@@ -1,8 +1,12 @@
 const fullWidth = 40;
 
 class Hero extends Phaser.GameObjects.Container {
-    maxHP: number = 11;
-    HP: number = 11;
+    maxHP: number;
+    HP: number;
+    stats = {
+        atk: 0,
+        def: 0
+    };
     hpBar: Phaser.GameObjects.Rectangle;
     emptyHPBar: Phaser.GameObjects.Rectangle;
     weaponType: Phaser.GameObjects.Image;
@@ -14,11 +18,14 @@ class Hero extends Phaser.GameObjects.Container {
     hpUnits: Phaser.GameObjects.Image = undefined;
     private unitData: { name: string; weaponType: string; movementType: string };
 
-    constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponType: string, movementType: string; }) {
+    constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponType: string, movementType: string; maxHP: number; atk: number; def: number }) {
         super(scene, x, y);
         scene.add.existing(this);
         this.image = new Phaser.GameObjects.Image(scene, 0, 0, unitData.name).setScale(0.6);
         this.add(this.image);
+        this.maxHP = this.HP = unitData.maxHP;
+        this.stats.atk = unitData.atk;
+        this.stats.def = unitData.def;
         this.hpBar = new Phaser.GameObjects.Rectangle(scene, -13, 10, fullWidth, 5, 0xFF0000).setOrigin(0, 0);
         this.weaponType = new Phaser.GameObjects.Image(scene, -20, -20, unitData.weaponType).setScale(0.7);
         this.emptyHPBar = new Phaser.GameObjects.Rectangle(scene, -13, 10, fullWidth, 5, 0xFFFFFF).setOrigin(0, 0);
@@ -35,6 +42,12 @@ class Hero extends Phaser.GameObjects.Container {
         this.hpUnits = new Phaser.GameObjects.Image(scene, -18, 12, "digits", `0.png`).setScale(0.7).setVisible(false);
         this.add(this.hpUnits);
         this.unitData = unitData;
+    }
+
+    attack(enemy: Hero) {
+        const turns = [{ attacker: this, defender: enemy, damage: this.stats.atk - enemy.stats.def, remainingHP: enemy.HP -  (this.stats.atk - enemy.stats.def)},
+        { attacker: enemy, defender: this, damage: enemy.stats.atk - this.stats.def, remainingHP: this.HP -  (enemy.stats.atk - this.stats.def) }];
+        return turns;
     }
 
     update() {

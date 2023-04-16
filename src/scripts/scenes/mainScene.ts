@@ -38,18 +38,21 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("map", "assets/testmap.png");
     this.load.image("byleth m", "assets/byleth m.png");
     this.load.image("sylvain", "assets/sylvain.png");
+    this.load.image("chrom", "assets/chrom.png");
     this.load.image("movement-allowed", "assets/movement-allowed.png");
     this.load.image("sword", "assets/sword.png");
     this.load.image("lance", "assets/lance.png");
     this.load.atlas("digits", "/assets/spritesheets/digits.png", "/assets/spritesheets/digits.json");
   }
 
-  addHero(config: { name: string; gridX: number; gridY: number; weaponType: string; movementType: string }) {
+  addHero(config: { name: string; gridX: number; gridY: number; weaponType: string; movementType: string; atk: number; def: number; maxHP: number }) {
     const { x, y } = gridToPixels(config.gridX, config.gridY);
     const hero = new Hero(this, x, y, config).setInteractive();
     this.input.setDraggable(hero);
     this.add.existing(hero);
     this.heroes.push(hero);
+    console.log(this.map);
+    this.map[config.gridY][config.gridX] = hero;
     let currentCoords: Coords = { x: config.gridX, y: config.gridY };
 
     hero.on("dragstart", () => {
@@ -80,10 +83,14 @@ export default class MainScene extends Phaser.Scene {
     hero.on("dragover", (_, x, y: Phaser.GameObjects.GameObject) => {
       console.log(y?.name, x.name)
     });
+
+    return hero;
   }
 
-  getNearestToAttackTile() {
-    
+  getNearestToAttackTile(hero: Hero, tileCoords: Coords) {
+    const eligibleTiles = this.getTilesInShallowRange(tileCoords, hero.getWeaponRange());
+    if (!eligibleTiles.size) return null;
+    return eligibleTiles;
   }
 
   create() {
@@ -94,12 +101,11 @@ export default class MainScene extends Phaser.Scene {
         const name = x + "-" + y;
         const r = this.add.rectangle(screenX, screenY, 50, 50, 0x0).setName(name).setInteractive(undefined, undefined, true);
         r.on("dragover", () => {
+
           console.log(name);
         });
-        r.on("collide", () => {
-          r.setFillStyle(0x00FF00);
-        });
         r.on("pointerdown", () => {
+          console.log(name);
           if (this.walkCoords.includes(name) && this.highlightedHero) {
             const [x, y] = name.split("-");
             const { x: pxX, y: pxY } = gridToPixels(+x, +y);
@@ -109,6 +115,8 @@ export default class MainScene extends Phaser.Scene {
               y: pxY,
               duration: 200
             });
+          } else {
+            this.displayRange = false;
           }
         });
         this.add.text(r.getCenter().x, r.getCenter().y, name, {
@@ -117,25 +125,44 @@ export default class MainScene extends Phaser.Scene {
       }
     }
 
-    this.addHero({
+    const sylvain = this.addHero({
       name: "sylvain",
       gridX: 1,
       gridY: 5,
       weaponType: "lance",
-      movementType: "cavalry"
+      movementType: "cavalry",
+      maxHP: 51,
+      atk: 36,
+      def: 15
     });
 
-    this.addHero({
+    const byleth = this.addHero({
       name: "byleth m",
       gridX: 3,
       gridY: 1,
       weaponType: "sword",
-      movementType: "infantry"
-    })
+      movementType: "infantry",
+      maxHP: 40,
+      atk: 24,
+      def: 20
+    });
+
+    this.addHero({
+      name: "chrom",
+      gridX: 6,
+      gridY: 1,
+      weaponType: "sword",
+      movementType: "infantry",
+      atk: 41,
+      def: 35,
+      maxHP: 60
+    });
 
      this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
-      d.x = dragX;
-      d.y = dragY;
+      if (d instanceof Hero) {
+        d.x = dragX;
+        d.y = dragY;
+      }
      });
   }
 
@@ -164,13 +191,13 @@ export default class MainScene extends Phaser.Scene {
     this.attackCoords = newAttackTiles;
   }
 
-  getTile(xy: string) {
-    return this.children.getByName(xy) as Phaser.GameObjects.Rectangle;
+  getTile(name: string) {
+    return this.children.getByName(name) as Phaser.GameObjects.Rectangle;
   }
 
   getTilesInRange(tile: Coords, range: number, existingTiles?: Map<string, Coords>) {
     let tiles = existingTiles ? Array.from(existingTiles.values()) : [tile];
-    const tileset = existingTiles ? new Map(existingTiles) : new Map<string, Coords>();
+    const tileset = existingTiles ? new Map(existingTiles || undefined) : new Map<string, Coords>();
 
     for (let i = 0; i < range; i++) {
       tiles = tiles.map(getNearby).flat();
@@ -185,6 +212,21 @@ export default class MainScene extends Phaser.Scene {
     return tileset;
   }
 
+  getTilesInShallowRange(tile: Coords, range: number) {
+    const tilesInRange = this.getTilesInRange(tile, range);
+    tilesInRange.forEach((recordedTile, tileKey) => {
+      if (this.getDistance(recordedTile, tile) !== range) {
+        tilesInRange.delete(tileKey);
+      }
+    });
+
+    return tilesInRange;
+  }
+
+  getDistance(tile1: Coords, tile2: Coords) {
+    return Math.abs(tile1.x - tile2.x) + Math.abs(tile1.y - tile2.y);
+  }
+
   update() {
     if (this.displayRange) {
       for (let i of this.walkCoords) {
@@ -194,6 +236,12 @@ export default class MainScene extends Phaser.Scene {
       for (let i of this.attackCoords) {
         (this.children.getByName(i) as GameObjects.Rectangle).setFillStyle(0xFF0000);
       }
+    } else {
+      for (let i of [...this.attackCoords, ...this.walkCoords]) {
+        this.getTile(i).setFillStyle(0x0);
+      }
+      this.walkCoords = [];
+      this.attackCoords = [];
     }
     for (let hero of this.heroes) {
       hero.update();
