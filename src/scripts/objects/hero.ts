@@ -45,8 +45,9 @@ class Hero extends Phaser.GameObjects.Container {
     }
 
     attack(enemy: Hero) {
-        const turns = [{ attacker: this, defender: enemy, damage: this.stats.atk - enemy.stats.def, remainingHP: enemy.HP -  (this.stats.atk - enemy.stats.def)},
-        { attacker: enemy, defender: this, damage: enemy.stats.atk - this.stats.def, remainingHP: this.HP -  (enemy.stats.atk - this.stats.def) }];
+        const turns = [{ attacker: this, defender: enemy, damage: Math.max(0, this.stats.atk - enemy.stats.def), remainingHP: enemy.HP -  Math.max(0, this.stats.atk - enemy.stats.def)},
+        { attacker: enemy, defender: this, damage: Math.max(0, enemy.stats.atk - this.stats.def), remainingHP: this.HP -  Math.max(0, enemy.stats.atk - this.stats.def) }];
+        console.log(turns);
         return turns;
     }
 

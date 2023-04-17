@@ -51,7 +51,6 @@ export default class MainScene extends Phaser.Scene {
     this.input.setDraggable(hero);
     this.add.existing(hero);
     this.heroes.push(hero);
-    console.log(this.map);
     this.map[config.gridY][config.gridX] = hero;
     let currentCoords: Coords = { x: config.gridX, y: config.gridY };
 
@@ -62,12 +61,41 @@ export default class MainScene extends Phaser.Scene {
     hero.on("dragend", ({ upX, upY }: { upX: number; upY: number }) => {
       const { x: x2, y: y2 } = pixelsToGrid(upX, upY);
       if (this.walkCoords.includes(x2 + "-" + y2)) {
+        this.map[currentCoords.y][currentCoords.x] = null;
         currentCoords.x = x2;
         currentCoords.y = y2;
+        this.map[currentCoords.y][currentCoords.x] = hero;
         const pixelsCoords = gridToPixels(x2, y2);
         hero.x = pixelsCoords.x;
         hero.y = pixelsCoords.y;
         this.displayRanges({ x: x2, y: y2 }, hero.getMovementRange(), hero.getWeaponRange());
+      } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2]) {
+        const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
+        const [x] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
+        const [xCoord, yCoord] = x.split("-");
+        const newCoords = gridToPixels(+xCoord, +yCoord);
+        hero.x = newCoords.x;
+        hero.y = newCoords.y;
+        const target = this.map[y2][x2];
+        const turns = hero.attack(target);
+        for (let i = 0; i < turns.length; i++) {
+          const turn = turns[i];
+          const damage = this.add.text(turn.defender.x, turn.defender.y, turn.damage.toString(), {
+            fontSize: "1px"
+          });
+          this.tweens.addCounter({
+            from: 1,
+            to: 20,
+            onUpdate(tween) {
+              damage.setFontSize(tween.getValue());
+            },
+            duration: 400,
+            delay: 900 * i,
+            onStart() {
+              turn.defender.HP -= turn.damage;
+            }
+          });
+        }
       } else {
         const pixelCoords = gridToPixels(currentCoords.x, currentCoords.y);
         hero.x = pixelCoords.x;
@@ -81,7 +109,6 @@ export default class MainScene extends Phaser.Scene {
     });
 
     hero.on("dragover", (_, x, y: Phaser.GameObjects.GameObject) => {
-      console.log(y?.name, x.name)
     });
 
     return hero;
@@ -101,11 +128,8 @@ export default class MainScene extends Phaser.Scene {
         const name = x + "-" + y;
         const r = this.add.rectangle(screenX, screenY, 50, 50, 0x0).setName(name).setInteractive(undefined, undefined, true);
         r.on("dragover", () => {
-
-          console.log(name);
         });
         r.on("pointerdown", () => {
-          console.log(name);
           if (this.walkCoords.includes(name) && this.highlightedHero) {
             const [x, y] = name.split("-");
             const { x: pxX, y: pxY } = gridToPixels(+x, +y);
@@ -297,3 +321,20 @@ function getNearby(coords: Coords) {
 
   return nearbyTiles.filter(isValid);
 };
+
+function getOverlap<T>(array1: T[], array2: T[]) {
+  const arr: T[] = [];
+  for (let key of array1) {
+    if (array2.includes(key)) {
+      arr.push(key);
+    }
+  }
+
+  for (let key of array2) {
+    if (array1.includes(key)) {
+      arr.push(key);
+    }
+  }
+
+  return Array.from(new Set(arr));
+}
