@@ -8,19 +8,24 @@ interface Coords {
   y: number;
 }
 
+const squareSize = 50;
+const squaresOffset = 0;
+
 function gridToPixels(x: number, y: number) {
   return {
-    x: x * 60 - 30,
-    y: y * 60 - 30,
+    x: x * squareSize - squaresOffset,
+    y: y * squareSize - squaresOffset,
   }
 }
 
 function pixelsToGrid(x: number, y: number) {
   return {
-    x: Math.round((x + 30) / 60) >> 0,
-    y: Math.round((y + 30) / 60) >> 0
+    x: Math.round((x + squaresOffset) / squareSize) >> 0,
+    y: Math.round((y + squaresOffset) / squareSize) >> 0
   };
 }
+
+// create teams
 
 export default class MainScene extends Phaser.Scene {
   map: (Hero | null)[][] = Array.from<(Hero | null)[]>({ length: 8 }).fill(Array.from<Hero | null>({ length: 6 }).fill(null));
@@ -29,6 +34,8 @@ export default class MainScene extends Phaser.Scene {
   displayRange = false;
   heroes: Hero[] = [];
   highlightedHero: Hero;
+  team1: Hero[] = [];
+  team2: Hero[] = [];
 
   constructor() {
     super({ key: 'MainScene' });
@@ -45,9 +52,9 @@ export default class MainScene extends Phaser.Scene {
     this.load.atlas("digits", "/assets/spritesheets/digits.png", "/assets/spritesheets/digits.json");
   }
 
-  addHero(config: { name: string; gridX: number; gridY: number; weaponType: string; movementType: string; atk: number; def: number; maxHP: number }) {
+  addHero(config: { name: string; gridX: number; gridY: number; weaponType: string; movementType: string; atk: number; def: number; maxHP: number }, team: "team1" | "team2") {
     const { x, y } = gridToPixels(config.gridX, config.gridY);
-    const hero = new Hero(this, x, y, config).setInteractive();
+    const hero = new Hero(this, x, y, config, team).setInteractive();
     this.input.setDraggable(hero);
     this.add.existing(hero);
     this.heroes.push(hero);
@@ -68,8 +75,10 @@ export default class MainScene extends Phaser.Scene {
         const pixelsCoords = gridToPixels(x2, y2);
         hero.x = pixelsCoords.x;
         hero.y = pixelsCoords.y;
+        hero.disableInteractive();
+        hero.image.tint = 0x777777;
         this.displayRanges({ x: x2, y: y2 }, hero.getMovementRange(), hero.getWeaponRange());
-      } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2]) {
+      } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
         const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
         const [x] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
         const [xCoord, yCoord] = x.split("-");
@@ -83,6 +92,7 @@ export default class MainScene extends Phaser.Scene {
           const damage = this.add.text(turn.defender.x, turn.defender.y, turn.damage.toString(), {
             fontSize: "1px"
           });
+          damage.setOrigin(0, 0);
           this.tweens.addCounter({
             from: 1,
             to: 20,
@@ -92,7 +102,10 @@ export default class MainScene extends Phaser.Scene {
             duration: 400,
             delay: 900 * i,
             onStart() {
-              turn.defender.HP -= turn.damage;
+              turn.defender.HP = Math.max(0, turn.defender.HP - turn.damage);
+            },
+            onComplete() {
+              damage.destroy();
             }
           });
         }
@@ -101,6 +114,8 @@ export default class MainScene extends Phaser.Scene {
         hero.x = pixelCoords.x;
         hero.y = pixelCoords.y;
       }
+
+      this[team].push(hero);
     });
 
     hero.on("pointerdown", () => {
@@ -126,7 +141,7 @@ export default class MainScene extends Phaser.Scene {
       for (let x = 1; x < 7; x++) {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
         const name = x + "-" + y;
-        const r = this.add.rectangle(screenX, screenY, 50, 50, 0x0).setName(name).setInteractive(undefined, undefined, true);
+        const r = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setName(name).setInteractive(undefined, undefined, true);
         r.on("dragover", () => {
         });
         r.on("pointerdown", () => {
@@ -158,7 +173,7 @@ export default class MainScene extends Phaser.Scene {
       maxHP: 51,
       atk: 36,
       def: 15
-    });
+    }, "team1");
 
     const byleth = this.addHero({
       name: "byleth m",
@@ -169,7 +184,7 @@ export default class MainScene extends Phaser.Scene {
       maxHP: 40,
       atk: 24,
       def: 20
-    });
+    }, "team1");
 
     this.addHero({
       name: "chrom",
@@ -180,7 +195,7 @@ export default class MainScene extends Phaser.Scene {
       atk: 41,
       def: 35,
       maxHP: 60
-    });
+    }, "team2");
 
      this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
       if (d instanceof Hero) {

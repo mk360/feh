@@ -15,10 +15,11 @@ class Hero extends Phaser.GameObjects.Container {
     image: Phaser.GameObjects.Image;
     hpHundreds: Phaser.GameObjects.Image = undefined;
     hpTens: Phaser.GameObjects.Image = undefined;
+    team: string;
     hpUnits: Phaser.GameObjects.Image = undefined;
     private unitData: { name: string; weaponType: string; movementType: string };
 
-    constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponType: string, movementType: string; maxHP: number; atk: number; def: number }) {
+    constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponType: string, movementType: string; maxHP: number; atk: number; def: number }, team: string) {
         super(scene, x, y);
         scene.add.existing(this);
         this.image = new Phaser.GameObjects.Image(scene, 0, 0, unitData.name).setScale(0.6);
@@ -26,6 +27,7 @@ class Hero extends Phaser.GameObjects.Container {
         this.maxHP = this.HP = unitData.maxHP;
         this.stats.atk = unitData.atk;
         this.stats.def = unitData.def;
+        this.team = team;
         this.hpBar = new Phaser.GameObjects.Rectangle(scene, -13, 10, fullWidth, 5, 0xFF0000).setOrigin(0, 0);
         this.weaponType = new Phaser.GameObjects.Image(scene, -20, -20, unitData.weaponType).setScale(0.7);
         this.emptyHPBar = new Phaser.GameObjects.Rectangle(scene, -13, 10, fullWidth, 5, 0xFFFFFF).setOrigin(0, 0);
@@ -47,7 +49,6 @@ class Hero extends Phaser.GameObjects.Container {
     attack(enemy: Hero) {
         const turns = [{ attacker: this, defender: enemy, damage: Math.max(0, this.stats.atk - enemy.stats.def), remainingHP: enemy.HP -  Math.max(0, this.stats.atk - enemy.stats.def)},
         { attacker: enemy, defender: this, damage: Math.max(0, enemy.stats.atk - this.stats.def), remainingHP: this.HP -  Math.max(0, enemy.stats.atk - this.stats.def) }];
-        console.log(turns);
         return turns;
     }
 
@@ -81,7 +82,7 @@ class Hero extends Phaser.GameObjects.Container {
 
     getWeaponRange() {
         if (this.unitData.weaponType === "sword" || this.unitData.weaponType === "lance") {
-            return 1;
+            return 2;
         }
 
         return 2;
