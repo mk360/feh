@@ -8,27 +8,26 @@ interface Coords {
   y: number;
 }
 
-const squareSize = 50;
-const squaresOffset = 0;
+const squareSize = 120;
+const squaresOffset = 60;
+const fixedY = 20;
 
 function gridToPixels(x: number, y: number) {
   return {
     x: x * squareSize - squaresOffset,
-    y: y * squareSize - squaresOffset,
+    y: y * squareSize + fixedY,
   }
 }
 
 function pixelsToGrid(x: number, y: number) {
   return {
-    x: Math.round((x + squaresOffset) / squareSize) >> 0,
-    y: Math.round((y + squaresOffset) / squareSize) >> 0
+    x: Math.round((squaresOffset + x) / squareSize),
+    y: Math.round((y - fixedY) / squareSize)
   };
 }
 
-// create teams
-
 export default class MainScene extends Phaser.Scene {
-  map: (Hero | null)[][] = Array.from<(Hero | null)[]>({ length: 8 }).fill(Array.from<Hero | null>({ length: 6 }).fill(null));
+  map: (Hero | null)[][] = [];
   walkCoords: string[] = [];
   attackCoords: string[] = [];
   displayRange = false;
@@ -39,6 +38,12 @@ export default class MainScene extends Phaser.Scene {
 
   constructor() {
     super({ key: 'MainScene' });
+    for (let i = 0; i < 8; i++) {
+      const newArray = Array.from<Hero | null>({ length: 6 }).fill(null);
+      this.map.push(newArray);
+    }
+    
+    this.map[0][0] = undefined;
   }
 
   preload() {
@@ -67,7 +72,7 @@ export default class MainScene extends Phaser.Scene {
 
     hero.on("dragend", ({ upX, upY }: { upX: number; upY: number }) => {
       const { x: x2, y: y2 } = pixelsToGrid(upX, upY);
-      if (this.walkCoords.includes(x2 + "-" + y2)) {
+      if (this.walkCoords.includes(x2 + "-" + y2) && !this.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
         this.map[currentCoords.y][currentCoords.x] = null;
         currentCoords.x = x2;
         currentCoords.y = y2;
@@ -77,7 +82,6 @@ export default class MainScene extends Phaser.Scene {
         hero.y = pixelsCoords.y;
         hero.disableInteractive();
         hero.image.tint = 0x777777;
-        this.displayRanges({ x: x2, y: y2 }, hero.getMovementRange(), hero.getWeaponRange());
       } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
         const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
         const [x] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
@@ -85,6 +89,8 @@ export default class MainScene extends Phaser.Scene {
         const newCoords = gridToPixels(+xCoord, +yCoord);
         hero.x = newCoords.x;
         hero.y = newCoords.y;
+        currentCoords.x = +xCoord;
+        currentCoords.y = +yCoord;
         const target = this.map[y2][x2];
         const turns = hero.attack(target);
         for (let i = 0; i < turns.length; i++) {
@@ -136,12 +142,13 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.image(0, 0, "map").setOrigin(0, 0);
+    this.add.image(0, 80, "map").setDisplaySize(720, 1000).setOrigin(0, 0);
+    
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
         const name = x + "-" + y;
-        const r = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setName(name).setInteractive(undefined, undefined, true);
+        const r = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.3).setName(name).setInteractive(undefined, undefined, true);
         r.on("dragover", () => {
         });
         r.on("pointerdown", () => {
@@ -197,12 +204,12 @@ export default class MainScene extends Phaser.Scene {
       maxHP: 60
     }, "team2");
 
-     this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
+    this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
       if (d instanceof Hero) {
         d.x = dragX;
         d.y = dragY;
       }
-     });
+    });
   }
 
   displayRanges(coords: Coords, walkingRange: number, weaponRange: number) {
