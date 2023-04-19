@@ -8,8 +8,8 @@ interface Coords {
   y: number;
 }
 
-const squareSize = 120;
-const squaresOffset = 60;
+const squareSize = 125;
+const squaresOffset = 63;
 const fixedY = 20;
 
 function gridToPixels(x: number, y: number) {
@@ -55,6 +55,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("sword", "assets/sword.png");
     this.load.image("lance", "assets/lance.png");
     this.load.atlas("digits", "/assets/spritesheets/digits.png", "/assets/spritesheets/digits.json");
+    this.load.audio("enabled-unit", "/assets/audio/q.mp3");
+    this.load.audio("disabled-unit", "/assets/audio/feh disabled unit.mp3");
   }
 
   addHero(config: { name: string; gridX: number; gridY: number; weaponType: string; movementType: string; atk: number; def: number; maxHP: number }, team: "team1" | "team2") {
@@ -125,6 +127,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     hero.on("pointerdown", () => {
+      this.sound.play("enabled-unit");
       this.highlightedHero = hero;
       this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
     });
@@ -142,7 +145,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.image(0, 80, "map").setDisplaySize(720, 1000).setOrigin(0, 0);
+    this.add.image(0, 80, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
     
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
@@ -162,6 +165,7 @@ export default class MainScene extends Phaser.Scene {
               duration: 200
             });
           } else {
+            this.sound.play("disabled-unit");
             this.displayRange = false;
           }
         });
@@ -291,6 +295,11 @@ export default class MainScene extends Phaser.Scene {
     }
     for (let hero of this.heroes) {
       hero.update();
+      const { x, y } = pixelsToGrid(hero.x, hero.y);
+      const tile = this.getTile(x + "-" + y);
+      // if (hero.active) {
+      //   tile.
+      // }
     }
   }
 }

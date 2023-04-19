@@ -75,12 +75,12 @@ class Hero extends Phaser.GameObjects.Container {
     getMovementRange() {
         if (this.unitData.movementType === "cavalry") return 3;
         if (this.unitData.movementType === "armored") return 1;
-        return 2;
+        return 4;
     }
 
     getWeaponRange() {
         if (this.unitData.weaponType === "sword" || this.unitData.weaponType === "lance") {
-            return 2;
+            return 1;
         }
 
         return 2;
