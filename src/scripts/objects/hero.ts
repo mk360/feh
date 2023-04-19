@@ -10,38 +10,38 @@ class Hero extends Phaser.GameObjects.Container {
     hpBar: Phaser.GameObjects.Rectangle;
     hpBarBackground: Phaser.GameObjects.Rectangle;
     weaponType: Phaser.GameObjects.Image;
-    moveRange: 2;
-    attackRange: 1;
     image: Phaser.GameObjects.Image;
     hpHundreds: Phaser.GameObjects.Image = undefined;
     hpTens: Phaser.GameObjects.Image = undefined;
     team: string;
     hpUnits: Phaser.GameObjects.Image = undefined;
-    private unitData: { name: string; weaponType: string; movementType: string };
+    unitData: { name: string; weaponType: "sword" | "lance" | "axe" | "dragonstone" | "bow" | "tome" | "dagger"; movementType: "infantry" | "cavalry" | "flier" | "armored" };
 
-    constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponType: string, movementType: string; maxHP: number; atk: number; def: number }, team: string) {
+    constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponType: "sword" | "lance" | "axe" | "dragonstone" | "bow" | "tome" | "dagger"; movementType: "infantry" | "cavalry" | "flier" | "armored"; maxHP: number; atk: number; def: number }, team: string) {
         super(scene, x, y);
         scene.add.existing(this);
-        this.image = new Phaser.GameObjects.Image(scene, 0, 0, unitData.name);
+        this.name = unitData.name;
+        this.image = new Phaser.GameObjects.Image(scene, 0, 0, unitData.name).setScale(0.7);
         this.add(this.image);
         this.maxHP = this.HP = unitData.maxHP;
         this.stats.atk = unitData.atk;
         this.stats.def = unitData.def;
         this.team = team;
-        this.hpBar = new Phaser.GameObjects.Rectangle(scene, -13, 21, fullWidth, 5, this.team === "team1" ? 0x54DFF4 : 0xFA4D69).setOrigin(0, 0);
+        const hpBarHeight = this.image.getBottomCenter().y - 20;        
+        this.hpBar = new Phaser.GameObjects.Rectangle(scene, -13, hpBarHeight, fullWidth, 5, this.team === "team1" ? 0x54DFF4 : 0xFA4D69).setOrigin(0, 0);
         this.weaponType = new Phaser.GameObjects.Image(scene, -30, -40, unitData.weaponType);
-        this.hpBarBackground = new Phaser.GameObjects.Rectangle(scene, -14, 20, fullWidth + 1, 7, 0x000000).setOrigin(0, 0);
-        
+        this.hpBarBackground = new Phaser.GameObjects.Rectangle(scene, -14, hpBarHeight - 1, fullWidth + 2, 7, 0x000000).setOrigin(0, 0);
+        const teamDigits = this.team === "team1" ? "digits" : "red_digits";
         this.add(this.hpBarBackground);
         this.add(this.hpBar);
         this.add(this.weaponType);
         this.setSize(this.image.width, this.image.height);
-        this.hpHundreds = new Phaser.GameObjects.Image(scene, -38, 22, "digits", `0.png`);
+        this.hpHundreds = new Phaser.GameObjects.Image(scene, -40, hpBarHeight, teamDigits, `0.png`);
         this.hpHundreds.setVisible(false);
         this.add(this.hpHundreds);
-        this.hpTens = new Phaser.GameObjects.Image(scene, -34, 22, "digits", `0.png`).setVisible(false);
+        this.hpTens = new Phaser.GameObjects.Image(scene, -37, hpBarHeight, teamDigits, `0.png`).setVisible(false);
         this.add(this.hpTens);
-        this.hpUnits = new Phaser.GameObjects.Image(scene, -22, 22, "digits", `0.png`).setVisible(false);
+        this.hpUnits = new Phaser.GameObjects.Image(scene, -25, hpBarHeight, teamDigits, `0.png`).setVisible(false);
         this.add(this.hpUnits);
         this.unitData = unitData;
     }
@@ -75,11 +75,11 @@ class Hero extends Phaser.GameObjects.Container {
     getMovementRange() {
         if (this.unitData.movementType === "cavalry") return 3;
         if (this.unitData.movementType === "armored") return 1;
-        return 4;
+        return 2;
     }
 
     getWeaponRange() {
-        if (this.unitData.weaponType === "sword" || this.unitData.weaponType === "lance") {
+        if (["sword", "lance", "axe", "dragonstone"].includes(this.unitData.weaponType)) {
             return 1;
         }
 
