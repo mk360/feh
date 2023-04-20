@@ -38,6 +38,7 @@ export default class MainScene extends Phaser.Scene {
   highlightedHero: Hero;
   team1: Hero[] = [];
   team2: Hero[] = [];
+  turn: "team1" | "team2" = "team1";
 
   terrain: TileType[][] = [
     ["wall", "floor", "floor", "floor", "floor", "floor"],
@@ -55,6 +56,90 @@ export default class MainScene extends Phaser.Scene {
     for (let i = 0; i < 8; i++) {
       const newArray = Array.from<Hero | null>({ length: 6 }).fill(null);
       this.map.push(newArray);
+    }
+  }
+
+  setTurn(turn: "team1" | "team2") {
+    const otherTeam = turn === "team1" ? "team2" : "team1";
+
+    for (let hero of this[turn]) {
+      const { x, y } = pixelsToGrid(hero.x, hero.y);
+      let currentCoords: Coords = { x, y };
+      hero.setInteractive(true);
+      hero.on("dragstart", () => {
+        this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
+      });
+
+      hero.on("dragend", ({ upX, upY }: { upX: number; upY: number }) => {
+        const { x: x2, y: y2 } = pixelsToGrid(upX, upY);
+        if (this.walkCoords.includes(x2 + "-" + y2) && !this.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
+          this.map[currentCoords.y][currentCoords.x] = null;
+          currentCoords.x = x2;
+          currentCoords.y = y2;
+          this.map[currentCoords.y][currentCoords.x] = hero;
+          const pixelsCoords = gridToPixels(x2, y2);
+          hero.x = pixelsCoords.x;
+          hero.y = pixelsCoords.y;
+          hero.disableInteractive();
+          hero.image.tint = 0x777777;
+        } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
+          const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
+          const [x] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
+          const [xCoord, yCoord] = x.split("-");
+          const newCoords = gridToPixels(+xCoord, +yCoord);
+          hero.x = newCoords.x;
+          hero.y = newCoords.y;
+          currentCoords.x = +xCoord;
+          currentCoords.y = +yCoord;
+          const target = this.map[y2][x2];
+          const turns = hero.attack(target);
+          for (let i = 0; i < turns.length; i++) {
+            const turn = turns[i];
+            const damage = this.add.text(turn.defender.x, turn.defender.y, turn.damage.toString(), {
+              fontSize: "1px"
+            });
+            damage.setOrigin(0, 0);
+            const tweenDelay = 900 * i + 40;
+            this.tweens.add({
+              targets: turn.attacker,
+              x: `-=${(turn.attacker.x - turn.defender.x) / 2}`,
+              y: `-=${(turn.attacker.y - turn.defender.y) / 2}`,
+              yoyo: true,
+              duration: 100,
+              onStart: () => {
+                this.sound.play("hit");
+                turn.defender.HP = Math.max(0, turn.defender.HP - turn.damage);
+              },
+              delay: tweenDelay
+            });
+            this.tweens.addCounter({
+              from: 1,
+              to: 20,
+              onUpdate: (tween) => {
+                damage.setFontSize(tween.getValue());
+              },
+              duration: 400,
+              delay: tweenDelay,
+              onComplete() {
+                damage.destroy();
+              }
+            });
+          }
+        } else {
+          const pixelCoords = gridToPixels(currentCoords.x, currentCoords.y);
+          hero.x = pixelCoords.x;
+          hero.y = pixelCoords.y;
+        }
+      });
+
+      hero.on("dragover", (_, x, y: Phaser.GameObjects.GameObject) => {
+      });
+    }
+
+    for (let hero of this[otherTeam]) {
+      hero.off("dragover");
+      hero.off("dragend");
+      hero.off("dragstart");
     }
   }
 
@@ -89,92 +174,7 @@ export default class MainScene extends Phaser.Scene {
     this.add.existing(hero);
     this.heroes.push(hero);
     this.map[config.gridY][config.gridX] = hero;
-    let currentCoords: Coords = { x: config.gridX, y: config.gridY };
-
-    hero.on("dragstart", () => {
-      this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
-    });
-
-    hero.on("dragend", ({ upX, upY }: { upX: number; upY: number }) => {
-      const { x: x2, y: y2 } = pixelsToGrid(upX, upY);
-      if (this.walkCoords.includes(x2 + "-" + y2) && !this.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
-        this.map[currentCoords.y][currentCoords.x] = null;
-        currentCoords.x = x2;
-        currentCoords.y = y2;
-        this.map[currentCoords.y][currentCoords.x] = hero;
-        const pixelsCoords = gridToPixels(x2, y2);
-        hero.x = pixelsCoords.x;
-        hero.y = pixelsCoords.y;
-        hero.disableInteractive();
-        hero.image.tint = 0x777777;
-      } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
-        const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
-        const [x] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
-        const [xCoord, yCoord] = x.split("-");
-        const newCoords = gridToPixels(+xCoord, +yCoord);
-        hero.x = newCoords.x;
-        hero.y = newCoords.y;
-        currentCoords.x = +xCoord;
-        currentCoords.y = +yCoord;
-        const target = this.map[y2][x2];
-        const turns = hero.attack(target);
-        for (let i = 0; i < turns.length; i++) {
-          const turn = turns[i];
-          const damage = this.add.text(turn.defender.x, turn.defender.y, turn.damage.toString(), {
-            fontSize: "1px"
-          });
-          damage.setOrigin(0, 0);
-          const tweenDelay = 900 * i + 40;
-          this.tweens.add({
-            targets: turn.attacker,
-            x: `-=${(turn.attacker.x - turn.defender.x) / 2}`,
-            y: `-=${(turn.attacker.y - turn.defender.y) / 2}`,
-            yoyo: true,
-            duration: 100,
-            onStart: () => {
-              this.sound.play("hit");
-              turn.defender.HP = Math.max(0, turn.defender.HP - turn.damage);
-            },
-            delay: tweenDelay
-          });
-          this.tweens.addCounter({
-            from: 1,
-            to: 20,
-            onUpdate: (tween) => {
-              damage.setFontSize(tween.getValue());
-            },
-            duration: 400,
-            delay: tweenDelay,
-            onComplete() {
-              damage.destroy();
-            }
-          });
-        }
-      } else {
-        const pixelCoords = gridToPixels(currentCoords.x, currentCoords.y);
-        hero.x = pixelCoords.x;
-        hero.y = pixelCoords.y;
-      }
-      this[team].push(hero);
-    });
-
-    let previousSoundFile = "";
-
-    hero.on("pointerdown", () => {
-      this.sound.play("enabled-unit");
-      this.highlightedHero = hero;
-      var x = new Phaser.Math.RandomDataGenerator();
-      const n = x.integerInRange(1, 3);
-      if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
-      const soundFile = `${hero.unitData.name.toLowerCase()} ${n}`;
-      this.sound.play(soundFile, { volume: 0.2 });
-      previousSoundFile = soundFile;
-      this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
-    });
-
-    hero.on("dragover", (_, x, y: Phaser.GameObjects.GameObject) => {
-    });
-
+    this[team].push(hero);
     return hero;
   }
 
@@ -262,11 +262,32 @@ export default class MainScene extends Phaser.Scene {
     }, "team2");
 
     this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
-      if (d instanceof Hero) {
+      if (d instanceof Hero && d.team === this.turn) {
         d.x = dragX;
         d.y = dragY;
       }
     });
+
+    let previousSoundFile = "";
+
+    for (let hero of this.heroes) {
+      hero.on("pointerdown", () => {
+        const currentCoords = pixelsToGrid(hero.x, hero.y);
+        this.sound.play("enabled-unit");
+        this.highlightedHero = hero;
+        if (hero.team === this.turn) {
+          var x = new Phaser.Math.RandomDataGenerator();
+          const n = x.integerInRange(1, 3);
+          if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
+          const soundFile = `${hero.unitData.name.toLowerCase()} ${n}`;
+          this.sound.play(soundFile, { volume: 0.2 });
+          previousSoundFile = soundFile;
+        }
+        this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
+      });
+    }
+
+    this.setTurn("team1");
   }
 
   displayRanges(coords: Coords, walkingRange: number, weaponRange: number) {
