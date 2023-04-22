@@ -13,11 +13,11 @@ class Hero extends Phaser.GameObjects.Container {
     image: Phaser.GameObjects.Image;
     hpHundreds: Phaser.GameObjects.Image = undefined;
     hpTens: Phaser.GameObjects.Image = undefined;
-    team: string;
+    team: "team1" | "team2";
     hpUnits: Phaser.GameObjects.Image = undefined;
     unitData: { name: string; weaponType: "sword" | "lance" | "axe" | "dragonstone" | "bow" | "tome" | "dagger"; movementType: "infantry" | "cavalry" | "flier" | "armored" };
 
-    constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponType: "sword" | "lance" | "axe" | "dragonstone" | "bow" | "tome" | "dagger"; movementType: "infantry" | "cavalry" | "flier" | "armored"; maxHP: number; atk: number; def: number }, team: string) {
+    constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponType: "sword" | "lance" | "axe" | "dragonstone" | "bow" | "tome" | "dagger"; movementType: "infantry" | "cavalry" | "flier" | "armored"; maxHP: number; atk: number; def: number }, team: "team1" | "team2") {
         super(scene, x, y);
         scene.add.existing(this);
         this.name = unitData.name;
