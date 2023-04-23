@@ -13,7 +13,7 @@ interface Coords {
 
 const squareSize = 125;
 const squaresOffset = 63;
-const fixedY = 20;
+const fixedY = 90;
 
 function gridToPixels(x: number, y: number) {
   return {
@@ -41,6 +41,8 @@ export default class MainScene extends Phaser.Scene {
   heroesWhoMoved: Hero[] = [];
   turn: "team1" | "team2" = "team1";
   rng = new Phaser.Math.RandomDataGenerator();
+  heroDetails: Phaser.GameObjects.Container;
+  heroPortrait: Phaser.GameObjects.Image;
 
   terrain: TileType[][] = [
     ["wall", "floor", "floor", "floor", "floor", "floor"],
@@ -87,6 +89,7 @@ export default class MainScene extends Phaser.Scene {
       hero.on("pointerdown", () => {
         this.sound.play("enabled-unit");
         this.highlightedHero = hero;
+        this.heroPortrait.setTexture(hero.name + " battle");
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         const n = this.rng.integerInRange(1, 3);
         if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
@@ -194,6 +197,7 @@ export default class MainScene extends Phaser.Scene {
       hero.off("dragstart");
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
+        this.heroPortrait.setTexture(hero.name + " battle");
         this.displayRanges(pixelsToGrid(hero.x, hero.y), hero.getMovementRange(), hero.getWeaponRange());
         this.sound.play("enabled-unit");
         this.highlightedHero = hero;
@@ -224,6 +228,7 @@ export default class MainScene extends Phaser.Scene {
       this.load.audio(`${hero} 1`, `/assets/audio/quotes/${hero}_1.wav`);
       this.load.audio(`${hero} 2`, `/assets/audio/quotes/${hero}_2.wav`);
       this.load.audio(`${hero} 3`, `/assets/audio/quotes/${hero}_3.wav`);
+      this.load.image(`${hero} battle`, `/assets/battle/${hero}.png`);
     }
   }
 
@@ -252,8 +257,11 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+    this.heroDetails = this.add.container(0, 0, []);
+    this.heroPortrait = new Phaser.GameObjects.Image(this, 0, 0, "byleth battle").setOrigin(0, 0).setScale(0.5);
+    this.heroDetails.add(this.heroPortrait);
     this.sound.play("bgm", { volume: 0.1, loop: true });
-    this.add.image(0, 80, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
+    this.add.image(0, this.heroPortrait.getBottomCenter().y, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
     
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
@@ -334,7 +342,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     this.setTurn("team1");
-  }
+}
 
   displayRanges(coords: Coords, walkingRange: number, weaponRange: number) {
     this.displayRange = true;
