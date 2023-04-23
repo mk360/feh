@@ -55,16 +55,19 @@ export default class MainScene extends Phaser.Scene {
 
   constructor() {
     super({ key: 'MainScene' });
-    for (let i = 0; i < 8; i++) {
+    // todo: refactor into a number-indexed object, maybe?
+    for (let i = 0; i < 9; i++) {
       const newArray = Array.from<Hero | null>({ length: 6 }).fill(null);
       this.map.push(newArray);
     }
   }
 
   endAction(hero: Hero) {
-    hero.image.setTint(0x777777);
+    hero.image.setTint(0x777777);    
     hero.disableInteractive();
     this.heroesWhoMoved.push(hero);
+    this.displayRange = false;
+    this.highlightedHero = null;
   }
 
   setTurn(turn: "team1" | "team2") {
@@ -80,6 +83,7 @@ export default class MainScene extends Phaser.Scene {
 
       let previousSoundFile = "";
 
+      hero.off("pointerdown");
       hero.on("pointerdown", () => {
         this.sound.play("enabled-unit");
         this.highlightedHero = hero;
@@ -91,11 +95,11 @@ export default class MainScene extends Phaser.Scene {
         previousSoundFile = soundFile;
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
-
+      hero.off("dragstart");
       hero.on("dragstart", () => {
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
-
+      hero.off("dragend");
       hero.on("dragend", ({ upX, upY }: { upX: number; upY: number }) => {
         const { x: x2, y: y2 } = pixelsToGrid(upX, upY);
         if (this.walkCoords.includes(x2 + "-" + y2) && !this.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
@@ -106,26 +110,47 @@ export default class MainScene extends Phaser.Scene {
           const pixelsCoords = gridToPixels(x2, y2);
           hero.x = pixelsCoords.x;
           hero.y = pixelsCoords.y;
+          this.sound.play("confirm", { volume: 0.4 });
           this.endAction(hero);
-          if (this.heroesWhoMoved.length === this[hero.team].length) {
-            const otherTeam = hero.team === "team1" ? "team2": "team1";
-            this.setTurn(otherTeam);
-          }
         } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
           const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
-          const [x] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
-          const [xCoord, yCoord] = x.split("-");
-          const newCoords = gridToPixels(+xCoord, +yCoord);
-          hero.x = newCoords.x;
-          hero.y = newCoords.y;
+          const [finalLandingTile] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
+          const [xCoord, yCoord] = finalLandingTile.split("-");
+          this.moveHero(hero, currentCoords, { x: +xCoord, y: +yCoord });
           currentCoords.x = +xCoord;
           currentCoords.y = +yCoord;
           const target = this.map[y2][x2];
           const turns = hero.attack(target);
           const t = this.tweens.timeline();
           t.on("complete", () => {
-            this.game.input.enabled = true;
-            this.endAction(hero);
+            const deadUnit = [hero, target].find(h => h.HP === 0);
+            const survivingUnit = [hero, target].find(h => !!h.HP);
+            if (deadUnit) {
+              this.tweens.add({
+              targets: deadUnit,
+              alpha: 0,
+              delay: 700,
+              onStart: () => {
+                this.sound.play("ko", { volume: 0.4 });
+              },
+              onComplete: () => {
+                this.displayRange = false;
+                this.heroes = this.heroes.filter(h => h.name !== deadUnit.name);
+                this[deadUnit.team] = this[deadUnit.team].filter(h => h.name !== deadUnit.name);
+                const { x, y } = pixelsToGrid(deadUnit.x, deadUnit.y);
+                this.map[y][x] = null;
+                deadUnit.destroy();
+                if (survivingUnit.team === this.turn) {
+                  this.endAction(survivingUnit);
+                }
+                this.game.input.enabled = true;
+              },
+              duration: 900
+            });
+            } else {
+              this.endAction(hero);
+              this.game.input.enabled = true;
+            }
           });
           for (let i = 0; i < turns.length; i++) {
             const turn = turns[i];
@@ -146,19 +171,7 @@ export default class MainScene extends Phaser.Scene {
               },
               delay: tweenDelay
             });
-            this.tweens.addCounter({
-              from: 1,
-              to: 20,
-              onUpdate: (tween) => {
-                damage.setFontSize(tween.getValue());
-              },
-              duration: 400,
-              delay: tweenDelay,
-              onComplete() {
-                damage.destroy();
-              }
-            });
-          }          
+          }
           this.game.input.enabled = false;
           t.play();
         } else {
@@ -179,6 +192,7 @@ export default class MainScene extends Phaser.Scene {
       hero.image.clearTint();
       this.input.setDraggable(hero, false);
       hero.off("dragstart");
+      hero.off("pointerdown");
       hero.on("pointerdown", () => {
         this.displayRanges(pixelsToGrid(hero.x, hero.y), hero.getMovementRange(), hero.getWeaponRange());
         this.sound.play("enabled-unit");
@@ -202,6 +216,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.audio("disabled-unit", "/assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "/assets/audio/hit.mp3");
     this.load.audio("ko", "/assets/audio/ko.mp3");
+    this.load.audio("hover", "/assets/audio/hover on tile.mp3");
+    this.load.audio("confirm", "/assets/audio/confirm.mp3");
     // todo: compress into audio sprite
     this.load.audio("bgm", "/assets/audio/leif's army in search of victory.mp3");
     for (let hero of ["chrom", "byleth", "dimitri", "lucina"]) {
@@ -221,6 +237,14 @@ export default class MainScene extends Phaser.Scene {
     return hero;
   }
 
+  moveHero(hero: Hero, from: Coords, destination: Coords) {
+    this.map[from.y][from.x] = null;
+    this.map[destination.y][destination.x] = hero;
+    const { x, y } = gridToPixels(destination.x, destination.y);
+    hero.x = x;
+    hero.y = y;
+  }
+
   getNearestToAttackTile(hero: Hero, tileCoords: Coords) {
     const eligibleTiles = this.getTilesInShallowRange(tileCoords, hero.getWeaponRange());
     if (!eligibleTiles.size) return null;
@@ -235,7 +259,7 @@ export default class MainScene extends Phaser.Scene {
       for (let x = 1; x < 7; x++) {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
         const name = x + "-" + y;
-        const r = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.3).setName(name).setInteractive(undefined, undefined, true);
+        const r = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.2).setName(name).setInteractive(undefined, undefined, true);
         r.on("pointerdown", () => {
           const [x, y] = name.split("-");
           if (this.walkCoords.includes(name) && this.highlightedHero) {
@@ -251,7 +275,7 @@ export default class MainScene extends Phaser.Scene {
             this.displayRange = false;
           }
         });
-        // uncomment if you need to check coordinates
+        // uncomment if you need to check tile coordinates
         // this.add.text(r.getCenter().x, r.getCenter().y, name, {
         //   fontSize: "18px"
         // });
@@ -286,8 +310,8 @@ export default class MainScene extends Phaser.Scene {
       gridY: 1,
       weaponType: "sword",
       movementType: "infantry",
-      atk: 41,
-      def: 35,
+      atk: 61,
+      def: 19,
       maxHP: 60
     }, "team2");
     
@@ -424,11 +448,11 @@ export default class MainScene extends Phaser.Scene {
     }
     for (let hero of this.heroes) {
       hero.update();
-      const { x, y } = pixelsToGrid(hero.x, hero.y);
-      const tile = this.getTile(x + "-" + y);
-      // if (hero.active) {
-      //   tile.
-      // }
+    }
+
+    if (this.heroesWhoMoved.length === this[this.turn].length) {
+      const otherTeam = this.turn === "team1" ? "team2": "team1";
+      this.setTurn(otherTeam);
     }
   }
 }
