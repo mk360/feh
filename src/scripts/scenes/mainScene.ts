@@ -5,6 +5,7 @@ import Hero from '../objects/hero';
 import TileType from '../../types/tiles';
 import WeaponType from '../../types/WeaponType';
 import MovementType from '../../types/MovementType';
+import UnitInfosBanner from '../objects/unit-infos-banner';
 
 interface Coords {
   x: number;
@@ -30,6 +31,7 @@ function pixelsToGrid(x: number, y: number) {
 }
 
 export default class MainScene extends Phaser.Scene {
+  unitInfosBanner: Phaser.GameObjects.Container;
   map: (Hero | null)[][] = [];
   walkCoords: string[] = [];
   attackCoords: string[] = [];
@@ -43,6 +45,11 @@ export default class MainScene extends Phaser.Scene {
   rng = new Phaser.Math.RandomDataGenerator();
   heroDetails: Phaser.GameObjects.Container;
   heroPortrait: Phaser.GameObjects.Image;
+  heroBackground: Phaser.GameObjects.Rectangle;
+  heroName: Phaser.GameObjects.Text;
+  heroWeapon: Phaser.GameObjects.Image;
+  heroStats: Phaser.GameObjects.Text[];
+  heroSkills: Phaser.GameObjects.Image[];
 
   terrain: TileType[][] = [
     ["wall", "floor", "floor", "floor", "floor", "floor"],
@@ -90,6 +97,12 @@ export default class MainScene extends Phaser.Scene {
         this.sound.play("enabled-unit");
         this.highlightedHero = hero;
         this.heroPortrait.setTexture(hero.name + " battle");
+        this.heroPortrait.x = -300;
+        this.tweens.add({
+          targets: this.heroPortrait,
+          x: 0,
+          duration: 200
+        });
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         const n = this.rng.integerInRange(1, 3);
         if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
@@ -198,14 +211,26 @@ export default class MainScene extends Phaser.Scene {
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
         this.heroPortrait.setTexture(hero.name + " battle");
+        this.heroPortrait.x = -300;
+        this.tweens.add({
+          targets: this.heroPortrait,
+          x: 0,
+          duration: 200
+        });
         this.displayRanges(pixelsToGrid(hero.x, hero.y), hero.getMovementRange(), hero.getWeaponRange());
         this.sound.play("enabled-unit");
         this.highlightedHero = hero;
-      })
+      });
     }
   }
 
   preload() {
+    const element = document.createElement('style');
+    document.head.appendChild(element);
+    const sheet = element.sheet;
+    let styles = '@font-face { font-family: "FEH"; src: url("assets/font/feh.ttf)';
+    sheet.insertRule(styles, 0);
+
     this.load.image("map", "assets/testmap.png");
     this.load.image("byleth", "assets/mini/Byleth.png");
     this.load.image("dimitri", "assets/mini/Dimitri.png");
@@ -257,11 +282,14 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    this.heroDetails = this.add.container(0, 0, []);
-    this.heroPortrait = new Phaser.GameObjects.Image(this, 0, 0, "byleth battle").setOrigin(0, 0).setScale(0.5);
-    this.heroDetails.add(this.heroPortrait);
+    // this.heroDetails = this.add.container(0, 0, []);
+    // this.heroPortrait = new Phaser.GameObjects.Image(this, -300, 0, "byleth battle").setOrigin(0, 0).setScale(0.5);
+    this.heroBackground = this.add.rectangle(0, 0, 1500, 400, 0x923432);
+    this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this))
+    // this.heroDetails.add(this.heroBackground);
+    // this.heroDetails.add(this.heroPortrait);
     this.sound.play("bgm", { volume: 0.1, loop: true });
-    this.add.image(0, this.heroPortrait.getBottomCenter().y, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
+    this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
     
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
