@@ -22,23 +22,21 @@ class UnitInfosBanner extends Phaser.GameObjects.Container {
     
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
-        this.heroName = renderText(scene, 360, 60, "Dimitri", { fontSize: "24px" })
-        // this.heroName = new Phaser.GameObjects.Text(scene, 360, 60, "Dimitri", {
-        //     fontSize: "24px",
-        //     fontFamily: "FEH"
-        // });
+        const blockX = 310;
+        this.heroName = renderText(scene, blockX, 10, "Dimitri", { fontSize: "26px" });
         this.heroPortrait = new Phaser.GameObjects.Image(scene, 0, 0, "dimitri battle").setOrigin(0, 0).setScale(0.5);
-        this.weaponType = new Phaser.GameObjects.Image(scene, 340, 70, "lance");
+        this.weaponType = new Phaser.GameObjects.Image(scene, this.heroName.getLeftCenter().x - 42, this.heroName.getCenter().y, "lance");
         this.atk = new Phaser.GameObjects.Text(scene, 100, 70, "49", {});
         this.add([this.heroName, this.weaponType, this.heroPortrait, this.atk]);
-        this.add(renderText(scene, 500, 60, "Atk", { fontSize: "20px" }));
-        this.add(renderText(scene, 540, 60, "64", { fontSize: "20px" }));
-        this.add(renderText(scene, 570, 60, "Spd", { fontSize: "20px" }));
-        this.add(renderText(scene, 610, 60, "20", { fontSize: "20px" }));
-        this.add(renderText(scene, 500, 90, "Def", { fontSize: "20px" }));
-        this.add(renderText(scene, 540, 90, "30", { fontSize: "20px" }));
-        this.add(renderText(scene, 570, 90, "Res", { fontSize: "20px" }));
-        this.add(renderText(scene, 610, 90, "19", { fontSize: "20px" }));
+        this.add(renderText(scene, blockX - 53, 50, "PV         47 / 47", { fontSize: "18px" }))
+        this.add(renderText(scene, blockX - 53, 75, "Atk", { fontSize: "18px" }));
+        this.add(renderText(scene, blockX - 13, 75, "57", { fontSize: "18px" }));
+        this.add(renderText(scene, blockX + 20, 75, "Spd", { fontSize: "18px" }));
+        this.add(renderText(scene, blockX + 60, 75, "43", { fontSize: "18px" }));
+        this.add(renderText(scene, blockX - 53, 100, "Def", { fontSize: "18px" }));
+        this.add(renderText(scene, blockX - 13, 100, "30", { fontSize: "18px" }));
+        this.add(renderText(scene, blockX + 20, 100, "Res", { fontSize: "18px" }));
+        this.add(renderText(scene, blockX + 60, 100, "19", { fontSize: "18px" }));
     }
 
     // update() {

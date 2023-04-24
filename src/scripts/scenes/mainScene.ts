@@ -6,6 +6,7 @@ import TileType from '../../types/tiles';
 import WeaponType from '../../types/WeaponType';
 import MovementType from '../../types/MovementType';
 import UnitInfosBanner from '../objects/unit-infos-banner';
+import renderText from '../utils/renderText';
 
 interface Coords {
   x: number;
@@ -225,11 +226,6 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    const element = document.createElement('style');
-    document.head.appendChild(element);
-    const sheet = element.sheet;
-    let styles = '@font-face { font-family: "FEH"; src: url("assets/font/feh.ttf)';
-    sheet.insertRule(styles, 0);
 
     this.load.image("map", "assets/testmap.png");
     this.load.image("byleth", "assets/mini/Byleth.png");
@@ -239,8 +235,6 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("movement-allowed", "assets/movement-allowed.png");
     this.load.image("sword", "assets/sword.png");
     this.load.image("lance", "assets/lance.png");
-    this.load.atlas("digits", "/assets/spritesheets/digits.png", "/assets/spritesheets/digits.json");
-    this.load.atlas("red_digits", "/assets/spritesheets/red_digits.png", "/assets/spritesheets/red_digits.json");
     this.load.audio("enabled-unit", "/assets/audio/q.mp3");
     this.load.audio("disabled-unit", "/assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "/assets/audio/hit.mp3");
@@ -282,15 +276,11 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    // this.heroDetails = this.add.container(0, 0, []);
-    // this.heroPortrait = new Phaser.GameObjects.Image(this, -300, 0, "byleth battle").setOrigin(0, 0).setScale(0.5);
-    this.heroBackground = this.add.rectangle(0, 0, 1500, 400, 0x923432);
+    this.heroBackground = this.add.rectangle(0, 0, 1500, 400, 0x1F6589);
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this))
-    // this.heroDetails.add(this.heroBackground);
-    // this.heroDetails.add(this.heroPortrait);
     this.sound.play("bgm", { volume: 0.1, loop: true });
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
-    
+  
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
@@ -359,7 +349,7 @@ export default class MainScene extends Phaser.Scene {
       movementType: "infantry",
       atk: 35,
       def: 19,
-      maxHP: 33
+      maxHP: 9
     }, "team2");
 
     this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {

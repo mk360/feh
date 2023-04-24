@@ -1,3 +1,5 @@
+import renderText from "../utils/renderText";
+
 const fullWidth = 60;
 
 class Hero extends Phaser.GameObjects.Container {
@@ -11,10 +13,8 @@ class Hero extends Phaser.GameObjects.Container {
     hpBarBackground: Phaser.GameObjects.Rectangle;
     weaponType: Phaser.GameObjects.Image;
     image: Phaser.GameObjects.Image;
-    hpHundreds: Phaser.GameObjects.Image = undefined;
-    hpTens: Phaser.GameObjects.Image = undefined;
+    hpText: Phaser.GameObjects.Text;
     team: "team1" | "team2";
-    hpUnits: Phaser.GameObjects.Image = undefined;
     unitData: { name: string; weaponType: "sword" | "lance" | "axe" | "dragonstone" | "bow" | "tome" | "dagger"; movementType: "infantry" | "cavalry" | "flier" | "armored" };
 
     constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponType: "sword" | "lance" | "axe" | "dragonstone" | "bow" | "tome" | "dagger"; movementType: "infantry" | "cavalry" | "flier" | "armored"; maxHP: number; atk: number; def: number }, team: "team1" | "team2") {
@@ -35,14 +35,15 @@ class Hero extends Phaser.GameObjects.Container {
         this.add(this.hpBarBackground);
         this.add(this.hpBar);
         this.add(this.weaponType);
+        this.hpText = renderText(scene, -15, hpBarHeight, this.HP, {
+            fontSize: "18px"
+        }).setOrigin(1, 0.5);
+        const gradient = this.hpText.context.createLinearGradient(0, 0, 0, this.hpText.height);
+        gradient.addColorStop(0, "white");
+        gradient.addColorStop(0.7, this.team === "team1" ? "#54DFF4" : "#FA4D69");
+        this.hpText.setFill(gradient);
+        this.add(this.hpText);
         this.setSize(this.image.width, this.image.height);
-        this.hpHundreds = new Phaser.GameObjects.Image(scene, -40, hpBarHeight, teamDigits, `0.png`);
-        this.hpHundreds.setVisible(false);
-        this.add(this.hpHundreds);
-        this.hpTens = new Phaser.GameObjects.Image(scene, -37, hpBarHeight, teamDigits, `0.png`).setVisible(false);
-        this.add(this.hpTens);
-        this.hpUnits = new Phaser.GameObjects.Image(scene, -25, hpBarHeight, teamDigits, `0.png`).setVisible(false);
-        this.add(this.hpUnits);
         this.unitData = unitData;
     }
 
@@ -53,23 +54,6 @@ class Hero extends Phaser.GameObjects.Container {
     }
 
     update() {
-        const hpRatio = this.HP / this.maxHP;
-        const hpDigits = threeDigits(this.HP);
-        this.hpTens.setVisible(hpDigits[1] !== "0");
-        this.hpHundreds.setVisible(hpDigits[0] !== "0");
-        this.hpBar.displayWidth = fullWidth * hpRatio;
-        this.hpHundreds.setVisible(hpDigits[0] !== "0").setFrame(`${hpDigits[0]}.png`);
-        this.hpTens.setVisible(hpDigits[1] !== "0" || this.HP >= 100).setFrame(`${hpDigits[1]}.png`);
-        this.hpUnits.setVisible(true).setFrame(`${hpDigits[2]}.png`);
-    }
-
-    setHPDigits(hp: number) {
-        const x = threeDigits(hp);
-        this.hpHundreds?.setVisible(hp >= 100);
-        if (this.hpHundreds.visible) {
-            this.hpHundreds.setFrame(x[0] + ".png");
-        }
-        return x;
     }
 
     getMovementRange() {
