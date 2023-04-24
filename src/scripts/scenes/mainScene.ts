@@ -226,7 +226,6 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
-
     this.load.image("map", "assets/testmap.png");
     this.load.image("byleth", "assets/mini/Byleth.png");
     this.load.image("dimitri", "assets/mini/Dimitri.png");
@@ -241,6 +240,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.audio("ko", "/assets/audio/ko.mp3");
     this.load.audio("hover", "/assets/audio/hover on tile.mp3");
     this.load.audio("confirm", "/assets/audio/confirm.mp3");
+    this.load.image("empty-skill", "/assets/empty-skill.png");
     // todo: compress into audio sprite
     this.load.audio("bgm", "/assets/audio/leif's army in search of victory.mp3");
     for (let hero of ["chrom", "byleth", "dimitri", "lucina"]) {
@@ -248,6 +248,9 @@ export default class MainScene extends Phaser.Scene {
       this.load.audio(`${hero} 2`, `/assets/audio/quotes/${hero}_2.wav`);
       this.load.audio(`${hero} 3`, `/assets/audio/quotes/${hero}_3.wav`);
       this.load.image(`${hero} battle`, `/assets/battle/${hero}.png`);
+    }
+    for (let slot of ["A", "B", "C", "S"]) {
+      this.load.image(slot, `/assets/${slot}.png`);
     }
   }
 
