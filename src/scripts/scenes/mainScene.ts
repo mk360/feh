@@ -7,6 +7,7 @@ import WeaponType from '../../types/WeaponType';
 import MovementType from '../../types/MovementType';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import renderText from '../utils/renderText';
+import Stats from '../../interfaces/stats';
 
 interface Coords {
   x: number;
@@ -32,7 +33,7 @@ function pixelsToGrid(x: number, y: number) {
 }
 
 export default class MainScene extends Phaser.Scene {
-  unitInfosBanner: Phaser.GameObjects.Container;
+  unitInfosBanner: UnitInfosBanner;
   map: (Hero | null)[][] = [];
   walkCoords: string[] = [];
   attackCoords: string[] = [];
@@ -92,29 +93,21 @@ export default class MainScene extends Phaser.Scene {
       this.input.setDraggable(hero, true);
 
       let previousSoundFile = "";
-
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
         this.sound.play("enabled-unit");
-        this.highlightedHero = hero;
-        this.heroPortrait.setTexture(hero.name + " battle");
-        this.heroPortrait.x = -300;
-        this.tweens.add({
-          targets: this.heroPortrait,
-          x: 0,
-          duration: 200
-        });
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         const n = this.rng.integerInRange(1, 3);
         if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
         const soundFile = `${hero.unitData.name.toLowerCase()} ${n}`;
         this.sound.play(soundFile, { volume: 0.2 });
         previousSoundFile = soundFile;
+        this.unitInfosBanner.setVisible(true).setHero(hero);
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
       hero.off("dragstart");
       hero.on("dragstart", () => {
-        this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
+        // this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
       hero.off("dragend");
       hero.on("dragend", ({ upX, upY }: { upX: number; upY: number }) => {
@@ -171,10 +164,6 @@ export default class MainScene extends Phaser.Scene {
           });
           for (let i = 0; i < turns.length; i++) {
             const turn = turns[i];
-            const damage = this.add.text(turn.defender.x, turn.defender.y, turn.damage.toString(), {
-              fontSize: "1px"
-            });
-            damage.setOrigin(0, 0);
             const tweenDelay = 900 * i + 40;
             t.add({
               targets: turn.attacker,
@@ -185,6 +174,32 @@ export default class MainScene extends Phaser.Scene {
               onStart: () => {
                 this.sound.play("hit");
                 turn.defender.HP = Math.max(0, turn.defender.HP - turn.damage);
+                const defCenter = turn.defender.image.getCenter();
+                const damageText = renderText(this, turn.defender.x + defCenter.x, turn.defender.y + defCenter.y, turn.damage.toString(), {
+                  stroke: "#FFFFFF",
+                  strokeThickness: 5,
+                  color: "red",
+                  fontSize: "30px"
+                });
+                damageText.setOrigin(0, 0);
+                this.add.existing(damageText);
+                // turn.defender.image.tintFill = true;
+                turn.defender.image.tint = 0xFFFFFF;
+                this.tweens.add({
+                  targets: [damageText],
+                  y: turn.defender.image.getTopCenter().y + turn.defender.y,
+                  yoyo: true,
+                  duration: 100,
+                  onComplete() {
+                    damageText.destroy();
+                  }
+                });
+                // this.tweens.add({
+                //   targets: [turn.defender.image],
+                //   tint: 0xFFFFFF,
+                //   duration: 300,
+                //   yoyo: true,
+                // });
               },
               delay: tweenDelay
             });
@@ -211,16 +226,10 @@ export default class MainScene extends Phaser.Scene {
       hero.off("dragstart");
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
-        this.heroPortrait.setTexture(hero.name + " battle");
-        this.heroPortrait.x = -300;
-        this.tweens.add({
-          targets: this.heroPortrait,
-          x: 0,
-          duration: 200
-        });
         this.displayRanges(pixelsToGrid(hero.x, hero.y), hero.getMovementRange(), hero.getWeaponRange());
         this.sound.play("enabled-unit");
         this.highlightedHero = hero;
+        this.unitInfosBanner.setVisible(true).setHero(hero);
       });
     }
   }
@@ -254,7 +263,8 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
-  addHero(config: { name: string; gridX: number; gridY: number; weaponType: WeaponType; movementType: MovementType; atk: number; def: number; maxHP: number }, team: "team1" | "team2") {
+  // todo: simplify signature
+  addHero(config: Omit<Stats, "hp"> & { name: string; gridX: number; gridY: number; weaponType: WeaponType; movementType: MovementType; maxHP: number }, team: "team1" | "team2") {
     const { x, y } = gridToPixels(config.gridX, config.gridY);
     const hero = new Hero(this, x, y, config, team).setInteractive();
     this.add.existing(hero);
@@ -280,7 +290,7 @@ export default class MainScene extends Phaser.Scene {
 
   create() {
     this.heroBackground = this.add.rectangle(0, 0, 1500, 400, 0x1F6589);
-    this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this))
+    this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
     this.sound.play("bgm", { volume: 0.1, loop: true });
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
   
@@ -318,8 +328,10 @@ export default class MainScene extends Phaser.Scene {
       weaponType: "lance",
       movementType: "infantry",
       maxHP: 51,
-      atk: 36,
-      def: 15
+      atk: 57,
+      def: 36,
+      res: 14,
+      spd: 24
     }, "team1");
 
     this.addHero({
@@ -329,8 +341,10 @@ export default class MainScene extends Phaser.Scene {
       weaponType: "sword",
       movementType: "infantry",
       maxHP: 40,
-      atk: 24,
-      def: 20
+      atk: 50,
+      def: 22,
+      spd: 31,
+      res: 20
     }, "team1");
 
     this.addHero({
@@ -340,8 +354,10 @@ export default class MainScene extends Phaser.Scene {
       weaponType: "sword",
       movementType: "infantry",
       atk: 61,
-      def: 19,
-      maxHP: 60
+      def: 39,
+      res: 10,
+      maxHP: 60,
+      spd: 9
     }, "team2");
     
     this.addHero({
@@ -350,9 +366,11 @@ export default class MainScene extends Phaser.Scene {
       gridY: 4,
       weaponType: "sword",
       movementType: "infantry",
-      atk: 35,
+      atk: 40,
       def: 19,
-      maxHP: 9
+      spd: 40,
+      maxHP: 33,
+      res: 10
     }, "team2");
 
     this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
@@ -398,7 +416,6 @@ export default class MainScene extends Phaser.Scene {
   getTile(name: string) {
     return this.children.getByName(name) as Phaser.GameObjects.Rectangle;
   }
-
 
   // todo: try to split function into distinct ones for walking and attacking
   getTilesInRange(tile: Coords, range: number, existingTiles?: Map<string, Coords>, checkForAttacks?: boolean) {
