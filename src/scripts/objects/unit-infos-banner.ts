@@ -32,6 +32,10 @@ class UnitInfosBanner extends Phaser.GameObjects.Container {
         this.spd = renderText(scene, blockX + 100, 75, "", { fontSize: "18px" }).setOrigin(1, 0);
         this.def = renderText(scene, blockX + 20, 100, "", { fontSize: "18px" }).setOrigin(1, 0);
         this.res = renderText(scene, blockX + 100, 100, "", { fontSize: "18px" }).setOrigin(1, 0);
+        const nameplate = new Phaser.GameObjects.Image(this.scene, this.weaponType.getLeftCenter().x - 20, this.heroName.getRightCenter().y, "nameplate").setScale(0.7, 0.5).setOrigin(0, 0.5);
+        const a = new Phaser.GameObjects.Image(this.scene, 0, 0, "unit-bg").setOrigin(0, 0);
+        a.setTint(0xFF0000).setDisplaySize(500, 400);
+        this.add([nameplate, a]);
         
         this.add([this.heroName, this.weaponType, this.heroPortrait, this.atk, this.spd, this.def, this.res, this.hp]);
 

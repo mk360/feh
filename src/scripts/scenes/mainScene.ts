@@ -180,26 +180,31 @@ export default class MainScene extends Phaser.Scene {
                   strokeThickness: 5,
                   color: "red",
                   fontSize: "30px"
-                });
-                damageText.setOrigin(0, 0);
+                }).setOrigin(0.4);
                 this.add.existing(damageText);
-                // turn.defender.image.tintFill = true;
-                turn.defender.image.tint = 0xFFFFFF;
+                turn.defender.image.tintFill = true;
                 this.tweens.add({
                   targets: [damageText],
                   y: turn.defender.image.getTopCenter().y + turn.defender.y,
                   yoyo: true,
                   duration: 100,
-                  onComplete() {
-                    damageText.destroy();
+                  onComplete: () => {
+                    this.tweens.add({
+                      targets: [turn.defender.image],
+                      alpha: 0,
+                      delay: 500,
+                      duration: 400,
+                      // onUpdate: (tween) => {
+                        
+                      //   turn.defender.image.setTint(tween.getValue());
+                      // },
+                      onStart: () => {
+                        // this.sound.play("ko");
+                        damageText.destroy();
+                      }
+                    });
                   }
                 });
-                // this.tweens.add({
-                //   targets: [turn.defender.image],
-                //   tint: 0xFFFFFF,
-                //   duration: 300,
-                //   yoyo: true,
-                // });
               },
               delay: tweenDelay
             });
@@ -249,7 +254,9 @@ export default class MainScene extends Phaser.Scene {
     this.load.audio("ko", "/assets/audio/ko.mp3");
     this.load.audio("hover", "/assets/audio/hover on tile.mp3");
     this.load.audio("confirm", "/assets/audio/confirm.mp3");
+    this.load.image("nameplate", "/assets/nameplate.png");
     this.load.image("empty-skill", "/assets/empty-skill.png");
+    this.load.image("unit-bg", "/assets/unitbg.png");
     // todo: compress into audio sprite
     this.load.audio("bgm", "/assets/audio/leif's army in search of victory.mp3");
     for (let hero of ["chrom", "byleth", "dimitri", "lucina"]) {
