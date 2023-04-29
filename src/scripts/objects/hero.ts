@@ -5,6 +5,7 @@ const fullWidth = 60;
 class Hero extends Phaser.GameObjects.Container {
     maxHP: number;
     HP: number;
+    weaponName: string;
     stats = {
         hp: 0,
         atk: 0,
@@ -21,10 +22,11 @@ class Hero extends Phaser.GameObjects.Container {
     unitData: { name: string; weaponType: "sword" | "lance" | "axe" | "dragonstone" | "bow" | "tome" | "dagger"; movementType: "infantry" | "cavalry" | "flier" | "armored" };
 
     // todo: simplify constructor
-    constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponType: "sword" | "lance" | "axe" | "dragonstone" | "bow" | "tome" | "dagger"; movementType: "infantry" | "cavalry" | "flier" | "armored"; maxHP: number; atk: number; res: number; spd: number; def: number }, team: "team1" | "team2") {
+    constructor(scene: Phaser.Scene, x: number, y: number, unitData: { name: string; weaponName: string; weaponType: "sword" | "lance" | "axe" | "dragonstone" | "bow" | "tome" | "dagger"; movementType: "infantry" | "cavalry" | "flier" | "armored"; maxHP: number; atk: number; res: number; spd: number; def: number }, team: "team1" | "team2") {
         super(scene, x, y);
         scene.add.existing(this);
         this.name = unitData.name;
+        this.weaponName = unitData.weaponName;
         this.image = new Phaser.GameObjects.Image(scene, 0, 0, unitData.name).setScale(0.7);
         this.add(this.image);
         this.maxHP = this.HP = unitData.maxHP;

@@ -99,7 +99,7 @@ export default class MainScene extends Phaser.Scene {
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         const n = this.rng.integerInRange(1, 3);
         if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
-        const soundFile = `${hero.unitData.name.toLowerCase()} ${n}`;
+        const soundFile = `${hero.unitData.name} ${n}`;
         this.sound.play(soundFile, { volume: 0.2 });
         previousSoundFile = soundFile;
         this.unitInfosBanner.setVisible(true).setHero(hero);
@@ -182,29 +182,28 @@ export default class MainScene extends Phaser.Scene {
                   fontSize: "30px"
                 }).setOrigin(0.4);
                 this.add.existing(damageText);
-                turn.defender.image.tintFill = true;
-                this.tweens.add({
-                  targets: [damageText],
-                  y: turn.defender.image.getTopCenter().y + turn.defender.y,
-                  yoyo: true,
-                  duration: 100,
-                  onComplete: () => {
-                    this.tweens.add({
-                      targets: [turn.defender.image],
-                      alpha: 0,
-                      delay: 500,
-                      duration: 400,
-                      // onUpdate: (tween) => {
-                        
-                      //   turn.defender.image.setTint(tween.getValue());
-                      // },
-                      onStart: () => {
-                        // this.sound.play("ko");
-                        damageText.destroy();
-                      }
-                    });
-                  }
-                });
+                // turn.defender.image.tintFill = true;
+                // const tint = new Phaser.Display.Color(255, 255, 255, 0);
+                // this.tweens.add({
+                //   targets: [damageText],
+                //   y: turn.defender.image.getTopCenter().y + turn.defender.y,
+                //   yoyo: true,
+                //   duration: 100,
+                //   onStart: () => {
+                //     // this.tweens.add({
+                //     //   targets: tint,
+                //     //   props: {
+                //     //     alpha: {
+                //     //       from: 0, to: 255, duration: 1000
+                //     //     }
+                //     //   },
+                //     //   onUpdate(x) {
+                //     //     turn.defender.image.tint = +`0xFFFFFF${x.getValue()}`
+                //     //   },
+                //     //   duration: 1000,
+                //     // });
+                //   },
+                // });
               },
               delay: tweenDelay
             });
@@ -241,10 +240,10 @@ export default class MainScene extends Phaser.Scene {
 
   preload() {
     this.load.image("map", "assets/testmap.png");
-    this.load.image("byleth", "assets/mini/Byleth.png");
-    this.load.image("dimitri", "assets/mini/Dimitri.png");
-    this.load.image("chrom", "assets/mini/Chrom.png");
-    this.load.image("lucina", "assets/mini/Lucina.png");
+    this.load.image("Byleth", "assets/mini/Byleth.png");
+    this.load.image("Dimitri", "assets/mini/Dimitri.png");
+    this.load.image("Chrom", "assets/mini/Chrom.png");
+    this.load.image("Lucina", "assets/mini/Lucina.png");
     this.load.image("movement-allowed", "assets/movement-allowed.png");
     this.load.image("sword", "assets/sword.png");
     this.load.image("lance", "assets/lance.png");
@@ -257,9 +256,13 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("nameplate", "/assets/nameplate.png");
     this.load.image("empty-skill", "/assets/empty-skill.png");
     this.load.image("unit-bg", "/assets/unitbg.png");
+    this.load.image("weapon-icon", "/assets/weapon_icon.png");
+    this.load.image("weapon-bg", "/assets/weapon.png");
+    this.load.image("assist-icon", "/assets/assist-icon.png");
+    this.load.image("special-icon", "/assets/special-icon.png");
     // todo: compress into audio sprite
     this.load.audio("bgm", "/assets/audio/leif's army in search of victory.mp3");
-    for (let hero of ["chrom", "byleth", "dimitri", "lucina"]) {
+    for (let hero of ["Chrom", "Byleth", "Dimitri", "Lucina"]) {
       this.load.audio(`${hero} 1`, `/assets/audio/quotes/${hero}_1.wav`);
       this.load.audio(`${hero} 2`, `/assets/audio/quotes/${hero}_2.wav`);
       this.load.audio(`${hero} 3`, `/assets/audio/quotes/${hero}_3.wav`);
@@ -271,7 +274,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   // todo: simplify signature
-  addHero(config: Omit<Stats, "hp"> & { name: string; gridX: number; gridY: number; weaponType: WeaponType; movementType: MovementType; maxHP: number }, team: "team1" | "team2") {
+  addHero(config: Omit<Stats, "hp"> & { name: string; weaponName: string; gridX: number; gridY: number; weaponType: WeaponType; movementType: MovementType; maxHP: number }, team: "team1" | "team2") {
     const { x, y } = gridToPixels(config.gridX, config.gridY);
     const hero = new Hero(this, x, y, config, team).setInteractive();
     this.add.existing(hero);
@@ -329,55 +332,59 @@ export default class MainScene extends Phaser.Scene {
     }
 
     this.addHero({
-      name: "dimitri",
+      name: "Dimitri",
+      weaponName: "Areadbhar",
       gridX: 1,
       gridY: 5,
       weaponType: "lance",
       movementType: "infantry",
-      maxHP: 51,
+      maxHP: 40,
       atk: 57,
-      def: 36,
-      res: 14,
-      spd: 24
+      def: 37,
+      res: 18,
+      spd: 41
     }, "team1");
 
     this.addHero({
-      name: "byleth",
+      name: "Byleth",
       gridX: 3,
+      weaponName: "Sword of the Creator",
       gridY: 1,
       weaponType: "sword",
       movementType: "infantry",
       maxHP: 40,
-      atk: 50,
-      def: 22,
-      spd: 31,
+      atk: 52,
+      def: 34,
+      spd: 38,
       res: 20
     }, "team1");
 
     this.addHero({
-      name: "chrom",
+      name: "Chrom",
       gridX: 6,
       gridY: 1,
+      weaponName: "Revenge Falchion",
       weaponType: "sword",
       movementType: "infantry",
-      atk: 61,
-      def: 39,
-      res: 10,
-      maxHP: 60,
-      spd: 9
+      atk: 57,
+      def: 33,
+      res: 19,
+      maxHP: 49,
+      spd: 27
     }, "team2");
     
     this.addHero({
-      name: "lucina",
+      name: "Lucina",
+      weaponName: "Parallel Falchion",
       gridX: 6,
       gridY: 4,
       weaponType: "sword",
       movementType: "infantry",
-      atk: 40,
-      def: 19,
-      spd: 40,
-      maxHP: 33,
-      res: 10
+      atk: 50,
+      def: 25,
+      spd: 36,
+      maxHP: 43,
+      res: 19
     }, "team2");
 
     this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
