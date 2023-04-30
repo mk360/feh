@@ -91,6 +91,17 @@ export default class MainScene extends Phaser.Scene {
       let currentCoords: Coords = { x, y };
       hero.setInteractive(true);
       this.input.setDraggable(hero, true);
+      const image = this.add.image(hero.x, hero.y, "movement-allowed");
+      const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);
+      this.add.tween({
+        yoyo: true,
+        duration: 1000,
+        alpha: 0,
+        targets: image,
+        loop: -1
+      });
+      
+      image.setDisplaySize(matchingTile.width, matchingTile.height);
 
       let previousSoundFile = "";
       hero.off("pointerdown");
@@ -104,10 +115,14 @@ export default class MainScene extends Phaser.Scene {
         previousSoundFile = soundFile;
         this.unitInfosBanner.setVisible(true).setHero(hero);
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
+        image.setVisible(false);
       });
-      hero.off("dragstart");
-      hero.on("dragstart", () => {
-        // this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
+      let previousTile = "";
+      hero.on("dragover", (_, target: Phaser.GameObjects.Rectangle) => {
+        if (this.walkCoords.includes(target.name) && target.name !== previousTile) {
+          this.sound.play("hover");
+          previousTile = target.name;
+        }
       });
       hero.off("dragend");
       hero.on("dragend", ({ upX, upY }: { upX: number; upY: number }) => {
@@ -165,6 +180,13 @@ export default class MainScene extends Phaser.Scene {
           for (let i = 0; i < turns.length; i++) {
             const turn = turns[i];
             const tweenDelay = 900 * i + 40;
+            const defCenter = turn.defender.image.getCenter();
+            const damageText = renderText(this, turn.defender.x + defCenter.x, turn.defender.y + defCenter.y, turn.damage.toString(), {
+                  stroke: "#FFFFFF",
+                  strokeThickness: 5,
+                  color: "red",
+                  fontSize: "30px"
+                }).setOrigin(0.4);
             t.add({
               targets: turn.attacker,
               x: `-=${(turn.attacker.x - turn.defender.x) / 2}`,
@@ -174,38 +196,20 @@ export default class MainScene extends Phaser.Scene {
               onStart: () => {
                 this.sound.play("hit");
                 turn.defender.HP = Math.max(0, turn.defender.HP - turn.damage);
-                const defCenter = turn.defender.image.getCenter();
-                const damageText = renderText(this, turn.defender.x + defCenter.x, turn.defender.y + defCenter.y, turn.damage.toString(), {
-                  stroke: "#FFFFFF",
-                  strokeThickness: 5,
-                  color: "red",
-                  fontSize: "30px"
-                }).setOrigin(0.4);
                 this.add.existing(damageText);
-                // turn.defender.image.tintFill = true;
-                // const tint = new Phaser.Display.Color(255, 255, 255, 0);
-                // this.tweens.add({
-                //   targets: [damageText],
-                //   y: turn.defender.image.getTopCenter().y + turn.defender.y,
-                //   yoyo: true,
-                //   duration: 100,
-                //   onStart: () => {
-                //     // this.tweens.add({
-                //     //   targets: tint,
-                //     //   props: {
-                //     //     alpha: {
-                //     //       from: 0, to: 255, duration: 1000
-                //     //     }
-                //     //   },
-                //     //   onUpdate(x) {
-                //     //     turn.defender.image.tint = +`0xFFFFFF${x.getValue()}`
-                //     //   },
-                //     //   duration: 1000,
-                //     // });
-                //   },
-                // });
+                this.tweens.add({
+                  targets: [damageText],
+                  y: turn.defender.image.getTopCenter().y + turn.defender.y,
+                  yoyo: true,
+                  duration: 100,
+                  onComplete: () => {
+                    setTimeout(() => {
+                      damageText.destroy();
+                    }, 500);
+                  }
+                });
               },
-              delay: tweenDelay
+              delay: tweenDelay,
             });
           }
           this.game.input.enabled = false;
@@ -225,6 +229,8 @@ export default class MainScene extends Phaser.Scene {
     for (let hero of this[otherTeam]) {
       hero.off("dragover");
       hero.off("dragend");
+      hero.setInteractive();
+      
       hero.image.clearTint();
       this.input.setDraggable(hero, false);
       hero.off("dragstart");
@@ -303,7 +309,7 @@ export default class MainScene extends Phaser.Scene {
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
     this.sound.play("bgm", { volume: 0.1, loop: true });
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
-  
+
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
