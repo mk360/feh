@@ -25,3 +25,5 @@ class CombatForecast extends Phaser.GameObjects.Container {
         }
     }
 }
+
+export default CombatForecast;

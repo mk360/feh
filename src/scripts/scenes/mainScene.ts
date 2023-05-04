@@ -139,7 +139,6 @@ export default class MainScene extends Phaser.Scene {
         const img = this.children.getByName(`movement-${hero.name}`) as GameObjects.Image;
         img.setVisible(true);
         pathStart = this.add.image(img.x, img.y, "rosary").setDisplaySize(img.width, img.height).setScale(1.35).setName("arrow");
-        pathStart.setRotation(Math.PI);
         this.movementAllowedTween.pause();
         this.sound.play("enabled-unit");
         const currentCoords = pixelsToGrid(hero.x, hero.y);
@@ -152,8 +151,9 @@ export default class MainScene extends Phaser.Scene {
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
       let previousTileString = "";
+      const endArrow = new GameObjects.Image(this, 0, 0, "end-arrow").setName("end-arrow");
+      this.movementArrows.add(endArrow);
       hero.on("dragover", (_, target: Phaser.GameObjects.Rectangle) => {
-        pathStart.setTexture("rosary-arrow");
         if (this.walkCoords.includes(target.name) && target.name !== previousTileString) {
           this.sound.play("hover");
           const targetTileXY = target.name.split('-').map(Number);
@@ -161,19 +161,43 @@ export default class MainScene extends Phaser.Scene {
             x: targetTileXY[0],
             y: targetTileXY[1]
           }, hero);
-          // const end = arrowPath.pop();
+          pathStart.setTexture("rosary");
 
+          this.movementArrows.clear(true);
           for (let i = 0; i < arrowPath.length; i++) {
-            const nextTile = arrowPath[i + 1];
             const previousTile = arrowPath[i - 1];
             const tile = arrowPath[i];
-            let previousTileDirections = [];
+            if (i) {
+              this.add.existing(endArrow);
+            }
             if (previousTile && arrowPath[i - 2]) {
-              previousTileDirections = previousTileDirections.concat(getTilesDirection(arrowPath[i - 2], tile));
+              const previousTileDirections = getTilesDirection(arrowPath[i - 2], tile);
+              console.log("previousDirections", previousTile, previousTileDirections);
+              console.log("previous to the previous", arrowPath[i - 2]);
               const gameTile = this.getTile(previousTile.x + "-" + previousTile.y);
-              const [s] = previousTileDirections;
-              var texture = !s.x ? "vertical" : !s.y ? "horizontal" : `path-${s.y}-${s.x}`;
-              this.add.image(gameTile.x, gameTile.y, texture); 
+              var texture = !previousTileDirections.x ? "vertical" : !previousTileDirections.y ? "horizontal" : `path-${previousTileDirections.y}-${previousTileDirections.x}`;
+              const img = new Phaser.GameObjects.Image(this, gameTile.x, gameTile.y, texture);
+              this.add.existing(img);
+              this.movementArrows.add(img);
+            }
+            if (i === 1) {
+              const direction = getTilesDirection(previousTile, tile);
+              const verticalAngle = direction.y === "up" ? 180 : direction.y === "down" ? 0 : null;
+              const horizontalAngle = direction.x === "left" ? 90 : direction.x === "right" ? -90 : null;
+              const angle = verticalAngle ?? horizontalAngle;
+              pathStart.setTexture("rosary-arrow");
+              pathStart.setRotation(angle * Math.PI / 180);
+            }
+            if (i === arrowPath.length - 1 && i) {
+              const x = arrowPath[arrowPath.length - 1];
+              const tile = this.getTile(x.x + "-" + x.y);
+              endArrow.x = tile.x;
+              endArrow.y = tile.y;
+              const direction = getTilesDirection(previousTile, x);
+              const horizontalAngle = direction.x === "left" ? 180 : direction.x === "right" ? 0 : null;
+              const verticalAngle = direction.y === "up" ? -90 : direction.y === "down" ? 90 : null;
+              const angle = horizontalAngle ?? verticalAngle;
+              endArrow.setRotation(angle * Math.PI / 180);
             }
             // for each tile
             // if it has a tile before it, compare directions
@@ -201,6 +225,8 @@ export default class MainScene extends Phaser.Scene {
           (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).setVisible(false);
           this.sound.play("confirm", { volume: 0.4 });
           this.endAction(hero);
+          this.children.remove(endArrow);
+          this.movementArrows.clear(true);
         } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
           const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
           const [finalLandingTile] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
@@ -246,11 +272,11 @@ export default class MainScene extends Phaser.Scene {
             const tweenDelay = 900 * i + 40;
             const defCenter = turn.defender.image.getCenter();
             const damageText = renderText(this, turn.defender.x + defCenter.x, turn.defender.y + defCenter.y, turn.damage.toString(), {
-                  stroke: "#FFFFFF",
-                  strokeThickness: 5,
-                  color: "red",
-                  fontSize: "30px"
-                }).setOrigin(0.4);
+              stroke: "#FFFFFF",
+              strokeThickness: 5,
+              color: "red",
+              fontSize: "30px"
+            }).setOrigin(0.4);
             t.add({
               targets: turn.attacker,
               x: `-=${(turn.attacker.x - turn.defender.x) / 2}`,
@@ -338,8 +364,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("empty-skill", "/assets/empty-skill.png");
     this.load.image("path-down-right", "/assets/path-down-left.png");
     this.load.image("path-down-left", "/assets/path-down-right.png");
-    this.load.image("path-left-down", "/assets/path-up-right.png");
     this.load.image("path-up-right", "/assets/path-up-right.png");
+    this.load.image("path-up-left", "/assets/path-up-left.png");
     this.load.image("horizontal", "/assets/horizontal.png");
     this.load.image("vertical", "/assets/vertical.png");
     this.load.image("unit-bg", "/assets/unitbg.png");
@@ -411,10 +437,13 @@ export default class MainScene extends Phaser.Scene {
               duration: 200
             });
           } else if (!this.map[+y][+x]) {
-            this.sound.play("disabled-unit");
+            if (this.displayRange) {
+              this.sound.play("disabled-unit");
+            }
             this.displayRange = false;
             this.movementAllowedImages.setVisible(true);
             this.movementAllowedTween.resume();
+            this.movementArrows.clear(true);
           }
         });
         // uncomment if you need to check tile coordinates
@@ -430,7 +459,7 @@ export default class MainScene extends Phaser.Scene {
       gridX: 3,
       gridY: 7,
       weaponType: "lance",
-      movementType: "infantry",
+      movementType: "cavalry",
       maxHP: 40,
       atk: 57,
       def: 37,
