@@ -1,6 +1,4 @@
-import PhaserLogo from '../objects/phaserLogo'
-import FpsText from '../objects/fpsText'
-import { GameObjects, Tweens } from 'phaser';
+import { GameObjects } from 'phaser';
 import Hero from '../objects/hero';
 import TileType from '../../types/tiles';
 import WeaponType from '../../types/WeaponType';
@@ -32,6 +30,11 @@ function pixelsToGrid(x: number, y: number) {
   };
 }
 
+// store the "allowed movement" graphic in an array,
+// hide all of them except the moving unit
+// make the graphic follow the unit when they're dragged around
+// put the rosary graphic where the unit was
+
 export default class MainScene extends Phaser.Scene {
   unitInfosBanner: UnitInfosBanner;
   map: (Hero | null)[][] = [];
@@ -52,6 +55,9 @@ export default class MainScene extends Phaser.Scene {
   heroWeapon: Phaser.GameObjects.Image;
   heroStats: Phaser.GameObjects.Text[];
   heroSkills: Phaser.GameObjects.Image[];
+  movementAllowedImages: Phaser.GameObjects.Group;
+  movementAllowedTween: Phaser.Tweens.Tween;
+  movementArrows: Phaser.GameObjects.Group;
 
   terrain: TileType[][] = [
     ["wall", "floor", "floor", "floor", "floor", "floor"],
@@ -81,31 +87,60 @@ export default class MainScene extends Phaser.Scene {
     this.highlightedHero = null;
   }
 
+  buildArrowPath(from: Coords, to: Coords, hero: Hero) {
+    // todo: optimiser en mémoisant les résultats
+    // todo: optimiser en prenant en compte le fait qu'on
+    // a déjà la case de départ et d'arrivée
+    // todo: optimiser en prenant en compte le fait qu'on
+    // a déjà toutes nos cases
+    let currentTile = from;
+    let path = new Map<string, Coords>();
+    let maxDistance = this.getDistance(from, to);
+    
+    path.set(`${from.x}-${from.y}`, from);
+    path.set(`${to.x}-${to.y}`, to);
+    while (maxDistance) {
+      const nearby = getNearby(currentTile).filter((tile) => {
+        return this.heroCanReachTile(hero, tile) && this.getDistance(tile, to) < maxDistance;
+      });
+      currentTile = nearby[0];
+      maxDistance = this.getDistance(to, nearby[0]);
+      const { x, y } = currentTile;
+      path.set(`${x}-${y}`, currentTile);
+    }
+
+    const x = Array.from(path.values()).sort((coordA, coordB) => {
+      return this.getDistance(coordA, from) - this.getDistance(coordB, from);
+    });
+    return x;
+  }
+
   setTurn(turn: "team1" | "team2") {
+    this.movementAllowedImages.clear();
     const otherTeam = turn === "team1" ? "team2" : "team1";
     this.turn = turn;
     this.heroesWhoMoved = [];
-
     for (let hero of this[turn]) {
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
       hero.setInteractive(true);
       this.input.setDraggable(hero, true);
-      const image = this.add.image(hero.x, hero.y, "movement-allowed");
-      const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);
-      this.add.tween({
-        yoyo: true,
-        duration: 1000,
-        alpha: 0,
-        targets: image,
-        loop: -1
-      });
-      
-      image.setDisplaySize(matchingTile.width, matchingTile.height);
+      const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.name}`);
+      this.add.existing(img);
+      const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);      
+      img.setDisplaySize(matchingTile.width, matchingTile.height);
+      this.movementAllowedImages.add(img);
+      let pathStart: GameObjects.Image;
 
       let previousSoundFile = "";
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
+        this.movementAllowedImages.setVisible(false);
+        const img = this.children.getByName(`movement-${hero.name}`) as GameObjects.Image;
+        img.setVisible(true);
+        pathStart = this.add.image(img.x, img.y, "rosary").setDisplaySize(img.width, img.height).setScale(1.35).setName("arrow");
+        pathStart.setRotation(Math.PI);
+        this.movementAllowedTween.pause();
         this.sound.play("enabled-unit");
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         const n = this.rng.integerInRange(1, 3);
@@ -115,18 +150,44 @@ export default class MainScene extends Phaser.Scene {
         previousSoundFile = soundFile;
         this.unitInfosBanner.setVisible(true).setHero(hero);
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
-        image.setVisible(false);
       });
-      let previousTile = "";
+      let previousTileString = "";
       hero.on("dragover", (_, target: Phaser.GameObjects.Rectangle) => {
-        if (this.walkCoords.includes(target.name) && target.name !== previousTile) {
+        pathStart.setTexture("rosary-arrow");
+        if (this.walkCoords.includes(target.name) && target.name !== previousTileString) {
           this.sound.play("hover");
-          previousTile = target.name;
+          const targetTileXY = target.name.split('-').map(Number);
+          const arrowPath = this.buildArrowPath({ ...currentCoords }, {
+            x: targetTileXY[0],
+            y: targetTileXY[1]
+          }, hero);
+          // const end = arrowPath.pop();
+
+          for (let i = 0; i < arrowPath.length; i++) {
+            const nextTile = arrowPath[i + 1];
+            const previousTile = arrowPath[i - 1];
+            const tile = arrowPath[i];
+            let previousTileDirections = [];
+            if (previousTile && arrowPath[i - 2]) {
+              previousTileDirections = previousTileDirections.concat(getTilesDirection(arrowPath[i - 2], tile));
+              const gameTile = this.getTile(previousTile.x + "-" + previousTile.y);
+              const [s] = previousTileDirections;
+              var texture = !s.x ? "vertical" : !s.y ? "horizontal" : `path-${s.y}-${s.x}`;
+              this.add.image(gameTile.x, gameTile.y, texture); 
+            }
+            // for each tile
+            // if it has a tile before it, compare directions
+            // if it has a tile after it, compare directions
+            // assemble directions from both comparisons
+            // and render path
+          }
+          previousTileString = target.name;
         }
       });
       hero.off("dragend");
       hero.on("dragend", ({ upX, upY }: { upX: number; upY: number }) => {
         const { x: x2, y: y2 } = pixelsToGrid(upX, upY);
+        this.children.remove(this.children.getByName("arrow"));
         if (this.walkCoords.includes(x2 + "-" + y2) && !this.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
           this.map[currentCoords.y][currentCoords.x] = null;
           currentCoords.x = x2;
@@ -135,6 +196,9 @@ export default class MainScene extends Phaser.Scene {
           const pixelsCoords = gridToPixels(x2, y2);
           hero.x = pixelsCoords.x;
           hero.y = pixelsCoords.y;
+          this.movementAllowedImages.setVisible(true);
+          this.movementAllowedTween.resume();
+          (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).setVisible(false);
           this.sound.play("confirm", { volume: 0.4 });
           this.endAction(hero);
         } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
@@ -216,21 +280,31 @@ export default class MainScene extends Phaser.Scene {
           t.play();
         } else {
           const pixelCoords = gridToPixels(currentCoords.x, currentCoords.y);
-          hero.x = pixelCoords.x;
-          hero.y = pixelCoords.y;
+          this.tweens.add({
+            targets: hero,
+            x: pixelCoords.x,
+            y: pixelCoords.y,
+            duration: 100
+          });
+          // hero.x = pixelCoords.x;
+          // hero.y = pixelCoords.y;
         }
       });
-
-      hero.on("dragover", (_, x, y: Phaser.GameObjects.GameObject) => {
-        // highlight hovered tile
-      });
     }
+
+    this.movementAllowedTween = this.tweens.add({
+      targets: this.movementAllowedImages.getChildren(),
+      loop: -1,
+      yoyo: true,
+      duration: 900,
+      alpha: 0
+    });
 
     for (let hero of this[otherTeam]) {
       hero.off("dragover");
       hero.off("dragend");
       hero.setInteractive();
-      
+      this.children.remove(this.children.getByName("movement-" + hero.name));
       hero.image.clearTint();
       this.input.setDraggable(hero, false);
       hero.off("dragstart");
@@ -245,14 +319,14 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("map", "assets/testmap.png");
-    this.load.image("Byleth", "assets/mini/Byleth.png");
-    this.load.image("Dimitri", "assets/mini/Dimitri.png");
-    this.load.image("Chrom", "assets/mini/Chrom.png");
-    this.load.image("Lucina", "assets/mini/Lucina.png");
-    this.load.image("movement-allowed", "assets/movement-allowed.png");
-    this.load.image("sword", "assets/sword.png");
-    this.load.image("lance", "assets/lance.png");
+    this.load.image("map", "/assets/testmap.png");
+    this.load.image("Byleth", "/assets/mini/Byleth.png");
+    this.load.image("Dimitri", "/assets/mini/Dimitri.png");
+    this.load.image("Chrom", "/assets/mini/Chrom.png");
+    this.load.image("Lucina", "/assets/mini/Lucina.png");
+    this.load.image("movement-allowed", "/assets/movement-allowed.png");
+    this.load.image("sword", "/assets/sword.png");
+    this.load.image("lance", "/assets/lance.png");
     this.load.audio("enabled-unit", "/assets/audio/q.mp3");
     this.load.audio("disabled-unit", "/assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "/assets/audio/hit.mp3");
@@ -260,8 +334,17 @@ export default class MainScene extends Phaser.Scene {
     this.load.audio("hover", "/assets/audio/hover on tile.mp3");
     this.load.audio("confirm", "/assets/audio/confirm.mp3");
     this.load.image("nameplate", "/assets/nameplate.png");
+    this.load.image("end-arrow", "/assets/end-arrow.png");
     this.load.image("empty-skill", "/assets/empty-skill.png");
+    this.load.image("path-down-right", "/assets/path-down-left.png");
+    this.load.image("path-down-left", "/assets/path-down-right.png");
+    this.load.image("path-left-down", "/assets/path-up-right.png");
+    this.load.image("path-up-right", "/assets/path-up-right.png");
+    this.load.image("horizontal", "/assets/horizontal.png");
+    this.load.image("vertical", "/assets/vertical.png");
     this.load.image("unit-bg", "/assets/unitbg.png");
+    this.load.image("rosary", "/assets/rosary-current.png");
+    this.load.image("rosary-arrow", "/assets/rosary-arrow.png");
     this.load.image("weapon-icon", "/assets/weapon_icon.png");
     this.load.image("weapon-bg", "/assets/weapon.png");
     this.load.image("assist-icon", "/assets/assist-icon.png");
@@ -305,6 +388,8 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+    this.movementAllowedImages = this.add.group();
+    this.movementArrows = this.add.group();
     this.heroBackground = this.add.rectangle(0, 0, 1500, 400, 0x1F6589);
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
     this.sound.play("bgm", { volume: 0.1, loop: true });
@@ -328,20 +413,22 @@ export default class MainScene extends Phaser.Scene {
           } else if (!this.map[+y][+x]) {
             this.sound.play("disabled-unit");
             this.displayRange = false;
+            this.movementAllowedImages.setVisible(true);
+            this.movementAllowedTween.resume();
           }
         });
         // uncomment if you need to check tile coordinates
-        // this.add.text(r.getCenter().x, r.getCenter().y, name, {
-        //   fontSize: "18px"
-        // });
+        this.add.text(r.getCenter().x, r.getCenter().y, name, {
+          fontSize: "18px"
+        });
       }
     }
 
     this.addHero({
       name: "Dimitri",
       weaponName: "Areadbhar",
-      gridX: 1,
-      gridY: 5,
+      gridX: 3,
+      gridY: 7,
       weaponType: "lance",
       movementType: "infantry",
       maxHP: 40,
@@ -570,6 +657,23 @@ function getNearby(coords: Coords) {
   });
 
   return nearbyTiles.filter(isValid);
+};
+
+function getTilesDirection(tile1: Coords, tile2: Coords) {
+  const directions = {
+    y: "",
+    x: "",
+  };
+
+  if (tile1.y !== tile2.y) {
+    directions.y = tile1.y < tile2.y ? "down" : "up";
+  }
+
+  if (tile1.x !== tile2.x) {
+    directions.x  = tile1.x < tile2.x ? "right" : "left";
+  }
+
+  return directions;
 };
 
 function getOverlap<T>(array1: T[], array2: T[]) {
