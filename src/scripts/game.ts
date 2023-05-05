@@ -6,7 +6,7 @@ const DEFAULT_WIDTH = 750
 const DEFAULT_HEIGHT = 1100
 
 const config = {
-  type: Phaser.AUTO,
+  type: Phaser.CANVAS,
   backgroundColor: '#ffffff',
   scale: {
     parent: 'phaser-game',
@@ -16,13 +16,6 @@ const config = {
     height: DEFAULT_HEIGHT
   },
   scene: [PreloadScene, MainScene],
-  physics: {
-    default: 'arcade',
-    arcade: {
-      debug: false,
-      gravity: { y: 400 }
-    }
-  }
 }
 
 window.addEventListener('load', () => {
