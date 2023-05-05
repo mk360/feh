@@ -4,7 +4,7 @@ import TileType from '../../types/tiles';
 import WeaponType from '../../types/WeaponType';
 import MovementType from '../../types/MovementType';
 import UnitInfosBanner from '../objects/unit-infos-banner';
-import renderText from '../utils/renderText';
+import { renderText } from '../utils/text-renderer';
 import Stats from '../../interfaces/stats';
 import CombatForecast from '../objects/combat-forecast';
 
@@ -420,7 +420,7 @@ export default class MainScene extends Phaser.Scene {
     this.movementArrows = this.add.group();
     this.heroBackground = this.add.rectangle(0, 0, 1500, 400, 0x1F6589);
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
-    this.combatForecast = this.add.existing(new CombatForecast(this));
+    this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(true));
     this.sound.play("bgm", { volume: 0.1, loop: true });
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
 

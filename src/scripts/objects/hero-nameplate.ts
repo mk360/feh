@@ -1,5 +1,5 @@
 import { GameObjects, Scene } from "phaser";
-import renderText from "../utils/renderText";
+import { renderText } from "../utils/text-renderer";
 
 interface HeroInformations {
     name: string;
