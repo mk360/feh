@@ -1,17 +1,16 @@
 import renderText from "../utils/renderText";
 import Hero from "./hero";
 import TextColors from "../utils/text-colors";
+import HeroNameplate from "./hero-nameplate";
 
 class UnitInfosBanner extends Phaser.GameObjects.Container {
-    private heroName: Phaser.GameObjects.Text;
-    private weaponType: Phaser.GameObjects.Image;
     private hp: Phaser.GameObjects.Text; // to replace with images
     private atk: Phaser.GameObjects.Text;
     private def: Phaser.GameObjects.Text;
+    private nameplate: HeroNameplate;
     private res: Phaser.GameObjects.Text;
     private weaponName: Phaser.GameObjects.Text;
     private spd: Phaser.GameObjects.Text;
-    private weapon: Phaser.GameObjects.Text;
     private assist: Phaser.GameObjects.Text;
     private special: Phaser.GameObjects.Text;
     private slot_A: Phaser.GameObjects.Image;
@@ -25,7 +24,6 @@ class UnitInfosBanner extends Phaser.GameObjects.Container {
         super(scene, 0, 0);
         const blockX = 210;
         this.heroPortrait = new Phaser.GameObjects.Image(scene, 0, 0, "").setOrigin(0, 0).setScale(0.5);
-        this.weaponType = new Phaser.GameObjects.Image(scene, blockX - 50, 25, "");
         this.hp = renderText(scene, blockX - 53, 50, "", { fontSize: "20px" });
         const gradient = this.hp.context.createLinearGradient(0, 0, 0, this.hp.height);
         gradient.addColorStop(0, "#FFFFFF");
@@ -34,8 +32,12 @@ class UnitInfosBanner extends Phaser.GameObjects.Container {
         this.maxHP = renderText(scene, blockX - 46, 50, "", {
             fontSize: "18px"
         });
-        const nameplate = new Phaser.GameObjects.Image(this.scene, this.weaponType.getLeftCenter().x, this.weaponType.getRightCenter().y, "nameplate").setScale(0.9, 0.5).setOrigin(0, 0.5);
-        this.heroName = renderText(scene, nameplate.getCenter().x, nameplate.getCenter().y, "", { fontSize: "22px" }).setOrigin(0.5);
+
+        this.nameplate = new HeroNameplate(scene, blockX - 50, 25, {
+            name: "",
+            weaponType: "",
+        });
+
         const lvText = renderText(scene, 490, 15, "40+", { fontSize: "20px"});
 
         this.atk = renderText(scene, blockX + 20, 75, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
@@ -45,9 +47,9 @@ class UnitInfosBanner extends Phaser.GameObjects.Container {
         this.add(this.heroPortrait);
         const a = new Phaser.GameObjects.Image(this.scene, 20, -40, "unit-bg").setOrigin(0, 0);
         a.setDisplaySize(800, 430);
-        this.add([a, nameplate]);
+        this.add([a, this.nameplate]);
         
-        this.add([this.heroName, this.weaponType, this.atk, this.spd, this.def, this.res, this.hp]);
+        this.add([this.atk, this.spd, this.def, this.res, this.hp]);
 
         this.add(renderText(scene, blockX - 53, 75, "Atk", { fontSize: "18px" }));
         this.add(renderText(scene, blockX + 25, 75, "Spd", { fontSize: "18px" }));
@@ -92,7 +94,7 @@ class UnitInfosBanner extends Phaser.GameObjects.Container {
     setHero(hero: Hero) {
         this.heroPortrait.setTexture(`${hero.name} battle`);
         this.hp.setText(`HP        ${hero.HP}/${hero.maxHP}`);
-        if (this.heroName.text !== hero.name) {
+        if (this.nameplate.heroName.text !== hero.name) {
             this.heroPortrait.x = -300;
             this.scene.tweens.add({
               targets: this.heroPortrait,
@@ -100,11 +102,15 @@ class UnitInfosBanner extends Phaser.GameObjects.Container {
               duration: 200
             });
         }
-        this.heroName.setText(hero.name);
+        this.nameplate.updateNameplate({
+            name: hero.name,
+            weaponType: hero.unitData.weaponType
+        });
+
         for (let stat of ["atk", "def", "res", "spd"]) {
             this[stat].setText(hero.stats[stat].toString());
         }
-        this.weaponType.setTexture(hero.unitData.weaponType);
+
         this.weaponName.setText(hero.weaponName);
     }
 };

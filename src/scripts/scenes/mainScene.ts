@@ -6,6 +6,7 @@ import MovementType from '../../types/MovementType';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import renderText from '../utils/renderText';
 import Stats from '../../interfaces/stats';
+import CombatForecast from '../objects/combat-forecast';
 
 interface Coords {
   x: number;
@@ -58,6 +59,7 @@ export default class MainScene extends Phaser.Scene {
   movementAllowedImages: Phaser.GameObjects.Group;
   movementAllowedTween: Phaser.Tweens.Tween;
   movementArrows: Phaser.GameObjects.Group;
+  combatForecast: CombatForecast;
 
   terrain: TileType[][] = [
     ["wall", "floor", "floor", "floor", "floor", "floor"],
@@ -147,7 +149,7 @@ export default class MainScene extends Phaser.Scene {
         const soundFile = `${hero.unitData.name} ${n}`;
         this.sound.play(soundFile, { volume: 0.2 });
         previousSoundFile = soundFile;
-        this.unitInfosBanner.setVisible(true).setHero(hero);
+        // this.unitInfosBanner.setVisible(true).setHero(hero);
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
       let previousTileString = "";
@@ -418,6 +420,7 @@ export default class MainScene extends Phaser.Scene {
     this.movementArrows = this.add.group();
     this.heroBackground = this.add.rectangle(0, 0, 1500, 400, 0x1F6589);
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
+    this.combatForecast = this.add.existing(new CombatForecast(this));
     this.sound.play("bgm", { volume: 0.1, loop: true });
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
 
