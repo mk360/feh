@@ -4,7 +4,7 @@ const TextColors = {
     bane: "#E99EAE",
     regular: "#FFFFFF",
     healthyHP: "#F2C42A",
-    criticalHP: "#AD2632"
+    criticalHP: "#CA384D"
 };
 
 export default TextColors;
