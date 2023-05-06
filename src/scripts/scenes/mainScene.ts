@@ -60,7 +60,6 @@ export default class MainScene extends Phaser.Scene {
   movementAllowedTween: Phaser.Tweens.Tween;
   movementArrows: Phaser.GameObjects.Group;
   combatForecast: CombatForecast;
-
   terrain: TileType[][] = [
     ["wall", "floor", "floor", "floor", "floor", "floor"],
     ["wall", "floor", "floor", "floor", "void", "floor"],
@@ -149,7 +148,7 @@ export default class MainScene extends Phaser.Scene {
         const soundFile = `${hero.unitData.name} ${n}`;
         this.sound.play(soundFile, { volume: 0.2 });
         previousSoundFile = soundFile;
-        // this.unitInfosBanner.setVisible(true).setHero(hero);
+        this.unitInfosBanner.setVisible(true).setHero(hero);
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
       let previousTileString = "";
@@ -157,6 +156,7 @@ export default class MainScene extends Phaser.Scene {
       this.movementArrows.add(endArrow);
       hero.on("dragover", (_, target: Phaser.GameObjects.Rectangle) => {
         if (this.walkCoords.includes(target.name) && target.name !== previousTileString) {
+          this.combatForecast.setVisible(false);
           this.sound.play("hover");
           const targetTileXY = target.name.split('-').map(Number);
           const arrowPath = this.buildArrowPath({ ...currentCoords }, {
@@ -208,6 +208,31 @@ export default class MainScene extends Phaser.Scene {
             // and render path
           }
           previousTileString = target.name;
+        } else if (this.attackCoords.includes(target.name)) {
+          const [x, y] = target.name.split("-");
+          if ((this.map[+y][+x]?.team ?? hero.team) !== hero.team && !this.combatForecast.visible) {
+            const opponent = this.map[+y][+x];
+            this.unitInfosBanner.setVisible(false);
+            this.combatForecast.setForecastData({
+              attacker: {
+                hero,
+                startHP: hero.maxHP,
+                endHP: Math.max(hero.HP - (opponent.stats.atk - hero.stats.def), 0),
+                statChanges: {},
+                turns: 1,
+                damage: 49,
+              },
+              defender: {
+                hero: opponent,
+                startHP: opponent.maxHP,
+                endHP: Math.max(opponent.HP - (hero.stats.atk - opponent.stats.def), 0),
+                statChanges: {},
+                turns: 1,
+                damage: 49,
+              },
+            });
+            this.combatForecast.setVisible(true);
+          }
         }
       });
       hero.off("dragend");
@@ -215,6 +240,7 @@ export default class MainScene extends Phaser.Scene {
         const { x: x2, y: y2 } = pixelsToGrid(upX, upY);
         this.children.remove(this.children.getByName("arrow"));
         if (this.walkCoords.includes(x2 + "-" + y2) && !this.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
+          this.combatForecast.setVisible(false);
           this.map[currentCoords.y][currentCoords.x] = null;
           currentCoords.x = x2;
           currentCoords.y = y2;
@@ -222,6 +248,8 @@ export default class MainScene extends Phaser.Scene {
           const pixelsCoords = gridToPixels(x2, y2);
           hero.x = pixelsCoords.x;
           hero.y = pixelsCoords.y;
+          this.movementArrows.setVisible(false);
+          this.movementArrows.clear();
           this.movementAllowedImages.setVisible(true);
           this.movementAllowedTween.resume();
           (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).setVisible(false);
@@ -420,7 +448,7 @@ export default class MainScene extends Phaser.Scene {
     this.movementArrows = this.add.group();
     this.heroBackground = this.add.rectangle(0, 0, 1500, 400, 0x1F6589);
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
-    this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(true));
+    this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
     this.sound.play("bgm", { volume: 0.1, loop: true });
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
 
@@ -492,7 +520,7 @@ export default class MainScene extends Phaser.Scene {
       weaponType: "sword",
       movementType: "infantry",
       atk: 57,
-      def: 33,
+      def: 0,
       res: 19,
       maxHP: 49,
       spd: 27
