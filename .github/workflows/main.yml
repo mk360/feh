@@ -20,7 +20,7 @@ jobs:
 
       - name: Build Packages
         run: npm run build
-        working-directory: .
+        working-directory: dir
 
   upload:
     needs: build
@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: my-artifact
-          path: ./dist
+          path: dir/dist
 
   deploy:
     needs: upload
