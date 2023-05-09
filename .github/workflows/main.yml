@@ -4,6 +4,14 @@ on: [push, pull_request]
 
 jobs:
   build:
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
 
     steps:
@@ -21,32 +29,6 @@ jobs:
       - name: Build Packages
         run: npm run build
 
-  upload:
-    needs: build
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: my-artifact
-          path: dist
-
-  deploy:
-    needs: upload
-
-    runs-on: ubuntu-latest
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
       - name: Deploy to Github Pages
         uses: actions/deploy-pages@v2
         with:
