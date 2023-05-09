@@ -27,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Confirm directory exists
+        run: ls -l dist/
       - name: Upload GitHub Pages artifact
         uses: actions/upload-artifact@v2
         with:
