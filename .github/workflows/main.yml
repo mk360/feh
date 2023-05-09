@@ -20,7 +20,7 @@ jobs:
 
       - name: Build Packages
         run: npm run build
-        working-directory: dir
+        working-directory: dist
 
   upload:
     needs: build
@@ -29,10 +29,11 @@ jobs:
 
     steps:
       - name: Upload GitHub Pages artifact
+        working-directory: dist
         uses: actions/upload-artifact@v2
         with:
           name: my-artifact
-          path: dir/dist
+          path: dist
 
   deploy:
     needs: upload
