@@ -39,6 +39,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "feh-battles": "^1.1.2",
     "phaser": "^3.55.2"
   },
   "devDependencies": {
