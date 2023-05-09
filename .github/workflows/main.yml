@@ -33,7 +33,6 @@ jobs:
         with:
           name: my-artifact
           path: dist
-        working-directory: dist
 
   deploy:
     needs: upload
