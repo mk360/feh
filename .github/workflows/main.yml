@@ -20,8 +20,8 @@ jobs:
 
       - name: Sign in
         run: |
-          git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)
-          git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)
+          git config --global user.name $(git --no-pager log --format=format:'%an' -n 1)
+          git config --global user.email $(git --no-pager log --format=format:'%ae' -n 1)
 
       - name: Use Node.js
         uses: actions/setup-node@v3
