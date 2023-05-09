@@ -31,6 +31,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: my-artifact
+          path: dist/
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-artifact@v2
