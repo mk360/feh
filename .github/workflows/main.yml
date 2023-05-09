@@ -21,6 +21,15 @@ jobs:
       - name: Build Packages
         run: npm run build
 
+  upload:
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v1.0.8
+
   deploy:
     needs: build
 
