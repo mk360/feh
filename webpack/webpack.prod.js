@@ -12,7 +12,7 @@ const prod = {
     chunkFilename: '[name].[contenthash].chunk.js'
   },
   resolve: {
-    symlinks: true
+    symlinks: false
   },
   optimization: {
     splitChunks: {
