@@ -27,13 +27,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug
-        run: ls
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: my-artifact
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-artifact@v2
         with:
-          name: dist
-          path: 'dist/'
+          name: my-artifact
+          path: dist/
 
   deploy:
     needs: upload
