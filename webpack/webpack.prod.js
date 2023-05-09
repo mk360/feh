@@ -40,8 +40,4 @@ const prod = {
   ]
 }
 
-const settings = merge(common, prod);
-
-console.log(settings);
-
-module.exports = settings;
+module.exports = merge(common, prod)
