@@ -32,5 +32,9 @@ jobs:
       - name: Check Credentials
         run: npx gh-pages -u "$(git --no-pager log --format=format:'%an' -n 1) <$(git --no-pager log --format=format:'%ae' -n 1)>"
 
-      - name: Deploy to GitHub Pages
-        run: npx gh-pages -d dist -b master
+      - name: Deploy with gh-pages
+        run: |
+          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          npx gh-pages -d build -u "github-actions-bot <support+actions@github.com>"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
