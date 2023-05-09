@@ -29,16 +29,5 @@ jobs:
       - name: Build Packages
         run: npm run build
 
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: my-artifact
-          path: dist
-
-      - name: Find sym and hardlinks
-        run: find dist
-
       - name: Deploy to Github Pages
-        uses: actions/deploy-pages@v2
-        with:
-          artifact_name: my-artifact
+        run: gh-pages -d dist
