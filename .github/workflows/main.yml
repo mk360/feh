@@ -38,6 +38,7 @@ jobs:
         run: |
           git config user.name
           git config user.email
+          git remote set-url origin git@github.com:mk360/feh
 
       - name: Deploy to GitHub Pages
         run: npx gh-pages -d dist -b master
