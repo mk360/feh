@@ -33,6 +33,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    #steps:
-    #- name: Deploy to Github Pages
-    #uses: actions/deploy-pages@v2
+    steps:
+      - name: Deploy to Github Pages
+        uses: actions/deploy-pages@v2
