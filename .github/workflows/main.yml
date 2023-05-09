@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Upload GitHub Pages artifact
-      - path: dist/
+      - path: 'dist/'
         uses: actions/upload-pages-artifact@v1.0.8
 
   deploy:
