@@ -28,8 +28,10 @@ jobs:
 
     steps:
       - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v1.0.8
-      - path: 'dist/'
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: 'dist/'
 
   deploy:
     needs: upload
