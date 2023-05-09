@@ -30,4 +30,4 @@ jobs:
         run: npm run build
 
       - name: Deploy to Github Pages
-        run: gh-pages -d dist
+        run: npx gh-pages -d dist
