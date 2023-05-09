@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-pages-artifact@v1.0.8
 
   deploy:
-    needs: build
+    needs: upload
 
     runs-on: ubuntu-latest
 
