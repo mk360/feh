@@ -29,5 +29,5 @@ jobs:
       - name: Build Packages
         run: npm run build
 
-      - name: Deploy
-        uses: actions/deploy-pages@v2
+      - name: Deploy to GitHub Pages
+        run: npx gh-pages -d dist -b master
