@@ -1,3 +1,3 @@
 #!/bin/sh
 
-find dist -exec unlink {} \;
+find dist -exec rm {} \;
