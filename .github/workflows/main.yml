@@ -35,10 +35,7 @@ jobs:
         run: npm run build
 
       - name: Check Credentials
-        run: |
-          git config user.name
-          git config user.email
-          git remote set-url origin git@github.com:mk360/feh
+        run: gh-pages -u "$(git --no-pager log --format=format:'%an' -n 1)" "$(git --no-pager log --format=format:'%ae' -n 1)"
 
       - name: Deploy to GitHub Pages
         run: npx gh-pages -d dist -b master
