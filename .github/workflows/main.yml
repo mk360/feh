@@ -20,6 +20,7 @@ jobs:
 
       - name: Build Packages
         run: npm run build
+        working-directory: ./bruh
 
   upload:
     needs: build
@@ -28,12 +29,12 @@ jobs:
 
     steps:
       - name: Confirm directory exists
-        run: ls -l dist/
+        run: ls -l dist
       - name: Upload GitHub Pages artifact
         uses: actions/upload-artifact@v2
         with:
           name: my-artifact
-          path: dist
+          path: ./bruh/dist
 
   deploy:
     needs: upload
