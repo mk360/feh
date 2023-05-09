@@ -20,3 +20,6 @@ jobs:
 
       - name: Build Packages
         run: npm run build
+
+      - name: Deploy
+        run: npm run serve
