@@ -2,14 +2,14 @@ name: CI
 
 on: [push, pull_request]
 
+permissions:
+  pages: write
+  id-token: write
+
 jobs:
   build:
-    permissions:
-      pages: write
-      id-token: write
-
     environment:
-      name: github-pages
+      name: master
       url: ${{ steps.deployment.outputs.page_url }}
 
     runs-on: ubuntu-latest

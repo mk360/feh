@@ -11,6 +11,9 @@ const prod = {
     filename: '[name].[contenthash].bundle.js',
     chunkFilename: '[name].[contenthash].chunk.js'
   },
+  resolve: {
+    symlinks: false
+  },
   optimization: {
     splitChunks: {
       cacheGroups: {
