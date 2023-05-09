@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 permissions:
   pages: write
+  contents: write
   id-token: write
 
 jobs:
@@ -32,7 +33,6 @@ jobs:
       - name: Deploy with gh-pages
         run: |
           git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-
           npx gh-pages -d dist -u "mk360 <hamoudi191@hotmail.fr>"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
