@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Debug
-        run: node debug
+        run: ls
       - name: Upload GitHub Pages artifact
         uses: actions/upload-artifact@v2
         with:
