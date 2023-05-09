@@ -35,6 +35,11 @@ jobs:
           name: my-artifact
           path: dist
 
+      - name: Find symlinks
+        run: find dist type -l
+      - name: Find hardlinks
+        run: find dist type -h
+
       - name: Deploy to Github Pages
         uses: actions/deploy-pages@v2
         with:
