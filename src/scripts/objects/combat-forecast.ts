@@ -192,6 +192,26 @@ class CombatForecast extends Phaser.GameObjects.Container {
             }
         }).setOrigin(1, 0);
 
+        let portraitToHighlight: GameObjects.Image;
+
+        if (attacker.endHP === 0) {
+            portraitToHighlight = this.firstHero.portrait;
+        }
+
+        if (defender.endHP === 0) {
+            portraitToHighlight = this.secondHero.portrait;
+        }
+
+        this.koTween = this.scene.tweens.create({
+            duration: 700,
+            loop: -1,
+            targets: portraitToHighlight,
+            yoyo: true,
+            alpha: 0.6,
+        });
+        
+        this.koTween.play();
+
         this.firstHero.predictedHP = firstHeroEndingHP({
             scene: this.scene,
             x: this.firstHero.predictedHP.x,
@@ -244,6 +264,10 @@ class CombatForecast extends Phaser.GameObjects.Container {
             yoyo: true,
             alpha: 0.6,
         });
+    }
+
+    switchPortraits(portrait: GameObjects.Image, previousHP: number, nextHP: number, maxHP: number) {
+        
     }
 }
 

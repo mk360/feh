@@ -7,6 +7,7 @@ import UnitInfosBanner from '../objects/unit-infos-banner';
 import { renderText } from '../utils/text-renderer';
 import Stats from '../../interfaces/stats';
 import CombatForecast from '../objects/combat-forecast';
+import FEH from "feh-battles";
 
 interface Coords {
   x: number;
@@ -174,8 +175,6 @@ export default class MainScene extends Phaser.Scene {
             }
             if (previousTile && arrowPath[i - 2]) {
               const previousTileDirections = getTilesDirection(arrowPath[i - 2], tile);
-              console.log("previousDirections", previousTile, previousTileDirections);
-              console.log("previous to the previous", arrowPath[i - 2]);
               const gameTile = this.getTile(previousTile.x + "-" + previousTile.y);
               var texture = !previousTileDirections.x ? "vertical" : !previousTileDirections.y ? "horizontal" : `path-${previousTileDirections.y}-${previousTileDirections.x}`;
               const img = new Phaser.GameObjects.Image(this, gameTile.x, gameTile.y, texture);
@@ -249,14 +248,13 @@ export default class MainScene extends Phaser.Scene {
           hero.x = pixelsCoords.x;
           hero.y = pixelsCoords.y;
           this.movementArrows.setVisible(false);
-          this.movementArrows.clear();
+          this.movementArrows.clear(true);
           this.movementAllowedImages.setVisible(true);
           this.movementAllowedTween.resume();
           (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).setVisible(false);
           this.sound.play("confirm", { volume: 0.4 });
           this.endAction(hero);
           this.children.remove(endArrow);
-          this.movementArrows.clear(true);
         } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
           const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
           const [finalLandingTile] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
@@ -285,6 +283,8 @@ export default class MainScene extends Phaser.Scene {
                 const { x, y } = pixelsToGrid(deadUnit.x, deadUnit.y);
                 this.map[y][x] = null;
                 deadUnit.destroy();
+                this.movementArrows.setVisible(false);
+                this.movementArrows.clear(true);
                 if (survivingUnit.team === this.turn) {
                   this.endAction(survivingUnit);
                 }
@@ -412,7 +412,11 @@ export default class MainScene extends Phaser.Scene {
       this.load.audio(`${hero} 2`, `/assets/audio/quotes/${hero}_2.wav`);
       this.load.audio(`${hero} 3`, `/assets/audio/quotes/${hero}_3.wav`);
       this.load.image(`${hero} battle`, `/assets/battle/${hero}.png`);
+      this.load.image(`${hero} damage`, `/assets/battle/${hero} battle damage.png`);
     }
+    this.load.image("hp plate", "/assets/hp plate.png");
+    this.load.image("stat-line", "/assets/stat-glowing-line.png");
+
     for (let slot of ["A", "B", "C", "S"]) {
       this.load.image(slot, `/assets/${slot}.png`);
     }
@@ -520,7 +524,7 @@ export default class MainScene extends Phaser.Scene {
       weaponType: "sword",
       movementType: "infantry",
       atk: 57,
-      def: 0,
+      def: 5,
       res: 19,
       maxHP: 49,
       spd: 27

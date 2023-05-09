@@ -24,41 +24,46 @@ class UnitInfosBanner extends GameObjects.Container {
     
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
-        const blockX = 210;
+        const blockX = 310;
         this.heroPortrait = new GameObjects.Image(scene, 0, 0, "").setOrigin(0, 0).setScale(0.5);
-        this.hp = renderText(scene, blockX - 53, 47, "HP", { fontSize: "20px" });
+        this.add(this.heroPortrait);
+        const a = new GameObjects.Image(this.scene, 20, -40, "unit-bg").setOrigin(0, 0);
+        a.setDisplaySize(800, 430);
+        this.add(a);
+        this.add(new GameObjects.Image(scene, blockX - 140, 70, "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5));
+        this.hp = renderText(scene, blockX - 120, 54, "HP", { fontSize: "20px" });
         this.maxHP = renderRegularHPText({
             scene: this.scene,
-            x: blockX + 50,
-            y: 50,
+            x: blockX,
+            y: 56,
             content: "",
             style: {
-                fontSize: "20px"
+                fontSize: "18px"
             }
         });
 
-        this.nameplate = new HeroNameplate(scene, blockX - 50, 25, {
+        this.nameplate = new HeroNameplate(scene, blockX - 150, 25, {
             name: "",
             weaponType: "",
         });
 
-        const lvText = renderText(scene, 490, 15, "40+", { fontSize: "20px"});
+        const lvText = renderText(scene, 590, 15, "40+", { fontSize: "20px"});
 
-        this.atk = renderText(scene, blockX + 20, 75, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
-        this.spd = renderText(scene, blockX + 100, 75, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
-        this.def = renderText(scene, blockX + 20, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
-        this.res = renderText(scene, blockX + 100, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
-        this.add(this.heroPortrait);
-        const a = new GameObjects.Image(this.scene, 20, -40, "unit-bg").setOrigin(0, 0);
-        a.setDisplaySize(800, 430);
-        this.add([a, this.nameplate]);
+        this.atk = renderText(scene, blockX - 30, 89, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
+        this.spd = renderText(scene, blockX + 80, 89, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
+        this.def = renderText(scene, blockX - 30, 114, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
+        this.res = renderText(scene, blockX + 80, 114, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
+        this.add([this.nameplate]);
         
         this.add([this.atk, this.spd, this.def, this.res, this.hp]);
 
-        this.add(renderText(scene, blockX - 53, 75, "Atk", { fontSize: "18px" }));
-        this.add(renderText(scene, blockX + 25, 75, "Spd", { fontSize: "18px" }));
-        this.add(renderText(scene, blockX - 53, 100, "Def", { fontSize: "18px" }));
-        this.add(renderText(scene, blockX + 25, 100, "Res", { fontSize: "18px" }));
+        this.add(new GameObjects.Image(scene, blockX - 130, 111, "stat-line").setScale(0.2, 0.5).setOrigin(0));
+        this.add(new GameObjects.Image(scene, blockX - 130, 136, "stat-line").setScale(0.2, 0.5).setOrigin(0));
+
+        this.add(renderText(scene, blockX - 120, 89, "Atk", { fontSize: "18px" }));
+        this.add(renderText(scene, blockX - 10, 89, "Spd", { fontSize: "18px" }));
+        this.add(renderText(scene, blockX - 120, 114, "Def", { fontSize: "18px" }));
+        this.add(renderText(scene, blockX - 10, 114, "Res", { fontSize: "18px" }));
 
         this.add(renderText(scene, lvText.getLeftCenter().x, 0, "Lv.", { fontSize: "14px"}));
         this.add(lvText);
@@ -95,8 +100,8 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(new GameObjects.Image(this.scene, 490, weaponBg.getLeftCenter().y, "weapon-icon").setScale(0.45).setOrigin(0.25, 0.5));
         this.currentHP = renderRegularHPText({
             scene: this.scene,
-            x: blockX,
-            y: 43,
+            x: blockX - 60,
+            y: 50,
             content: 0,
             style: {
                 fontSize: "26px"
