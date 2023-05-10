@@ -10,7 +10,7 @@ const prod = {
   output: {
     filename: '[name].[contenthash].bundle.js',
     chunkFilename: '[name].[contenthash].chunk.js',
-    publicPath: "/feh/"
+    path: path.resolve(__dirname, "dist")
   },
   resolve: {
     symlinks: false
