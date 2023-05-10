@@ -81,6 +81,19 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
+  fillTiles(tiles: string[], fillColor: number, alpha = 1) {
+    for (let tileName of tiles) {
+      const tile = this.getTile(tileName);
+      tile.setFillStyle(fillColor, alpha);
+    }
+  }
+
+  clearTiles(tiles: string[]) {
+    for (let tileName of tiles) {
+      this.getTile(tileName).setFillStyle(0x0);
+    }
+  }
+
   endAction(hero: Hero) {
     hero.image.setTint(0x777777);    
     hero.disableInteractive();
@@ -581,7 +594,9 @@ export default class MainScene extends Phaser.Scene {
     }
 
     this.walkCoords = newWalkTiles;
+    this.fillTiles(this.walkCoords, 0x0000FF);
     this.attackCoords = newAttackTiles;
+    this.fillTiles(this.attackCoords, 0xFF0000);
   }
 
   getTile(name: string) {
@@ -648,21 +663,6 @@ export default class MainScene extends Phaser.Scene {
   }
 
   update() {
-    if (this.displayRange) {
-      for (let i of this.walkCoords) {
-        (this.children.getByName(i) as GameObjects.Rectangle).setFillStyle(0x0000FF);
-      }
-
-      for (let i of this.attackCoords) {
-        (this.children.getByName(i) as GameObjects.Rectangle).setFillStyle(0xFF0000);
-      }
-    } else {
-      for (let i of [...this.attackCoords, ...this.walkCoords]) {
-        this.getTile(i).setFillStyle(0x0);
-      }
-      this.walkCoords = [];
-      this.attackCoords = [];
-    }
     for (let hero of this.heroes) {
       hero.update();
     }
