@@ -408,9 +408,9 @@ export default class MainScene extends Phaser.Scene {
     // todo: compress into audio sprite
     this.load.audio("bgm", "assets/audio/leif's army in search of victory.mp3");
     for (let hero of ["Chrom", "Byleth", "Dimitri", "Lucina"]) {
-      this.load.audio(`${hero} 1`, `assets/audio/quotes/${hero}_1.wav`);
-      this.load.audio(`${hero} 2`, `assets/audio/quotes/${hero}_2.wav`);
-      this.load.audio(`${hero} 3`, `assets/audio/quotes/${hero}_3.wav`);
+      this.load.audio(`${hero} 1`, `assets/audio/quotes/${hero}_1.mp3`);
+      this.load.audio(`${hero} 2`, `assets/audio/quotes/${hero}_2.mp3`);
+      this.load.audio(`${hero} 3`, `assets/audio/quotes/${hero}_3.mp3`);
       this.load.image(`${hero} battle`, `assets/battle/${hero}.png`);
       this.load.image(`${hero} damage`, `assets/battle/${hero} battle damage.png`);
     }
