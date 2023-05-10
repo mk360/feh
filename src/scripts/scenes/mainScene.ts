@@ -383,7 +383,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("movement-allowed", "assets/movement-allowed.png");
     this.load.image("sword", "assets/sword.png");
     this.load.image("lance", "assets/lance.png");
-    this.load.audio("enabled-unit", "assets/audio/q.mp3");
+    this.load.audio("enabled-unit", "assets/audio/pointer-tap.mp3");
     this.load.audio("disabled-unit", "assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "assets/audio/hit.mp3");
     this.load.audio("ko", "assets/audio/ko.mp3");
@@ -411,7 +411,7 @@ export default class MainScene extends Phaser.Scene {
       this.load.audio(`${hero} 1`, `assets/audio/quotes/${hero}_1.mp3`);
       this.load.audio(`${hero} 2`, `assets/audio/quotes/${hero}_2.mp3`);
       this.load.audio(`${hero} 3`, `assets/audio/quotes/${hero}_3.mp3`);
-      this.load.image(`${hero} battle`, `assets/battle/${hero}.png`);
+      this.load.image(`${hero} battle`, `assets/battle/${hero} test.png`);
       this.load.image(`${hero} damage`, `assets/battle/${hero} battle damage.png`);
     }
     this.load.image("hp plate", "assets/hp plate.png");
