@@ -5,6 +5,9 @@ const dev = {
   mode: 'development',
   stats: 'errors-warnings',
   devtool: 'eval',
+  output: {
+    assetModuleFilename: "feh/[name][ext]"
+  },
   devServer: {
     open: true
   }
