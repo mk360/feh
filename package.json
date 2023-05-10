@@ -2,7 +2,7 @@
   "name": "phaser-project-template",
   "version": "3.55.2",
   "description": "Phaser 3 starter template with TypeScript and webpack.",
-  "homepage": "https://github.com/yandeu/phaser-project-template#readme",
+  "homepage": "https://mk360.github.io/feh",
   "main": "index.js",
   "scripts": {
     "start": "webpack serve --config webpack/webpack.dev.js",
@@ -22,8 +22,8 @@
     "starter"
   ],
   "author": {
-    "name": "Yannick Deubel",
-    "url": "https://github.com/yandeu"
+    "name": "Mohamed Kassar",
+    "url": "https://github.com/mk360"
   },
   "repository": {
     "type": "git",
