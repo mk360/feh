@@ -9,7 +9,8 @@ const prod = {
   stats: 'errors-warnings',
   output: {
     filename: '[name].[contenthash].bundle.js',
-    chunkFilename: '[name].[contenthash].chunk.js'
+    chunkFilename: '[name].[contenthash].chunk.js',
+    publicPath: "/feh/"
   },
   resolve: {
     symlinks: false
