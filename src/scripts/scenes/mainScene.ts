@@ -375,50 +375,50 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("map", "/assets/testmap.png");
-    this.load.image("Byleth", "/assets/mini/Byleth.png");
-    this.load.image("Dimitri", "/assets/mini/Dimitri.png");
-    this.load.image("Chrom", "/assets/mini/Chrom.png");
-    this.load.image("Lucina", "/assets/mini/Lucina.png");
-    this.load.image("movement-allowed", "/assets/movement-allowed.png");
-    this.load.image("sword", "/assets/sword.png");
-    this.load.image("lance", "/assets/lance.png");
-    this.load.audio("enabled-unit", "/assets/audio/q.mp3");
-    this.load.audio("disabled-unit", "/assets/audio/feh disabled unit.mp3");
-    this.load.audio("hit", "/assets/audio/hit.mp3");
-    this.load.audio("ko", "/assets/audio/ko.mp3");
-    this.load.audio("hover", "/assets/audio/hover on tile.mp3");
-    this.load.audio("confirm", "/assets/audio/confirm.mp3");
-    this.load.image("nameplate", "/assets/nameplate.png");
-    this.load.image("end-arrow", "/assets/end-arrow.png");
-    this.load.image("empty-skill", "/assets/empty-skill.png");
-    this.load.image("path-down-right", "/assets/path-down-left.png");
-    this.load.image("path-down-left", "/assets/path-down-right.png");
-    this.load.image("path-up-right", "/assets/path-up-right.png");
-    this.load.image("path-up-left", "/assets/path-up-left.png");
-    this.load.image("horizontal", "/assets/horizontal.png");
-    this.load.image("vertical", "/assets/vertical.png");
-    this.load.image("unit-bg", "/assets/unitbg.png");
-    this.load.image("rosary", "/assets/rosary-current.png");
-    this.load.image("rosary-arrow", "/assets/rosary-arrow.png");
-    this.load.image("weapon-icon", "/assets/weapon_icon.png");
-    this.load.image("weapon-bg", "/assets/weapon.png");
-    this.load.image("assist-icon", "/assets/assist-icon.png");
-    this.load.image("special-icon", "/assets/special-icon.png");
+    this.load.image("map", "assets/testmap.png");
+    this.load.image("Byleth", "assets/mini/Byleth.png");
+    this.load.image("Dimitri", "assets/mini/Dimitri.png");
+    this.load.image("Chrom", "assets/mini/Chrom.png");
+    this.load.image("Lucina", "assets/mini/Lucina.png");
+    this.load.image("movement-allowed", "assets/movement-allowed.png");
+    this.load.image("sword", "assets/sword.png");
+    this.load.image("lance", "assets/lance.png");
+    this.load.audio("enabled-unit", "assets/audio/q.mp3");
+    this.load.audio("disabled-unit", "assets/audio/feh disabled unit.mp3");
+    this.load.audio("hit", "assets/audio/hit.mp3");
+    this.load.audio("ko", "assets/audio/ko.mp3");
+    this.load.audio("hover", "assets/audio/hover on tile.mp3");
+    this.load.audio("confirm", "assets/audio/confirm.mp3");
+    this.load.image("nameplate", "assets/nameplate.png");
+    this.load.image("end-arrow", "assets/end-arrow.png");
+    this.load.image("empty-skill", "assets/empty-skill.png");
+    this.load.image("path-down-right", "assets/path-down-left.png");
+    this.load.image("path-down-left", "assets/path-down-right.png");
+    this.load.image("path-up-right", "assets/path-up-right.png");
+    this.load.image("path-up-left", "assets/path-up-left.png");
+    this.load.image("horizontal", "assets/horizontal.png");
+    this.load.image("vertical", "assets/vertical.png");
+    this.load.image("unit-bg", "assets/unitbg.png");
+    this.load.image("rosary", "assets/rosary-current.png");
+    this.load.image("rosary-arrow", "assets/rosary-arrow.png");
+    this.load.image("weapon-icon", "assets/weapon_icon.png");
+    this.load.image("weapon-bg", "assets/weapon.png");
+    this.load.image("assist-icon", "assets/assist-icon.png");
+    this.load.image("special-icon", "assets/special-icon.png");
     // todo: compress into audio sprite
-    this.load.audio("bgm", "/assets/audio/leif's army in search of victory.mp3");
+    this.load.audio("bgm", "assets/audio/leif's army in search of victory.mp3");
     for (let hero of ["Chrom", "Byleth", "Dimitri", "Lucina"]) {
-      this.load.audio(`${hero} 1`, `/assets/audio/quotes/${hero}_1.wav`);
-      this.load.audio(`${hero} 2`, `/assets/audio/quotes/${hero}_2.wav`);
-      this.load.audio(`${hero} 3`, `/assets/audio/quotes/${hero}_3.wav`);
-      this.load.image(`${hero} battle`, `/assets/battle/${hero}.png`);
-      this.load.image(`${hero} damage`, `/assets/battle/${hero} battle damage.png`);
+      this.load.audio(`${hero} 1`, `assets/audio/quotes/${hero}_1.wav`);
+      this.load.audio(`${hero} 2`, `assets/audio/quotes/${hero}_2.wav`);
+      this.load.audio(`${hero} 3`, `assets/audio/quotes/${hero}_3.wav`);
+      this.load.image(`${hero} battle`, `assets/battle/${hero}.png`);
+      this.load.image(`${hero} damage`, `assets/battle/${hero} battle damage.png`);
     }
-    this.load.image("hp plate", "/assets/hp plate.png");
-    this.load.image("stat-line", "/assets/stat-glowing-line.png");
+    this.load.image("hp plate", "assets/hp plate.png");
+    this.load.image("stat-line", "assets/stat-glowing-line.png");
 
     for (let slot of ["A", "B", "C", "S"]) {
-      this.load.image(slot, `/assets/${slot}.png`);
+      this.load.image(slot, `assets/${slot}.png`);
     }
   }
 
