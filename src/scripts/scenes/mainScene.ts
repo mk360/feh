@@ -168,7 +168,12 @@ export default class MainScene extends Phaser.Scene {
       let previousTileString = "";
       const endArrow = new GameObjects.Image(this, 0, 0, "end-arrow").setName("end-arrow");
       this.movementArrows.add(endArrow);
+      let hoveredTile = "";
       hero.on("dragover", (_, target: Phaser.GameObjects.Rectangle) => {
+        if (target.name !== hoveredTile) {
+          hoveredTile = target.name
+        } else return;
+        console.log("hovered on " + target.name)
         if (this.walkCoords.includes(target.name) && target.name !== previousTileString) {
           this.combatForecast.setVisible(false);
           this.sound.play("hover");
