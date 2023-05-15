@@ -15,11 +15,10 @@ class Hero extends GameObjects.Container {
     // todo: simplify constructor
     constructor(scene: Scene, x: number, y: number, data: HeroData, team: "team1" | "team2") {
         super(scene, x, y);
-        console.log(data);
         this.setData("hero", data);
         this.setName(data.id);
         scene.add.existing(this);
-        this.image = new GameObjects.Image(scene, 0, 0, data.name).setScale(0.7).setDepth(1);
+        this.image = new GameObjects.Image(scene, 0, 0, `${data.name} map`).setScale(0.7).setDepth(1);
         this.add(this.image);
         this.team = team;
         const hpBarHeight = this.image.getBottomCenter().y - 20;        

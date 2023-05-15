@@ -1,7 +1,7 @@
 import { GameObjects, Tweens } from "phaser";
 import Hero from "./hero";
 import HeroNameplate from "./hero-nameplate";
-import { renderCritHPText, renderRegularHPText, renderText } from "../utils/text-renderer";
+import { renderBoonText, renderCritHPText, renderRegularHPText, renderText } from "../utils/text-renderer";
 import HeroPortrait from "./hero-portrait";
 import Stats from "../../interfaces/stats";
 
@@ -62,6 +62,15 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.add(this.firstHero.nameplate);
         const hpLineHeight = 85;
         const hpTextHeight = 60;
+
+        const buffText = renderText(scene, firstSideBg.getCenter().x - 80, 120, "Atk");
+        this.add(renderBoonText({
+            scene,
+            x: buffText.x + 35,
+            y: buffText.y,
+            content: "+34"
+        }).setOrigin(0))
+        this.add(buffText);
 
         this.secondHero.nameplate = new HeroNameplate(scene, 377, 30, {
             name: "", weaponType: ""
@@ -164,6 +173,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
 
     setForecastData(params: ForecastData) {
         const { attacker, defender } = params;
+        console.log(attacker.statChanges, defender.statChanges);
         this.firstHero.nameplate.weaponIcon.setTexture(attacker.hero.getInternalHero().getWeapon().type);
         this.firstHero.nameplate.heroName.setText(attacker.hero.getInternalHero().name);
         this.secondHero.nameplate.weaponIcon.setTexture(defender.hero.getInternalHero().getWeapon().type);

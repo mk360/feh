@@ -15,11 +15,11 @@ class UnitInfosBanner extends GameObjects.Container {
     private currentHP: GameObjects.Text;
     private assist: GameObjects.Text;
     private special: GameObjects.Text;
-    private slot_A: GameObjects.Image;
-    private slot_B: GameObjects.Image;
-    private slot_C: GameObjects.Image;
     private maxHP: GameObjects.Text;
-    private slot_S: GameObjects.Image;
+    private A: GameObjects.Image;
+    private B: GameObjects.Image;
+    private C: GameObjects.Image;
+    private S: GameObjects.Image;
     private heroPortrait: GameObjects.Image;
     
     constructor(scene: Phaser.Scene) {
@@ -67,21 +67,21 @@ class UnitInfosBanner extends GameObjects.Container {
 
         this.add(renderText(scene, lvText.getLeftCenter().x, 0, "Lv.", { fontSize: "14px"}));
         this.add(lvText);
-        const S_Skill = new GameObjects.Image(scene, 715, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
-        const S_Letter = new GameObjects.Image(scene, S_Skill.getBottomRight().x, S_Skill.getBottomRight().y, "S").setOrigin(1).setScale(0.5);
-        this.add(S_Skill);
+        this.S = new GameObjects.Image(scene, 715, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
+        const S_Letter = new GameObjects.Image(scene, this.S.getBottomRight().x, this.S.getBottomRight().y, "S").setOrigin(1).setScale(0.5);
+        this.add(this.S);
         this.add(S_Letter);
-        const C_Skill = new GameObjects.Image(scene, 690, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
-        const C_Letter = new GameObjects.Image(scene, C_Skill.getBottomRight().x, C_Skill.getBottomRight().y, "C").setOrigin(1).setScale(0.5);
-        this.add(C_Skill);
+        this.C = new GameObjects.Image(scene, 690, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
+        const C_Letter = new GameObjects.Image(scene, this.C.getBottomRight().x, this.C.getBottomRight().y, "C").setOrigin(1).setScale(0.5);
+        this.add(this.C);
         this.add(C_Letter);
-        const B_Skill = new GameObjects.Image(scene, 665, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
-        const B_Letter = new GameObjects.Image(scene, B_Skill.getBottomRight().x, B_Skill.getBottomRight().y, "B").setOrigin(1).setScale(0.5);
-        this.add(B_Skill);
+        this.B = new GameObjects.Image(scene, 665, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
+        const B_Letter = new GameObjects.Image(scene, this.B.getBottomRight().x, this.B.getBottomRight().y, "B").setOrigin(1).setScale(0.5);
+        this.add(this.B);
         this.add(B_Letter);
-        const A_Skill = new GameObjects.Image(scene, 640, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
-        const A_Letter = new GameObjects.Image(scene, A_Skill.getBottomRight().x, A_Skill.getBottomRight().y, "A").setOrigin(1).setScale(0.5);
-        this.add(A_Skill);
+        this.A = new GameObjects.Image(scene, 640, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
+        const A_Letter = new GameObjects.Image(scene, this.A.getBottomRight().x, this.A.getBottomRight().y, "A").setOrigin(1).setScale(0.5);
+        this.add(this.A);
         this.add(A_Letter);
         const weaponBg = new GameObjects.Image(this.scene, 490, 45, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25);
         const assistBg = new GameObjects.Image(this.scene, 490, 85, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25);
@@ -112,9 +112,10 @@ class UnitInfosBanner extends GameObjects.Container {
     }
 
     setHero(hero: Hero) {
-        this.heroPortrait.setTexture(`${hero.name} battle`);
+        const internalHero = hero.getInternalHero();
+        this.heroPortrait.setTexture(`${internalHero.name} battle`);
         this.currentHP.destroy();
-        const hpRenderFct = hero.getInternalHero().stats.hp < 10 ? renderCritHPText : renderRegularHPText;
+        const hpRenderFct = internalHero.stats.hp < 10 ? renderCritHPText : renderRegularHPText;
         this.currentHP = hpRenderFct({
             scene: this.scene,
             x: this.currentHP.x,
@@ -122,10 +123,10 @@ class UnitInfosBanner extends GameObjects.Container {
             style: {
                 fontSize: "26px",
             },
-            content: hero.getInternalHero().stats.hp,
+            content: internalHero.stats.hp,
         });
         this.add(this.currentHP);
-        if (this.nameplate.heroName.text !== hero.name) {
+        if (this.nameplate.heroName.text !== internalHero.name) {
             this.heroPortrait.x = -300;
             this.scene.tweens.add({
               targets: this.heroPortrait,
@@ -134,16 +135,25 @@ class UnitInfosBanner extends GameObjects.Container {
             });
         }
         this.nameplate.updateNameplate({
-            name: hero.getInternalHero().name,
-            weaponType: hero.getInternalHero().getWeapon().type
+            name: internalHero.name,
+            weaponType: internalHero.getWeapon().type
         });
-        this.maxHP.setText(`/ ${hero.getInternalHero().maxHP}`);
+        this.maxHP.setText(`/ ${internalHero.maxHP}`);
 
         for (let stat of ["atk", "def", "res", "spd"]) {
-            this[stat].setText(hero.getInternalHero().stats[stat].toString());
+            this[stat].setText(internalHero.stats[stat].toString());
         }
 
-        this.weaponName.setText(hero.getInternalHero().getWeapon().name);
+        this.weaponName.setText(internalHero.getWeapon().name);
+
+        for (let skill of ["A", "B", "C", "S"] as const) {
+            if (internalHero.skills[skill]) {
+                console.log(internalHero.skills[skill].name)
+                this[skill].setTexture(internalHero.skills[skill].name);
+            } else {
+                this[skill].setTexture("empty-skill");
+            }
+        }
     }
 };
 

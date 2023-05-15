@@ -26,6 +26,12 @@ export function renderStatText(config: TextRenderingConfig) {
     return text;
 }
 
+export function renderBoonText(config: TextRenderingConfig) {
+    const { text } = renderTextWith2DContext(config);
+    text.setColor(TextColors.boon);
+    return text;
+}
+
 export function renderCritHPText(config: TextRenderingConfig) {
     const { text, gradient } = renderTextWith2DContext(config);
     gradient.addColorStop(0, "white");
