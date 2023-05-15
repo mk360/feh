@@ -114,7 +114,7 @@ class UnitInfosBanner extends GameObjects.Container {
     setHero(hero: Hero) {
         this.heroPortrait.setTexture(`${hero.name} battle`);
         this.currentHP.destroy();
-        const hpRenderFct = hero.HP < 10 ? renderCritHPText : renderRegularHPText;
+        const hpRenderFct = hero.getInternalHero().stats.hp < 10 ? renderCritHPText : renderRegularHPText;
         this.currentHP = hpRenderFct({
             scene: this.scene,
             x: this.currentHP.x,
@@ -122,7 +122,7 @@ class UnitInfosBanner extends GameObjects.Container {
             style: {
                 fontSize: "26px",
             },
-            content: hero.HP,
+            content: hero.getInternalHero().stats.hp,
         });
         this.add(this.currentHP);
         if (this.nameplate.heroName.text !== hero.name) {
@@ -134,16 +134,16 @@ class UnitInfosBanner extends GameObjects.Container {
             });
         }
         this.nameplate.updateNameplate({
-            name: hero.name,
-            weaponType: hero.unitData.weaponType
+            name: hero.getInternalHero().name,
+            weaponType: hero.getInternalHero().getWeapon().type
         });
-        this.maxHP.setText(`/ ${hero.maxHP}`);
+        this.maxHP.setText(`/ ${hero.getInternalHero().maxHP}`);
 
         for (let stat of ["atk", "def", "res", "spd"]) {
-            this[stat].setText(hero.stats[stat].toString());
+            this[stat].setText(hero.getInternalHero().stats[stat].toString());
         }
 
-        this.weaponName.setText(hero.weaponName);
+        this.weaponName.setText(hero.getInternalHero().getWeapon().name);
     }
 };
 

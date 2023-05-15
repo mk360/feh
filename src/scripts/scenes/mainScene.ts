@@ -1,18 +1,12 @@
 import { GameObjects } from 'phaser';
 import Hero from '../objects/hero';
 import TileType from '../../types/tiles';
-import WeaponType from '../../types/WeaponType';
-import MovementType from '../../types/MovementType';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import { renderText } from '../utils/text-renderer';
-import Stats from '../../interfaces/stats';
 import CombatForecast from '../objects/combat-forecast';
-import FEH from "feh-battles";
-
-interface Coords {
-  x: number;
-  y: number;
-}
+import Coords from '../../interfaces/coords';
+import battle from '../classes/battle';
+import HeroData from "feh-battles/dec/hero";
 
 const squareSize = 125;
 const squaresOffset = 63;
@@ -50,13 +44,7 @@ export default class MainScene extends Phaser.Scene {
   heroesWhoMoved: Hero[] = [];
   turn: "team1" | "team2" = "team1";
   rng = new Phaser.Math.RandomDataGenerator();
-  heroDetails: Phaser.GameObjects.Container;
-  heroPortrait: Phaser.GameObjects.Image;
   heroBackground: Phaser.GameObjects.Rectangle;
-  heroName: Phaser.GameObjects.Text;
-  heroWeapon: Phaser.GameObjects.Image;
-  heroStats: Phaser.GameObjects.Text[];
-  heroSkills: Phaser.GameObjects.Image[];
   movementAllowedImages: Phaser.GameObjects.Group;
   movementAllowedTween: Phaser.Tweens.Tween;
   movementArrows: Phaser.GameObjects.Group;
@@ -99,6 +87,7 @@ export default class MainScene extends Phaser.Scene {
     hero.disableInteractive();
     this.heroesWhoMoved.push(hero);
     this.displayRange = false;
+    this.children.remove(this.children.getByName("movement-" + hero.getInternalHero().name));
     this.highlightedHero = null;
   }
 
@@ -140,9 +129,9 @@ export default class MainScene extends Phaser.Scene {
       let currentCoords: Coords = { x, y };
       hero.setInteractive(true);
       this.input.setDraggable(hero, true);
-      const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.name}`);
+      const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.getInternalHero().name}`);
       this.add.existing(img);
-      const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);      
+      const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);    
       img.setDisplaySize(matchingTile.width, matchingTile.height);
       this.movementAllowedImages.add(img);
       let pathStart: GameObjects.Image;
@@ -150,18 +139,19 @@ export default class MainScene extends Phaser.Scene {
       let previousSoundFile = "";
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
+        console.log(hero.getInternalHero());
+        const currentCoords = pixelsToGrid(hero.x, hero.y);
         this.movementAllowedImages.setVisible(false);
-        const img = this.children.getByName(`movement-${hero.name}`) as GameObjects.Image;
+        const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;
         img.setVisible(true);
         pathStart = this.add.image(img.x, img.y, "rosary").setDisplaySize(img.width, img.height).setScale(1.35).setName("arrow");
         this.movementAllowedTween.pause();
         this.sound.play("enabled-unit");
-        const currentCoords = pixelsToGrid(hero.x, hero.y);
-        const n = this.rng.integerInRange(1, 3);
-        if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
-        const soundFile = `${hero.unitData.name} ${n}`;
-        this.sound.play(soundFile, { volume: 0.2 });
-        previousSoundFile = soundFile;
+        // const n = this.rng.integerInRange(1, 3);
+        // if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
+        // const soundFile = `${hero.getInternalHero().name} ${n}`;
+        // this.sound.play(soundFile, { volume: 0.2 });
+        // previousSoundFile = soundFile;
         this.unitInfosBanner.setVisible(true).setHero(hero);
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
@@ -173,7 +163,6 @@ export default class MainScene extends Phaser.Scene {
         if (target.name !== hoveredTile) {
           hoveredTile = target.name
         } else return;
-        console.log("hovered on " + target.name)
         if (this.walkCoords.includes(target.name) && target.name !== previousTileString) {
           this.combatForecast.setVisible(false);
           this.sound.play("hover");
@@ -207,7 +196,9 @@ export default class MainScene extends Phaser.Scene {
               pathStart.setTexture("rosary-arrow");
               pathStart.setRotation(angle * Math.PI / 180);
             }
-            if (i === arrowPath.length - 1 && i) {
+            if (arrowPath.length === 1) {
+              this.children.remove(this.children.getByName("end-arrow"));
+            } else if (i === arrowPath.length - 1 && i) {
               const x = arrowPath[arrowPath.length - 1];
               const tile = this.getTile(x.x + "-" + x.y);
               endArrow.x = tile.x;
@@ -230,20 +221,21 @@ export default class MainScene extends Phaser.Scene {
           if ((this.map[+y][+x]?.team ?? hero.team) !== hero.team && !this.combatForecast.visible) {
             const opponent = this.map[+y][+x];
             this.unitInfosBanner.setVisible(false);
+            const simulatedBattle = battle.startCombat(hero.getInternalHero(), opponent.getInternalHero());
             this.combatForecast.setForecastData({
               attacker: {
                 hero,
-                startHP: hero.maxHP,
-                endHP: Math.max(hero.HP - (opponent.stats.atk - hero.stats.def), 0),
-                statChanges: {},
+                startHP: hero.getInternalHero().stats.hp,
+                endHP: simulatedBattle.atkRemainingHP,
+                statChanges: simulatedBattle.atkChanges,
                 turns: 1,
-                damage: 49,
+                damage: 10,
               },
               defender: {
                 hero: opponent,
-                startHP: opponent.maxHP,
-                endHP: Math.max(opponent.HP - (hero.stats.atk - opponent.stats.def), 0),
-                statChanges: {},
+                startHP: opponent.getInternalHero().stats.hp,
+                endHP: simulatedBattle.defRemainingHP,
+                statChanges: simulatedBattle.defChanges,
                 turns: 1,
                 damage: 49,
               },
@@ -255,9 +247,12 @@ export default class MainScene extends Phaser.Scene {
       hero.off("dragend");
       hero.on("dragend", ({ upX, upY }: { upX: number; upY: number }) => {
         const { x: x2, y: y2 } = pixelsToGrid(upX, upY);
+        this.movementArrows.setVisible(false);
         this.children.remove(this.children.getByName("arrow"));
+        this.children.remove(this.children.getByName("end-arrow"));
         if (this.walkCoords.includes(x2 + "-" + y2) && !this.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
           this.combatForecast.setVisible(false);
+          this.clearTiles([...this.walkCoords, ...this.attackCoords]);
           this.map[currentCoords.y][currentCoords.x] = null;
           currentCoords.x = x2;
           currentCoords.y = y2;
@@ -269,7 +264,7 @@ export default class MainScene extends Phaser.Scene {
           this.movementArrows.clear(true);
           this.movementAllowedImages.setVisible(true);
           this.movementAllowedTween.resume();
-          (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).setVisible(false);
+          (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).setVisible(false);
           this.sound.play("confirm", { volume: 0.4 });
           this.endAction(hero);
           this.children.remove(endArrow);
@@ -281,73 +276,76 @@ export default class MainScene extends Phaser.Scene {
           currentCoords.x = +xCoord;
           currentCoords.y = +yCoord;
           const target = this.map[y2][x2];
-          const turns = hero.attack(target);
+          const turns = battle.startCombat(hero.getInternalHero(), target.getInternalHero());
           const t = this.tweens.timeline();
           t.on("complete", () => {
-            const deadUnit = [hero, target].find(h => h.HP === 0);
-            const survivingUnit = [hero, target].find(h => !!h.HP);
-            if (deadUnit) {
-              this.tweens.add({
-              targets: deadUnit,
-              alpha: 0,
-              delay: 700,
-              onStart: () => {
-                this.sound.play("ko", { volume: 0.4 });
-              },
-              onComplete: () => {
-                this.displayRange = false;
-                this.heroes = this.heroes.filter(h => h.name !== deadUnit.name);
-                this[deadUnit.team] = this[deadUnit.team].filter(h => h.name !== deadUnit.name);
-                const { x, y } = pixelsToGrid(deadUnit.x, deadUnit.y);
-                this.map[y][x] = null;
-                deadUnit.destroy();
-                this.movementArrows.setVisible(false);
-                this.movementArrows.clear(true);
-                if (survivingUnit.team === this.turn) {
-                  this.endAction(survivingUnit);
-                }
+          //   this.clearTiles([...this.walkCoords, ...this.attackCoords]);
+          //   const deadUnit = [hero, target].find(h => h.HP === 0);
+          //   const survivingUnit = [hero, target].find(h => !!h.HP);
+          //   if (deadUnit) {
+          //     this.tweens.add({
+          //     targets: deadUnit,
+          //     alpha: 0,
+          //     delay: 700,
+          //     onStart: () => {
+          //       this.sound.play("ko", { volume: 0.4 });
+          //     },
+          //     onComplete: () => {
+          //       this.heroes = this.heroes.filter(h => h.name !== deadUnit.name);
+          //       this[deadUnit.team] = this[deadUnit.team].filter(h => h.name !== deadUnit.name);
+          //       const { x, y } = pixelsToGrid(deadUnit.x, deadUnit.y);
+          //       this.map[y][x] = null;
+          //       deadUnit.destroy();
+          //       this.movementArrows.setVisible(false);
+          //       this.movementArrows.clear(true);
+          //       if (survivingUnit.team === this.turn) {
+          //         this.endAction(survivingUnit);
+          //       }
                 this.game.input.enabled = true;
-              },
-              duration: 900
-            });
-            } else {
-              this.endAction(hero);
-              this.game.input.enabled = true;
-            }
+          //     },
+          //     duration: 900
+          //   });
+          //   } else {
+          //     this.endAction(hero);
+          //     this.game.input.enabled = true;
+          //   }
           });
-          for (let i = 0; i < turns.length; i++) {
-            const turn = turns[i];
-            const tweenDelay = 900 * i + 40;
-            const defCenter = turn.defender.image.getCenter();
-            const damageText = renderText(this, turn.defender.x + defCenter.x, turn.defender.y + defCenter.y, turn.damage.toString(), {
+          for (let i = 0; i < turns.outcome.length; i++) {
+            const turn = turns.outcome[i];
+            const defenderObject = this.children.getByName(turn.defender.id) as Hero;
+            const attackerObject = this.children.getByName(turn.attacker.id) as Hero;
+            const defCenter = defenderObject.image.getCenter();
+            const damageText = renderText(this, defenderObject.x + defCenter.x, defenderObject.y + defCenter.y, turn.damage.toString(), {
               stroke: "#FFFFFF",
               strokeThickness: 5,
               color: "red",
-              fontSize: "30px"
+              fontSize: turn.advantage === "advantage" || turn.effective ? "32px" : turn.advantage === "disadvantage" ? "25px" : "30px"
             }).setOrigin(0.4);
             t.add({
-              targets: turn.attacker,
-              x: `-=${(turn.attacker.x - turn.defender.x) / 2}`,
-              y: `-=${(turn.attacker.y - turn.defender.y) / 2}`,
+              targets: attackerObject,
+              x: `-=${(attackerObject.x - defenderObject.x) / 2}`,
+              y: `-=${(attackerObject.y - defenderObject.y) / 2}`,
               yoyo: true,
               duration: 100,
               onStart: () => {
                 this.sound.play("hit");
-                turn.defender.HP = Math.max(0, turn.defender.HP - turn.damage);
                 this.add.existing(damageText);
                 this.tweens.add({
                   targets: [damageText],
-                  y: turn.defender.image.getTopCenter().y + turn.defender.y,
+                  y: defenderObject.image.getTopCenter().y + defenderObject.y,
                   yoyo: true,
                   duration: 100,
                   onComplete: () => {
                     setTimeout(() => {
                       damageText.destroy();
                     }, 500);
+                  },
+                  onStart: () => {
+                    defenderObject.getInternalHero().stats.hp = turn.remainingHP;
                   }
                 });
               },
-              delay: tweenDelay,
+              delay: 500,
             });
           }
           this.game.input.enabled = false;
@@ -378,7 +376,7 @@ export default class MainScene extends Phaser.Scene {
       hero.off("dragover");
       hero.off("dragend");
       hero.setInteractive();
-      this.children.remove(this.children.getByName("movement-" + hero.name));
+      this.children.remove(this.children.getByName("movement-" + hero.getInternalHero().name));
       hero.image.clearTint();
       this.input.setDraggable(hero, false);
       hero.off("dragstart");
@@ -396,6 +394,9 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("map", "assets/testmap.png");
     this.load.image("Byleth", "assets/mini/Byleth.png");
     this.load.image("Dimitri", "assets/mini/Dimitri.png");
+    this.load.image("Lyn", "assets/mini/Lyn.webp");
+    this.load.image("Ike", "assets/mini/Ike.webp");
+    this.load.image("Corrin", "assets/mini/Corrin.webp");
     this.load.image("Chrom", "assets/mini/Chrom.png");
     this.load.image("Lucina", "assets/mini/Lucina.png");
     this.load.image("movement-allowed", "assets/movement-allowed.png");
@@ -441,12 +442,12 @@ export default class MainScene extends Phaser.Scene {
   }
 
   // todo: simplify signature
-  addHero(config: Omit<Stats, "hp"> & { name: string; weaponName: string; gridX: number; gridY: number; weaponType: WeaponType; movementType: MovementType; maxHP: number }, team: "team1" | "team2") {
-    const { x, y } = gridToPixels(config.gridX, config.gridY);
-    const hero = new Hero(this, x, y, config, team).setInteractive();
+  addHero(config: { hero: HeroData } & Coords, team: "team1" | "team2") {
+    const { x, y } = gridToPixels(config.x, config.y);
+    const hero = new Hero(this, x, y, config.hero, team).setInteractive();
     this.add.existing(hero);
     this.heroes.push(hero);
-    this.map[config.gridY][config.gridX] = hero;
+    this.map[config.y][config.x] = hero;
     this[team].push(hero);
     return hero;
   }
@@ -490,6 +491,7 @@ export default class MainScene extends Phaser.Scene {
               duration: 200
             });
           } else if (!this.map[+y][+x]) {
+            this.clearTiles([...this.walkCoords, ...this.attackCoords]);
             if (this.displayRange) {
               this.sound.play("disabled-unit");
             }
@@ -506,61 +508,72 @@ export default class MainScene extends Phaser.Scene {
       }
     }
 
-    this.addHero({
-      name: "Dimitri",
-      weaponName: "Areadbhar",
-      gridX: 3,
-      gridY: 7,
-      weaponType: "lance",
-      movementType: "cavalry",
-      maxHP: 40,
-      atk: 57,
-      def: 37,
-      res: 18,
-      spd: 41
-    }, "team1");
+    for (let { hero, x, y } of battle.team1) {
+      this.addHero({ x, y, hero }, "team1");
+    }
 
-    this.addHero({
-      name: "Byleth",
-      gridX: 3,
-      weaponName: "Sword of the Creator",
-      gridY: 1,
-      weaponType: "sword",
-      movementType: "infantry",
-      maxHP: 40,
-      atk: 52,
-      def: 34,
-      spd: 38,
-      res: 20
-    }, "team1");
+    for (let { hero, x, y } of battle.team2) {
+      this.addHero({
+        hero,
+        x,
+        y,
+      }, "team2");
+    }
 
-    this.addHero({
-      name: "Chrom",
-      gridX: 6,
-      gridY: 1,
-      weaponName: "Revenge Falchion",
-      weaponType: "sword",
-      movementType: "infantry",
-      atk: 57,
-      def: 5,
-      res: 19,
-      maxHP: 49,
-      spd: 27
-    }, "team2");
+    // this.addHero({
+    //   name: "Dimitri",
+    //   weaponName: "Areadbhar",
+    //   gridX: 3,
+    //   gridY: 7,
+    //   weaponType: "lance",
+    //   movementType: "cavalry",
+    //   maxHP: 40,
+    //   atk: 57,
+    //   def: 37,
+    //   res: 18,
+    //   spd: 41
+    // }, "team1");
+
+    // this.addHero({
+    //   name: "Byleth",
+    //   gridX: 3,
+    //   weaponName: "Sword of the Creator",
+    //   gridY: 1,
+    //   weaponType: "sword",
+    //   movementType: "infantry",
+    //   maxHP: 40,
+    //   atk: 52,
+    //   def: 34,
+    //   spd: 38,
+    //   res: 20
+    // }, "team1");
+
+    // this.addHero({
+    //   name: "Chrom",
+    //   gridX: 6,
+    //   gridY: 1,
+    //   weaponName: "Revenge Falchion",
+    //   weaponType: "sword",
+    //   movementType: "infantry",
+    //   atk: 57,
+    //   def: 5,
+    //   res: 19,
+    //   maxHP: 49,
+    //   spd: 27
+    // }, "team2");
     
-    this.addHero({
-      name: "Lucina",
-      weaponName: "Parallel Falchion",
-      gridX: 6,
-      gridY: 4,
-      weaponType: "sword",
-      movementType: "infantry",
-      atk: 50,
-      def: 25,
-      spd: 36,
-      maxHP: 43,
-      res: 19
-    }, "team2");
+    // this.addHero({
+    //   name: "Lucina",
+    //   gridX: 6,
+    //   gridY: 4,
+    //   weaponType: "sword",
+    //   movementType: "infantry",
+    //   atk: 50,
+    //   def: 25,
+    //   spd: 36,
+    //   maxHP: 43,
+    //   res: 19
+    // }, "team2");
 
     this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
       if (d instanceof Hero && d.team === this.turn) {
@@ -599,8 +612,8 @@ export default class MainScene extends Phaser.Scene {
     }
 
     this.walkCoords = newWalkTiles;
-    this.fillTiles(this.walkCoords, 0x0000FF);
     this.attackCoords = newAttackTiles;
+    this.fillTiles(this.walkCoords, 0x0000FF);
     this.fillTiles(this.attackCoords, 0xFF0000);
   }
 
@@ -652,12 +665,12 @@ export default class MainScene extends Phaser.Scene {
     if (Boolean(occupying) && occupying.team !== hero.team) return false;
     const tileType = this.terrain[tile.y - 1][tile.x - 1];
     if (tileType === "wall") return false;
-    if (tileType === "void") return hero.unitData.movementType === "flier";
-    if (hero.unitData.movementType === "flier") return true;
+    if (tileType === "void") return hero.getInternalHero().movementType === "flier";
+    if (hero.getInternalHero().movementType === "flier") return true;
     const { x, y } = pixelsToGrid(hero.x, hero.y);
-    if (hero.unitData.movementType === "cavalry" && tileType === "trench") return this.getDistance({ x, y }, tile) <= 1;
+    if (hero.getInternalHero().movementType === "cavalry" && tileType === "trench") return this.getDistance({ x, y }, tile) <= 1;
     if (tileType === "tree") {
-      switch (hero.unitData.movementType) {
+      switch (hero.getInternalHero().movementType) {
         case "cavalry": return false;
         case "infantry": return this.getDistance({ x, y }, tile) <= 1;
         default: return true;
@@ -746,18 +759,18 @@ function getTilesDirection(tile1: Coords, tile2: Coords) {
 };
 
 function getOverlap<T>(array1: T[], array2: T[]) {
-  const arr: T[] = [];
+  const overlap: T[] = [];
   for (let key of array1) {
     if (array2.includes(key)) {
-      arr.push(key);
+      overlap.push(key);
     }
   }
 
   for (let key of array2) {
     if (array1.includes(key)) {
-      arr.push(key);
+      overlap.push(key);
     }
   }
 
-  return Array.from(new Set(arr));
+  return Array.from(new Set(overlap));
 }

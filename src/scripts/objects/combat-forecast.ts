@@ -164,15 +164,15 @@ class CombatForecast extends Phaser.GameObjects.Container {
 
     setForecastData(params: ForecastData) {
         const { attacker, defender } = params;
-        this.firstHero.nameplate.weaponIcon.setTexture(attacker.hero.unitData.weaponType);
-        this.firstHero.nameplate.heroName.setText(attacker.hero.unitData.name);
-        this.secondHero.nameplate.weaponIcon.setTexture(defender.hero.unitData.weaponType);
-        this.secondHero.nameplate.heroName.setText(defender.hero.unitData.name);
+        this.firstHero.nameplate.weaponIcon.setTexture(attacker.hero.getInternalHero().getWeapon().type);
+        this.firstHero.nameplate.heroName.setText(attacker.hero.getInternalHero().name);
+        this.secondHero.nameplate.weaponIcon.setTexture(defender.hero.getInternalHero().getWeapon().type);
+        this.secondHero.nameplate.heroName.setText(defender.hero.getInternalHero().name);
 
-        const firstDamaged = attacker.hero.HP / attacker.hero.maxHP < 0.5 ? " damaged" : "";
-        const secondDamaged = defender.hero.HP / defender.hero.maxHP < 0.5 ? " damaged" : "";
-        this.firstHero.portrait.setTexture(`${attacker.hero.name} battle` + firstDamaged);
-        this.secondHero.portrait.setTexture(`${defender.hero.name} battle` + secondDamaged);
+        const firstDamaged = attacker.hero.getInternalHero().stats.hp / attacker.hero.getInternalHero().maxHP < 0.5 ? " damaged" : "";
+        const secondDamaged = defender.hero.getInternalHero().stats.hp / defender.hero.getInternalHero().maxHP < 0.5 ? " damaged" : "";
+        this.firstHero.portrait.setTexture(`${attacker.hero.getInternalHero().name} battle` + firstDamaged);
+        this.secondHero.portrait.setTexture(`${defender.hero.getInternalHero().name} battle` + secondDamaged);
         this.secondHero.portrait.x = 1100;
         this.portraitDisplayTween.play();
 
@@ -257,6 +257,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         if (this.koTween) {
             this.koTween.destroy();
         }
+
         this.koTween = this.scene.tweens.create({
             duration: 500,
             loop: -1,
@@ -266,8 +267,22 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
     }
 
-    switchPortraits(portrait: GameObjects.Image, previousHP: number, nextHP: number, maxHP: number) {
-        
+    updatePortrait(portrait: GameObjects.Image, hero: Hero, previousHP: number, nextHP: number) {
+        // const shouldSwitch = (previousHP > hero.maxHP / 2 && nextHP < hero.maxHP / 2) || (previousHP < hero.maxHP / 2 && nextHP > hero.maxHP / 2);
+        // if (shouldSwitch) {
+        //     const hpRatio = nextHP / hero.maxHP;
+        //     const targetTexture = hpRatio < 0.5 ? `${hero.name} battle damaged` : `${hero.name} battle`;
+
+        //     this.scene.tweens.create({
+        //         targets: [portrait],
+        //         alpha: 0,
+        //         duration: 200,
+        //         yoyo: true,
+        //         onYoyo: () => {
+        //             portrait.setTexture(targetTexture);
+        //         }
+        //     }).play();
+        // }
     }
 }
 
