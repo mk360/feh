@@ -3,33 +3,36 @@ import Hero from "./hero";
 import TextColors from "../utils/text-colors";
 import HeroNameplate from "./hero-nameplate";
 import { GameObjects } from "phaser";
+import R from "./r";
 
 class UnitInfosBanner extends GameObjects.Container {
-    private hp: GameObjects.Text; // to replace with images
+    private nameplate: HeroNameplate;
+    private hp: GameObjects.Text;
+    private currentHP: GameObjects.Text;
+    private maxHP: GameObjects.Text;
     private atk: GameObjects.Text;
     private def: GameObjects.Text;
-    private nameplate: HeroNameplate;
     private res: GameObjects.Text;
     private weaponName: GameObjects.Text;
     private spd: GameObjects.Text;
-    private currentHP: GameObjects.Text;
-    private assist: GameObjects.Text;
-    private special: GameObjects.Text;
-    private maxHP: GameObjects.Text;
     private A: GameObjects.Image;
     private B: GameObjects.Image;
     private C: GameObjects.Image;
     private S: GameObjects.Image;
     private heroPortrait: GameObjects.Image;
+    private assist: GameObjects.Text;
+    private special: GameObjects.Text;
+    private skillInfos: GameObjects.Rectangle;
+    private samir: R;
     
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
         const blockX = 310;
         this.heroPortrait = new GameObjects.Image(scene, 0, 0, "").setOrigin(0, 0).setScale(0.5);
         this.add(this.heroPortrait);
-        const a = new GameObjects.Image(this.scene, 20, -40, "unit-bg").setOrigin(0, 0);
-        a.setDisplaySize(800, 430);
-        this.add(a);
+        const unitBg = new GameObjects.Image(this.scene, 20, -40, "unit-bg").setOrigin(0, 0);
+        unitBg.setDisplaySize(800, 430);
+        this.add(unitBg);
         this.add(new GameObjects.Image(scene, blockX - 140, 70, "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5));
         this.hp = renderText(scene, blockX - 120, 54, "HP", { fontSize: "20px" });
         this.maxHP = renderRegularHPText({
@@ -76,6 +79,11 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(this.C);
         this.add(C_Letter);
         this.B = new GameObjects.Image(scene, 665, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
+        this.B.setInteractive().on("pointerdown", () => {
+            if (this.B.name) {
+                
+            }
+        });
         const B_Letter = new GameObjects.Image(scene, this.B.getBottomRight().x, this.B.getBottomRight().y, "B").setOrigin(1).setScale(0.5);
         this.add(this.B);
         this.add(B_Letter);
@@ -107,8 +115,10 @@ class UnitInfosBanner extends GameObjects.Container {
                 fontSize: "26px"
             }
         });
+        // this.samir = new R(scene, this.S.getRightCenter().x, this.B.getCenter().y);
         this.add(this.currentHP);
         this.add(this.maxHP);
+        // this.add(this.samir);
     }
 
     setHero(hero: Hero) {
@@ -148,10 +158,12 @@ class UnitInfosBanner extends GameObjects.Container {
 
         for (let skill of ["A", "B", "C", "S"] as const) {
             if (internalHero.skills[skill]) {
-                console.log(internalHero.skills[skill].name)
-                this[skill].setTexture(internalHero.skills[skill].name);
+                const skillName = internalHero.skills[skill].name;
+                this[skill].setTexture(skillName);
+                this[skill].setName(skillName);
             } else {
                 this[skill].setTexture("empty-skill");
+                this[skill].setName("");
             }
         }
     }

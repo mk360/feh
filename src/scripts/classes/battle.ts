@@ -19,9 +19,13 @@ Mulagir.onEquip = (hero) => {
     hero.raiseStat("spd", 3);
 };
 
-Mulagir.onBeforeCombat = ({ enemy }) => {
+Mulagir.onBeforeCombat = ({ enemy, wielder }) => {
     if (enemy.getWeapon().type === "tome") {
         enemy.lowerCursor("mapBuff", 1);
+    }
+
+    if (enemy.movementType === "flier") {
+        wielder.raiseCursor("effectiveness", 1);
     }
 };
 
@@ -158,8 +162,7 @@ AtkResBond3.onBeforeCombat = ({ wielder }) => {
             return;
         }
     }
-}
-
+};
 
 Lucina.setWeapon(Geirskogul);
 Lucina.equipSkill(SturdyBlow2);
@@ -167,6 +170,15 @@ Lucina.equipSkill(AtkResBond3);
 Lucina.equipSkill(DriveSpd2);
 
 const AtkResForm3 = new FEH.PassiveSkill().setName("Atk/Res Form 3").setSlot("S");
+const SacaesBlessing = new FEH.PassiveSkill().setName("Sacae's Blessing").setSlot("B");
+
+SacaesBlessing.onInitiate = ({ enemy }) => {
+    if (["sword", "axe", "lance"].includes(enemy.getWeapon().type)) {
+        enemy.lowerCursor("counterattack", 1);
+    }
+};
+
+Lyn.equipSkill(SacaesBlessing);
 
 AtkResForm3.onBeforeCombat = ({ wielder }) => {
     let allyCount = 0;
@@ -201,6 +213,70 @@ const Robin = new FEH.Hero({
     movementType: "flier"
 });
 
+const Hector = new FEH.Hero({
+    name: "Hector",
+    weaponColor: "green",
+    weaponType: "axe",
+    stats: {
+        hp: 47,
+        atk: 40,
+        spd: 23,
+        def: 38,
+        res: 26
+    },
+    movementType: "armored"
+});
+
+const ThunderArmads = new FEH.Weapon({
+    name: "Thunder Armads",
+    type: "axe",
+    color: "green",
+    might: 16,
+    range: 1
+});
+
+ThunderArmads.onEquip = (wielder) => {
+    wielder.raiseStat("def", 3);
+};
+
+ThunderArmads.onBeforeCombat = ({ wielder, enemy }) => {
+    let allies = 0;
+    let enemies = 0;
+    for (let ally of wielder.allies) {
+        if (wielder.getDistance(ally) <= 2) allies++;
+    }
+
+    for (let e of wielder.enemies) {
+        if (wielder.getDistance(e) <= 2) enemies++;
+    }
+
+    if (allies > enemies) {
+        enemy.lowerCursor("followup", 1);
+    }
+};
+
+const DistantCounter = new FEH.PassiveSkill();
+DistantCounter.setName("Distant Counter");
+DistantCounter.setSlot("A");
+DistantCounter.onDefense = ({ wielder }) => {
+    wielder.raiseCursor("counterattack", 1);
+}
+
+Hector.equipSkill(DistantCounter);
+Hector.setWeapon(ThunderArmads);
+
+const VengefulFighter3 = new FEH.PassiveSkill();
+VengefulFighter3.setName("Vengeful Fighter 3");
+VengefulFighter3.setSlot("B");
+
+VengefulFighter3.onDefense = ({ wielder }) => {
+    if (wielder.stats.hp / wielder.maxHP >= 0.5) {
+        wielder.raiseCursor("followup", 1);
+    }
+}
+
+Hector.equipSkill(VengefulFighter3);
+
 const Expiration = new FEH.Weapon({
     name: "Expiration",
     might: 16,
@@ -225,14 +301,12 @@ const Dragonskin = new FEH.PassiveSkill();
 Dragonskin.setName("Dragonskin");
 Dragonskin.setSlot("A");
 Dragonskin.onBeforeCombat = ({ enemy }) => {
-    console.log("running dragonskin");
     if (enemy.getWeapon().effectiveAgainst.includes("flier")) {
         enemy.lowerCursor("effectiveness", 1);
     }
 };
 
 Dragonskin.onDefense = ({ wielder }) => {
-    console.log("running dragonskin on defense");
     wielder.setBattleMods({
         def: 4,
         res: 4
@@ -265,9 +339,25 @@ const Raijinto = new FEH.Weapon({
 
 Ryoma.setWeapon(Raijinto);
 
+const SwiftSparrow3 = new FEH.PassiveSkill().setName("Swift Sparrow 3").setSlot("A");
+
+SwiftSparrow3.onInitiate = ({ wielder }) => {
+    wielder.setBattleMods({
+        atk: 6,
+        spd: 6
+    });
+};
+
+Lyn.equipSkill(SwiftSparrow3);
+
+SwiftSparrow3.slot = "S";
+
+Lyn.equipSkill(SwiftSparrow3);
+
 class Battle {
     team1: ({ hero: Hero } & Coords)[];
     team2: ({ hero: Hero } & Coords)[];
+    // todo: refactor into a key-value pair?
     map: {
         [k: number]: (Hero | null)[];
     }
@@ -293,17 +383,6 @@ class Battle {
     }
 
     addHero(hero: Hero, team: "team1" | "team2", startingCoordinates: { x: number; y: number }) {
-        const currentTeam = this[team];
-        const otherTeam = this[team === "team1" ? "team2" : "team1"];
-        for (let { hero: enemy } of otherTeam) {
-            enemy.setEnemy(hero);
-        }
-
-        for (let { hero: ally } of currentTeam) {
-            ally.setAlly(hero);
-            hero.setAlly(ally);
-        }
-
         hero.coordinates = startingCoordinates;
 
         this[team].push({
@@ -316,22 +395,51 @@ class Battle {
         const c = new FEH.Combat({ attacker, defender }).createCombat();
         return c;
     }
+
+    setAlliesAndEnemies() {
+        for (let i = 0; i < this.team1.length; i++) {
+            for (let j = i + 1; j < this.team1.length; j++) {
+                this.team1[i].hero.setAlly(this.team1[j].hero);
+                this.team1[j].hero.setAlly(this.team1[i].hero);
+            }
+
+            for (let j = 0; j < this.team2.length; j++) {
+                this.team1[i].hero.setEnemy(this.team2[j].hero);
+            }
+        }
+
+        for (let i = 0; i < this.team2.length; i++) {
+            for (let j = i + 1; j < this.team2.length; j++) {
+                this.team2[i].hero.setAlly(this.team2[j].hero);
+                this.team2[j].hero.setAlly(this.team2[i].hero);
+            }
+
+            for (let j = 0; j < this.team2.length; j++) {
+                this.team2[i].hero.setEnemy(this.team1[j].hero);
+            }
+        }
+    }
 };
 
 const battle = new Battle();
 
-battle.addHero(Corrin, "team1", {
-    y: 1,
-    x: 2,
+battle.addHero(Hector, "team1", {
+    x: 4,
+    y: 1
 });
 
-battle.addHero(Lyn, "team1", {
+battle.addHero(Lucina, "team1", {
     y: 1,
-    x: 5
+    x: 2
 });
 
 battle.addHero(Ryoma, "team1", {
     x: 3,
+    y: 1
+});
+
+battle.addHero(Robin, "team1", {
+    x: 5,
     y: 1
 });
 
@@ -340,17 +448,16 @@ battle.addHero(Ike, "team2", {
     x: 6
 });
 
-battle.addHero(Lucina, "team2", {
+battle.addHero(Corrin, "team2", {
     y: 7,
-    x: 5
-});
-
-battle.addHero(Robin, "team2", {
     x: 4,
-    y: 7
 });
 
-console.log(battle.startCombat(Lyn, Robin));
+battle.addHero(Lyn, "team2", {
+    y: 7,
+    x: 3
+});
 
+battle.setAlliesAndEnemies();
 
 export default battle;

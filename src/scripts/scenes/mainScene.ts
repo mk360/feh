@@ -164,6 +164,7 @@ export default class MainScene extends Phaser.Scene {
         } else return;
         if (this.walkCoords.includes(target.name) && target.name !== previousTileString) {
           this.combatForecast.setVisible(false);
+          this.unitInfosBanner.setVisible(true);
           this.sound.play("hover");
           const targetTileXY = target.name.split('-').map(Number);
           const arrowPath = this.buildArrowPath({ ...currentCoords }, {
@@ -217,11 +218,10 @@ export default class MainScene extends Phaser.Scene {
           previousTileString = target.name;
         } else if (this.attackCoords.includes(target.name)) {
           const [x, y] = target.name.split("-");
-          if ((this.map[+y][+x]?.team ?? hero.team) !== hero.team && !this.combatForecast.visible) {
+          if ((this.map[+y][+x]?.team ?? hero.team) !== hero.team) {
             const opponent = this.map[+y][+x];
             this.unitInfosBanner.setVisible(false);
             const simulatedBattle = battle.startCombat(hero.getInternalHero(), opponent.getInternalHero());
-            console.log(simulatedBattle);
             this.combatForecast.setForecastData({
               attacker: {
                 hero,
@@ -252,6 +252,7 @@ export default class MainScene extends Phaser.Scene {
         this.children.remove(this.children.getByName("end-arrow"));
         if (this.walkCoords.includes(x2 + "-" + y2) && !this.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
           this.combatForecast.setVisible(false);
+          this.unitInfosBanner.setVisible(true);
           this.clearTiles([...this.walkCoords, ...this.attackCoords]);
           this.map[currentCoords.y][currentCoords.x] = null;
           currentCoords.x = x2;
@@ -331,6 +332,7 @@ export default class MainScene extends Phaser.Scene {
               onStart: () => {
                 this.sound.play("hit");
                 this.add.existing(damageText);
+                this.combatForecast
                 this.tweens.add({
                   targets: [damageText],
                   y: defenderObject.image.getTopCenter().y + defenderObject.y,
@@ -398,6 +400,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("movement-allowed", "assets/movement-allowed.png");
     this.load.image("sword", "assets/sword.png");
     this.load.image("lance", "assets/lance.png");
+    this.load.image("axe", "assets/axe.webp");
     this.load.audio("enabled-unit", "assets/audio/pointer-tap.mp3");
     this.load.audio("disabled-unit", "assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "assets/audio/hit.mp3");
@@ -405,8 +408,12 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("Dragonskin", "assets/skills/Dragonskin.webp");
     this.load.image("Sturdy Blow 2", "assets/skills/Sturdy Blow 2.webp");
     this.load.image("Drive Spd 2", "assets/skills/Drive Spd 2.webp");
+    this.load.image("Sacae's Blessing", "assets/skills/Sacae's Blessing.webp");
+    this.load.image("Vengeful Fighter 3", "assets/skills/Vengeful Fighter 3.webp");
+    this.load.image("Distant Counter", "assets/skills/Distant Counter.webp");
     this.load.image("Atk/Res Bond 3", "assets/skills/Atk Res Bond 3.webp");
     this.load.image("Atk/Res Form 3", "assets/skills/Atk Res Form 3.webp");
+    this.load.image("Swift Sparrow 3", "assets/skills/Swift Sparrow 3.webp");
     this.load.audio("hover", "assets/audio/hover on tile.mp3");
     this.load.audio("confirm", "assets/audio/confirm.mp3");
     this.load.image("nameplate", "assets/nameplate.png");
@@ -427,7 +434,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("special-icon", "assets/special-icon.png");
     // todo: compress into audio sprite
     this.load.audio("bgm", "assets/audio/leif's army in search of victory.mp3");
-    for (let hero of ["Ike", "Lyn", "Lucina", "Robin", "Corrin", "Ryoma"]) {
+    for (let hero of ["Ike", "Lyn", "Lucina", "Robin", "Corrin", "Ryoma", "Hector"]) {
       this.load.audio(`${hero} 1`, `assets/audio/quotes/${hero}_1.wav`);
       this.load.audio(`${hero} 2`, `assets/audio/quotes/${hero}_2.wav`);
       this.load.audio(`${hero} 3`, `assets/audio/quotes/${hero}_3.wav`);

@@ -172,6 +172,10 @@ class CombatForecast extends Phaser.GameObjects.Container {
     }
 
     setForecastData(params: ForecastData) {
+        if (this.koTween) {
+            (this.koTween.targets[0] as GameObjects.Image)?.setAlpha(1);
+            this.koTween.stop();
+        }
         const { attacker, defender } = params;
         console.log(attacker.statChanges, defender.statChanges);
         this.firstHero.nameplate.weaponIcon.setTexture(attacker.hero.getInternalHero().getWeapon().type);
@@ -213,11 +217,11 @@ class CombatForecast extends Phaser.GameObjects.Container {
         }
 
         this.koTween = this.scene.tweens.create({
-            duration: 700,
+            duration: 1000,
             loop: -1,
             targets: portraitToHighlight,
             yoyo: true,
-            alpha: 0.6,
+            alpha: 0.5,
         });
         
         this.koTween.play();
@@ -275,6 +279,10 @@ class CombatForecast extends Phaser.GameObjects.Container {
             yoyo: true,
             alpha: 0.6,
         });
+    }
+
+    updatePortraits({ attacker, defender }: { attacker: { startHP: number; endHP: number }, defender: { startHP: number; endHP: number }}) {
+        
     }
 
     updatePortrait(portrait: GameObjects.Image, hero: Hero, previousHP: number, nextHP: number) {
