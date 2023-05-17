@@ -127,9 +127,11 @@ export default class MainScene extends Phaser.Scene {
     for (let hero of this[turn]) {
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
-      hero.setInteractive(true);
+      hero.setInteractive({
+        dropZone: true,
+      }).setDepth(1);
       this.input.setDraggable(hero, true);
-      const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.getInternalHero().name}`);
+      const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.getInternalHero().name}`).setDepth(0);
       this.add.existing(img);
       const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);    
       img.setDisplaySize(matchingTile.width, matchingTile.height);
@@ -172,6 +174,7 @@ export default class MainScene extends Phaser.Scene {
             y: targetTileXY[1]
           }, hero);
           pathStart.setTexture("rosary");
+          hero.getInternalHero().coordinates = arrowPath[arrowPath.length - 1];
 
           this.movementArrows.clear(true);
           for (let i = 0; i < arrowPath.length; i++) {
@@ -281,18 +284,17 @@ export default class MainScene extends Phaser.Scene {
           const turns = battle.startCombat(hero.getInternalHero(), target.getInternalHero());
           const t = this.tweens.timeline();
           t.on("complete", () => {
-          //   this.clearTiles([...this.walkCoords, ...this.attackCoords]);
-          //   const deadUnit = [hero, target].find(h => h.HP === 0);
-          //   const survivingUnit = [hero, target].find(h => !!h.HP);
-          //   if (deadUnit) {
-          //     this.tweens.add({
-          //     targets: deadUnit,
-          //     alpha: 0,
-          //     delay: 700,
-          //     onStart: () => {
-          //       this.sound.play("ko", { volume: 0.4 });
-          //     },
-          //     onComplete: () => {
+            this.clearTiles([...this.walkCoords, ...this.attackCoords]);
+            const deadUnit = [hero, target].find(h => h.getInternalHero().stats.hp === 0);
+            if (deadUnit) {
+              this.tweens.add({
+              targets: deadUnit,
+              alpha: 0,
+              delay: 700,
+              onStart: () => {
+                this.sound.play("ko", { volume: 0.4 });
+              },
+              onComplete: () => {
           //       this.heroes = this.heroes.filter(h => h.name !== deadUnit.name);
           //       this[deadUnit.team] = this[deadUnit.team].filter(h => h.name !== deadUnit.name);
           //       const { x, y } = pixelsToGrid(deadUnit.x, deadUnit.y);
@@ -310,7 +312,9 @@ export default class MainScene extends Phaser.Scene {
           //   } else {
           //     this.endAction(hero);
           //     this.game.input.enabled = true;
-          //   }
+            }
+              });
+            }
           });
           for (let i = 0; i < turns.outcome.length; i++) {
             const turn = turns.outcome[i];
@@ -322,7 +326,7 @@ export default class MainScene extends Phaser.Scene {
               strokeThickness: 5,
               color: "red",
               fontSize: turn.advantage === "advantage" || turn.effective ? "32px" : turn.advantage === "disadvantage" ? "25px" : "30px"
-            }).setOrigin(0.4);
+            }).setOrigin(0.4).setDepth(3);
             t.add({
               targets: attackerObject,
               x: `-=${(attackerObject.x - defenderObject.x) / 2}`,
@@ -361,6 +365,7 @@ export default class MainScene extends Phaser.Scene {
             y: pixelCoords.y,
             duration: 100
           });
+          hero.getInternalHero().coordinates = {...currentCoords};
           // hero.x = pixelCoords.x;
           // hero.y = pixelCoords.y;
         }
@@ -405,12 +410,14 @@ export default class MainScene extends Phaser.Scene {
     this.load.audio("disabled-unit", "assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "assets/audio/hit.mp3");
     this.load.audio("ko", "assets/audio/ko.mp3");
+    this.load.image("test", "assets/unit-bg-test.png");
     this.load.image("Dragonskin", "assets/skills/Dragonskin.webp");
     this.load.image("Sturdy Blow 2", "assets/skills/Sturdy Blow 2.webp");
     this.load.image("Drive Spd 2", "assets/skills/Drive Spd 2.webp");
     this.load.image("Sacae's Blessing", "assets/skills/Sacae's Blessing.webp");
     this.load.image("Vengeful Fighter 3", "assets/skills/Vengeful Fighter 3.webp");
     this.load.image("Distant Counter", "assets/skills/Distant Counter.webp");
+    this.load.image("Spd/Res Rein 3", "assets/skills/Spd Res Rein 3.webp");
     this.load.image("Atk/Res Bond 3", "assets/skills/Atk Res Bond 3.webp");
     this.load.image("Atk/Res Form 3", "assets/skills/Atk Res Form 3.webp");
     this.load.image("Swift Sparrow 3", "assets/skills/Swift Sparrow 3.webp");
@@ -431,6 +438,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("weapon-icon", "assets/weapon_icon.png");
     this.load.image("weapon-bg", "assets/weapon.png");
     this.load.image("assist-icon", "assets/assist-icon.png");
+    this.load.image("chrom", "assets/battle/chrom.webp");
     this.load.image("special-icon", "assets/special-icon.png");
     // todo: compress into audio sprite
     this.load.audio("bgm", "assets/audio/leif's army in search of victory.mp3");
@@ -478,7 +486,7 @@ export default class MainScene extends Phaser.Scene {
   create() {
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
-    this.heroBackground = this.add.rectangle(0, 0, 1500, 400, 0x1F6589);
+    this.add.image(0, 0, "test").setOrigin(0).setTint(0x423452);
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
     this.sound.play("bgm", { volume: 0.1, loop: true });
@@ -503,9 +511,9 @@ export default class MainScene extends Phaser.Scene {
           }
         });
         // uncomment if you need to check tile coordinates
-        // this.add.text(r.getCenter().x, r.getCenter().y, name, {
-        //   fontSize: "18px"
-        // });
+        this.add.text(r.getCenter().x, r.getCenter().y, name, {
+          fontSize: "18px"
+        });
       }
     }
 

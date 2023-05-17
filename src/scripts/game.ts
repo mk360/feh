@@ -3,11 +3,11 @@ import MainScene from './scenes/mainScene'
 import PreloadScene from './scenes/preloadScene'
 
 const DEFAULT_WIDTH = 750
-const DEFAULT_HEIGHT = 1100
+const DEFAULT_HEIGHT = 1200
 
 const config = {
   type: Phaser.CANVAS,
-  backgroundColor: '#ffffff',
+  backgroundColor: '#000',
   scale: {
     parent: 'phaser-game',
     mode: Phaser.Scale.FIT,

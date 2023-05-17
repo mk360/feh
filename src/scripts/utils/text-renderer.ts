@@ -32,6 +32,13 @@ export function renderBoonText(config: TextRenderingConfig) {
     return text;
 }
 
+export function renderSkillNameText(config: TextRenderingConfig) {
+    const { text } = renderTextWith2DContext(config);
+    text.setColor(TextColors.skillName);
+    text.setFontSize(20);
+    return text;
+}
+
 export function renderCritHPText(config: TextRenderingConfig) {
     const { text, gradient } = renderTextWith2DContext(config);
     gradient.addColorStop(0, "white");

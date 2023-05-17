@@ -199,6 +199,25 @@ AtkResBond3.slot = "A";
 Corrin.equipSkill(AtkResBond3);
 Corrin.equipSkill(AtkResForm3);
 
+const SpdResRein3 = new FEH.PassiveSkill().setName("Spd/Res Rein 3").setSlot("C");
+
+SpdResRein3.onBeforeAllyCombat = ({ wielder, enemy }) => {
+    if (wielder.getDistance(enemy) <= 2) {
+        enemy.setBattleMods({
+            spd: -4,
+            res: -4
+        });
+    }
+};
+
+SpdResRein3.onBeforeCombat = ({ enemy }) => {
+    enemy.setBattleMods({
+        spd: -4,
+        res: -4
+    });
+};
+
+
 const Robin = new FEH.Hero({
     name: "Robin",
     weaponColor: "colorless",
@@ -212,6 +231,8 @@ const Robin = new FEH.Hero({
     },
     movementType: "flier"
 });
+
+Robin.equipSkill(SpdResRein3);
 
 const Hector = new FEH.Hero({
     name: "Hector",
@@ -454,7 +475,7 @@ battle.addHero(Corrin, "team2", {
 });
 
 battle.addHero(Lyn, "team2", {
-    y: 7,
+    y: 3,
     x: 3
 });
 

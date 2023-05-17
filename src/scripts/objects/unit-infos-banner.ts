@@ -3,7 +3,7 @@ import Hero from "./hero";
 import TextColors from "../utils/text-colors";
 import HeroNameplate from "./hero-nameplate";
 import { GameObjects } from "phaser";
-import R from "./r";
+import R from "./skill-details";
 
 class UnitInfosBanner extends GameObjects.Container {
     private nameplate: HeroNameplate;
@@ -22,13 +22,23 @@ class UnitInfosBanner extends GameObjects.Container {
     private heroPortrait: GameObjects.Image;
     private assist: GameObjects.Text;
     private special: GameObjects.Text;
-    private skillInfos: GameObjects.Rectangle;
+    private skillInfos: R;
     private samir: R;
     
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
         const blockX = 310;
-        this.heroPortrait = new GameObjects.Image(scene, 0, 0, "").setOrigin(0, 0).setScale(0.5);
+        const canvas = scene.textures.createCanvas("gradient", 1500, 400);
+        const ctx = canvas.getContext();
+        const gradient = ctx.createLinearGradient(0, 0, 1500, 0);
+        gradient.addColorStop(0, "#00CFF2");
+        gradient.addColorStop(0.15, "#002B43");
+        gradient.addColorStop(0.25, "#001D30");
+        gradient.addColorStop(0.7, "#033554");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 1500, 400);
+        this.add(new GameObjects.Image(scene, 0, 0, "gradient").setOrigin(0, 0.5));
+        this.heroPortrait = new GameObjects.Image(scene, -100, -10, "").setOrigin(0).setScale(0.6);
         this.add(this.heroPortrait);
         const unitBg = new GameObjects.Image(this.scene, 20, -40, "unit-bg").setOrigin(0, 0);
         unitBg.setDisplaySize(800, 430);
@@ -81,7 +91,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.B = new GameObjects.Image(scene, 665, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
         this.B.setInteractive().on("pointerdown", () => {
             if (this.B.name) {
-                
+                this.skillInfos.setVisible(true);
             }
         });
         const B_Letter = new GameObjects.Image(scene, this.B.getBottomRight().x, this.B.getBottomRight().y, "B").setOrigin(1).setScale(0.5);
@@ -91,6 +101,13 @@ class UnitInfosBanner extends GameObjects.Container {
         const A_Letter = new GameObjects.Image(scene, this.A.getBottomRight().x, this.A.getBottomRight().y, "A").setOrigin(1).setScale(0.5);
         this.add(this.A);
         this.add(A_Letter);
+        this.A.setInteractive().on("pointerdown", () => {
+            console.log(this.A.name);
+            if (this.A.name) {
+                this.skillInfos.setVisible(true);
+            }
+        });
+        this.skillInfos = new R(scene, this.S.getCenter().x + 10, this.S.getBottomRight().y).setDepth(4);
         const weaponBg = new GameObjects.Image(this.scene, 490, 45, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25);
         const assistBg = new GameObjects.Image(this.scene, 490, 85, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25);
         const specialBg = new GameObjects.Image(this.scene, 490, 125, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25);
@@ -118,6 +135,8 @@ class UnitInfosBanner extends GameObjects.Container {
         // this.samir = new R(scene, this.S.getRightCenter().x, this.B.getCenter().y);
         this.add(this.currentHP);
         this.add(this.maxHP);
+        this.add(this.skillInfos.setVisible(true));
+        this.skillInfos.setSkillDescription("test");
         // this.add(this.samir);
     }
 
@@ -140,7 +159,7 @@ class UnitInfosBanner extends GameObjects.Container {
             this.heroPortrait.x = -300;
             this.scene.tweens.add({
               targets: this.heroPortrait,
-              x: -50,
+              x: -100,
               duration: 200
             });
         }

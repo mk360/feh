@@ -4,6 +4,7 @@ import HeroNameplate from "./hero-nameplate";
 import { renderBoonText, renderCritHPText, renderRegularHPText, renderText } from "../utils/text-renderer";
 import HeroPortrait from "./hero-portrait";
 import Stats from "../../interfaces/stats";
+import TextColors from "../utils/text-colors";
 
 interface ForecastHeroData {
     hero: Hero;
@@ -30,8 +31,11 @@ interface RenderedHero {
 
 class CombatForecast extends Phaser.GameObjects.Container {
     private portraitDisplayTween: Tweens.Tween;
+    private attackerStatMods: GameObjects.Group;
+    private defenderStatMods: GameObjects.Group;
     private firstPortraitSwitchingTween: Tweens.Tween;
     private secondPortraitSwitchingTween: Tweens.Tween;
+    private firstSideBg: GameObjects.Rectangle;
 
     private firstHero: RenderedHero = {
         previousHP: null,
@@ -49,30 +53,21 @@ class CombatForecast extends Phaser.GameObjects.Container {
 
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
-
-        const firstSideBg = new GameObjects.Rectangle(scene, 0, 0, 750, 400, 0xFEDCBA).setOrigin(0);
-        firstSideBg.setAlpha(0);
-        this.add(firstSideBg);
+        this.attackerStatMods = this.defenderStatMods = new GameObjects.Group(scene);
+        this.firstSideBg = new GameObjects.Rectangle(scene, 0, 0, 750, 400, 0x002438).setOrigin(0);
+        this.firstSideBg.setAlpha(0);
+        this.add(this.firstSideBg);
         this.firstHero.portrait = new HeroPortrait(scene, "");
         this.add(this.firstHero.portrait);
-        this.add(new GameObjects.Rectangle(scene, 750, 0, 750, 400, 0x9A2D18).setVisible(true));
+        this.add(new GameObjects.Rectangle(scene, 750, 0, 750, 400, 0x9A2D18).setAlpha(0.7));
         this.secondHero.portrait = new HeroPortrait(scene, "").setFlipX(true).setX(1100).setOrigin(1, 0);
         this.add(this.secondHero.portrait);
-        this.firstHero.nameplate = new HeroNameplate(scene, 100, 30, { name: "", weaponType: "" });
+        this.firstHero.nameplate = new HeroNameplate(scene, 100, 20, { name: "", weaponType: "" });
         this.add(this.firstHero.nameplate);
         const hpLineHeight = 85;
         const hpTextHeight = 60;
 
-        const buffText = renderText(scene, firstSideBg.getCenter().x - 80, 120, "Atk");
-        this.add(renderBoonText({
-            scene,
-            x: buffText.x + 35,
-            y: buffText.y,
-            content: "+34"
-        }).setOrigin(0))
-        this.add(buffText);
-
-        this.secondHero.nameplate = new HeroNameplate(scene, 377, 30, {
+        this.secondHero.nameplate = new HeroNameplate(scene, 377, 20, {
             name: "", weaponType: ""
         });
         const hpBg = new GameObjects.Image(scene, 250, hpLineHeight, "unit-bg").setScale(0.50, 0.75);
@@ -80,7 +75,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         
         this.add(this.secondHero.nameplate);
         this.add([hpBg, hpBg2]);
-        this.add(renderText(scene, firstSideBg.getCenter().x, hpLineHeight, "HP", {
+        this.add(renderText(scene, this.firstSideBg.getCenter().x, hpLineHeight, "HP", {
             fontSize: "22px",
         }).setOrigin(0.5));
         this.firstHero.previousHP = renderRegularHPText({
@@ -176,8 +171,46 @@ class CombatForecast extends Phaser.GameObjects.Container {
             (this.koTween.targets[0] as GameObjects.Image)?.setAlpha(1);
             this.koTween.stop();
         }
+        this.remove(this.attackerStatMods.getChildren(), true);
+        this.remove(this.defenderStatMods.getChildren(), true);
+        this.attackerStatMods.clear();
+        this.defenderStatMods.clear();
         const { attacker, defender } = params;
-        console.log(attacker.statChanges, defender.statChanges);
+        const attackerStatMods = attacker.statChanges;
+        const defenderStatMods = defender.statChanges;
+        let xOffset = this.firstSideBg.getCenter().x - 35;
+        for (let stat in attackerStatMods) {
+            if (attackerStatMods[stat]) {
+                const changedStat = renderText(this.scene, xOffset - 40, 120, capitalize(stat));
+                const statValue = attackerStatMods[stat];
+                this.attackerStatMods.add(changedStat);
+                const statChangeValue = renderText(this.scene, xOffset - 5, 120, `${statValue > 0 ? "+" : ""}${Math.abs(statValue)}`, {
+                    color: statValue < 0 ? TextColors.bane : TextColors.boon
+                });
+
+                this.attackerStatMods.add(statChangeValue);
+                this.add(statChangeValue);
+                this.add(changedStat);
+                xOffset -= 80
+            }
+        }
+
+        let otherXOffset = this.firstSideBg.getCenter().x + 35;
+        for (let stat in defenderStatMods) {
+            if (defenderStatMods[stat]) {
+                const changedStat = renderText(this.scene, otherXOffset, 120, capitalize(stat));
+                const statValue = defenderStatMods[stat];
+                this.defenderStatMods.add(changedStat);
+                const statChangeValue = renderText(this.scene, otherXOffset + 35, 120, `${statValue > 0 ? "+" : ""}${Math.abs(statValue)}`, {
+                    color: statValue < 0 ? TextColors.bane : TextColors.boon
+                });
+
+                this.defenderStatMods.add(statChangeValue);
+                this.add(statChangeValue);
+                this.add(changedStat);
+                otherXOffset += 80
+            }
+        }
         this.firstHero.nameplate.weaponIcon.setTexture(attacker.hero.getInternalHero().getWeapon().type);
         this.firstHero.nameplate.heroName.setText(attacker.hero.getInternalHero().name);
         this.secondHero.nameplate.weaponIcon.setTexture(defender.hero.getInternalHero().getWeapon().type);
@@ -302,6 +335,10 @@ class CombatForecast extends Phaser.GameObjects.Container {
         //     }).play();
         // }
     }
+}
+
+function capitalize(str: string) {
+    return str[0].toUpperCase() + str.substring(1, str.length);
 }
 
 export default CombatForecast;
