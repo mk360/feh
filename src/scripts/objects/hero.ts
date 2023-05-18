@@ -23,7 +23,7 @@ class Hero extends GameObjects.Container {
         this.team = team;
         const hpBarHeight = this.image.getBottomCenter().y - 20;        
         this.hpBar = new GameObjects.Rectangle(scene, -13, hpBarHeight, fullWidth, 5, this.team === "team1" ? 0x54DFF4 : 0xFA4D69).setOrigin(0, 0).setDepth(2);
-        this.weaponType = new GameObjects.Image(scene, -30, -40, data.getWeapon().type);
+        this.weaponType = new GameObjects.Image(scene, -30, -40, "weapons", `${data.getWeapon().color}-${data.getWeapon().type}`);
         this.hpBarBackground = new GameObjects.Rectangle(scene, -14, hpBarHeight - 1, fullWidth + 2, 7, 0x000000).setOrigin(0, 0);
         this.add(this.hpBarBackground);
         this.add(this.hpBar);

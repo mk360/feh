@@ -61,13 +61,13 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.add(new GameObjects.Rectangle(scene, 750, 0, 750, 400, 0x9A2D18).setAlpha(0.7));
         this.secondHero.portrait = new HeroPortrait(scene, "").setFlipX(true).setX(1100).setOrigin(1, 0);
         this.add(this.secondHero.portrait);
-        this.firstHero.nameplate = new HeroNameplate(scene, 100, 20, { name: "", weaponType: "" });
+        this.firstHero.nameplate = new HeroNameplate(scene, 100, 20, { name: "", weaponType: "", weaponColor: "" });
         this.add(this.firstHero.nameplate);
         const hpLineHeight = 70;
         const hpTextHeight = 45;
 
         this.secondHero.nameplate = new HeroNameplate(scene, 377, 20, {
-            name: "", weaponType: ""
+            name: "", weaponType: "", weaponColor: "",
         });
         const hpBg = new GameObjects.Image(scene, 250, hpLineHeight, "unit-bg").setScale(0.50, 0.75);
         const hpBg2 = new GameObjects.Image(scene, 510, hpLineHeight, "unit-bg").setScale(0.50, 0.75);

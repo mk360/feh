@@ -56,6 +56,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.nameplate = new HeroNameplate(scene, blockX - 150, 25, {
             name: "",
             weaponType: "",
+            weaponColor: "",
         });
 
         const lvText = renderText(scene, 590, 15, "40+", { fontSize: "20px"});
@@ -150,9 +151,12 @@ class UnitInfosBanner extends GameObjects.Container {
               duration: 200
             });
         }
+
+        console.log(internalHero.getWeapon());
         this.nameplate.updateNameplate({
             name: internalHero.name,
-            weaponType: internalHero.getWeapon().type
+            weaponType: internalHero.getWeapon().type,
+            weaponColor: internalHero.getWeapon().color,
         });
         this.maxHP.setText(`/ ${internalHero.maxHP}`);
 

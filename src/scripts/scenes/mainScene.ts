@@ -401,12 +401,8 @@ export default class MainScene extends Phaser.Scene {
 
   preload() {
     this.load.image("map", "assets/map.webp");
-    this.load.image("dragonstone", "assets/blue dragonstone.webp");
-    this.load.image("bow", "assets/bow.webp");
     this.load.image("movement-allowed", "assets/movement-allowed.png");
-    this.load.image("sword", "assets/sword.png");
-    this.load.image("lance", "assets/lance.png");
-    this.load.image("axe", "assets/axe.webp");
+    this.load.atlas("weapons", "assets/sheets/weapons.webp", "assets/sheets/weapons.json");
     this.load.audio("enabled-unit", "assets/audio/pointer-tap.mp3");
     this.load.audio("disabled-unit", "assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "assets/audio/hit.mp3");
