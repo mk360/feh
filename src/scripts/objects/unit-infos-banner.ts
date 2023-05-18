@@ -7,7 +7,6 @@ import R from "./skill-details";
 
 class UnitInfosBanner extends GameObjects.Container {
     private nameplate: HeroNameplate;
-    private hp: GameObjects.Text;
     private currentHP: GameObjects.Text;
     private maxHP: GameObjects.Text;
     private atk: GameObjects.Text;
@@ -22,29 +21,28 @@ class UnitInfosBanner extends GameObjects.Container {
     private heroPortrait: GameObjects.Image;
     private assist: GameObjects.Text;
     private special: GameObjects.Text;
+    private skillDescContainer: GameObjects.Rectangle;
     private skillInfos: R;
-    private samir: R;
     
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
         const blockX = 310;
-        const canvas = scene.textures.createCanvas("gradient", 1500, 400);
+        const canvas = scene.textures.createCanvas("gradient", 1500, 340);
         const ctx = canvas.getContext();
         const gradient = ctx.createLinearGradient(0, 0, 1500, 0);
         gradient.addColorStop(0, "#00CFF2");
         gradient.addColorStop(0.15, "#002B43");
         gradient.addColorStop(0.25, "#001D30");
         gradient.addColorStop(0.7, "#033554");
+        // this.skillDescContainer = new GameObjects.Rectangle(scene, 0, 0, 600, 400, 0x13353F).setOrigin(1, 0).setAlpha(0.8).setStrokeStyle(2, 0x7FD2E0);
+        // this.add(this.skillDescContainer);
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 1500, 400);
         this.add(new GameObjects.Image(scene, 0, 0, "gradient").setOrigin(0, 0.5));
-        this.heroPortrait = new GameObjects.Image(scene, -100, -10, "").setOrigin(0).setScale(0.6);
+        this.heroPortrait = new GameObjects.Image(scene, -100, -10, "").setOrigin(0);
         this.add(this.heroPortrait);
-        const unitBg = new GameObjects.Image(this.scene, 20, -40, "unit-bg").setOrigin(0, 0);
-        unitBg.setDisplaySize(800, 430);
-        this.add(unitBg);
         this.add(new GameObjects.Image(scene, blockX - 140, 70, "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5));
-        this.hp = renderText(scene, blockX - 120, 54, "HP", { fontSize: "20px" });
+        this.add(renderText(scene, blockX - 120, 54, "HP", { fontSize: "20px" }));
         this.maxHP = renderRegularHPText({
             scene: this.scene,
             x: blockX,
@@ -68,7 +66,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.res = renderText(scene, blockX + 80, 114, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
         this.add([this.nameplate]);
         
-        this.add([this.atk, this.spd, this.def, this.res, this.hp]);
+        this.add([this.atk, this.spd, this.def, this.res]);
 
         this.add(new GameObjects.Image(scene, blockX - 130, 111, "stat-line").setScale(0.2, 0.5).setOrigin(0));
         this.add(new GameObjects.Image(scene, blockX - 130, 136, "stat-line").setScale(0.2, 0.5).setOrigin(0));
@@ -89,11 +87,6 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(this.C);
         this.add(C_Letter);
         this.B = new GameObjects.Image(scene, 665, lvText.getBottomCenter().y, "empty-skill").setScale(0.5).setOrigin(0, 1);
-        this.B.setInteractive().on("pointerdown", () => {
-            if (this.B.name) {
-                this.skillInfos.setVisible(true);
-            }
-        });
         const B_Letter = new GameObjects.Image(scene, this.B.getBottomRight().x, this.B.getBottomRight().y, "B").setOrigin(1).setScale(0.5);
         this.add(this.B);
         this.add(B_Letter);
@@ -101,13 +94,7 @@ class UnitInfosBanner extends GameObjects.Container {
         const A_Letter = new GameObjects.Image(scene, this.A.getBottomRight().x, this.A.getBottomRight().y, "A").setOrigin(1).setScale(0.5);
         this.add(this.A);
         this.add(A_Letter);
-        this.A.setInteractive().on("pointerdown", () => {
-            console.log(this.A.name);
-            if (this.A.name) {
-                this.skillInfos.setVisible(true);
-            }
-        });
-        this.skillInfos = new R(scene, this.S.getCenter().x + 10, this.S.getBottomRight().y).setDepth(4);
+        this.skillInfos = new R(scene, this.S.getCenter().x + 10, this.S.getBottomRight().y).setDepth(4).setVisible(false);
         const weaponBg = new GameObjects.Image(this.scene, 490, 45, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25);
         const assistBg = new GameObjects.Image(this.scene, 490, 85, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25);
         const specialBg = new GameObjects.Image(this.scene, 490, 125, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25);
@@ -132,17 +119,17 @@ class UnitInfosBanner extends GameObjects.Container {
                 fontSize: "26px"
             }
         });
-        // this.samir = new R(scene, this.S.getRightCenter().x, this.B.getCenter().y);
+
         this.add(this.currentHP);
         this.add(this.maxHP);
-        this.add(this.skillInfos.setVisible(true));
-        this.skillInfos.setSkillDescription("test");
+        this.add(this.skillInfos);
+        // this.skillInfos.setSkillDescription("test");
         // this.add(this.samir);
     }
 
     setHero(hero: Hero) {
         const internalHero = hero.getInternalHero();
-        this.heroPortrait.setTexture(`${internalHero.name} battle`);
+        this.heroPortrait.setTexture(internalHero.name, internalHero.stats.hp / internalHero.maxHP < 0.5 ? 'portrait-damaged' : 'portrait');
         this.currentHP.destroy();
         const hpRenderFct = internalHero.stats.hp < 10 ? renderCritHPText : renderRegularHPText;
         this.currentHP = hpRenderFct({
@@ -176,10 +163,15 @@ class UnitInfosBanner extends GameObjects.Container {
         this.weaponName.setText(internalHero.getWeapon().name);
 
         for (let skill of ["A", "B", "C", "S"] as const) {
+            this[skill].off("pointerdown");
+
             if (internalHero.skills[skill]) {
                 const skillName = internalHero.skills[skill].name;
                 this[skill].setTexture(skillName);
                 this[skill].setName(skillName);
+                this[skill].on("pointerdown", () => {
+                    this.skillInfos.setVisible(true);
+                })
             } else {
                 this[skill].setTexture("empty-skill");
                 this[skill].setName("");

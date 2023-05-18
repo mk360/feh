@@ -55,7 +55,6 @@ class CombatForecast extends Phaser.GameObjects.Container {
         super(scene, 0, 0);
         this.attackerStatMods = this.defenderStatMods = new GameObjects.Group(scene);
         this.firstSideBg = new GameObjects.Rectangle(scene, 0, 0, 750, 400, 0x002438).setOrigin(0);
-        this.firstSideBg.setAlpha(0);
         this.add(this.firstSideBg);
         this.firstHero.portrait = new HeroPortrait(scene, "");
         this.add(this.firstHero.portrait);
@@ -64,8 +63,8 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.add(this.secondHero.portrait);
         this.firstHero.nameplate = new HeroNameplate(scene, 100, 20, { name: "", weaponType: "" });
         this.add(this.firstHero.nameplate);
-        const hpLineHeight = 85;
-        const hpTextHeight = 60;
+        const hpLineHeight = 70;
+        const hpTextHeight = 45;
 
         this.secondHero.nameplate = new HeroNameplate(scene, 377, 20, {
             name: "", weaponType: ""
@@ -80,7 +79,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         }).setOrigin(0.5));
         this.firstHero.previousHP = renderRegularHPText({
             scene,
-            x: 200,
+            x: 210,
             y: hpTextHeight,
             style: {
                 fontSize: "36px"
@@ -89,7 +88,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         }).setOrigin(1, 0);
         this.firstHero.predictedHP = renderRegularHPText({
             scene,
-            x: 320,
+            x: 310,
             y: hpTextHeight,
             style: {
                 fontSize: "36px"
@@ -98,16 +97,16 @@ class CombatForecast extends Phaser.GameObjects.Container {
         }).setOrigin(1, 0);
         this.secondHero.previousHP = renderRegularHPText({
             scene,
-            content: 49,
+            content: "",
             style: {
                 fontSize: "36px",
             },
-            x: 480,
+            x: 490,
             y: hpTextHeight,
         }).setOrigin(1, 0);
         const arrow = renderRegularHPText({
             scene,
-            x: 490,
+            x: 500,
             y: hpTextHeight,
             content: "→",
             style: {
@@ -116,7 +115,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
         const otherArrow = renderRegularHPText({
             scene,
-            x: 210,
+            x: 215,
             y: hpTextHeight,
             content: "→",
             style: {
@@ -126,7 +125,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.secondHero.predictedHP = renderCritHPText({
             scene,
             content: 0,
-            x: 540,
+            x: 550,
             y: hpTextHeight,
             style: {
                 fontSize: "36px"
@@ -178,13 +177,14 @@ class CombatForecast extends Phaser.GameObjects.Container {
         const { attacker, defender } = params;
         const attackerStatMods = attacker.statChanges;
         const defenderStatMods = defender.statChanges;
+        console.log({ defenderStatMods });
         let xOffset = this.firstSideBg.getCenter().x - 35;
         for (let stat in attackerStatMods) {
             if (attackerStatMods[stat]) {
                 const changedStat = renderText(this.scene, xOffset - 40, 120, capitalize(stat));
                 const statValue = attackerStatMods[stat];
                 this.attackerStatMods.add(changedStat);
-                const statChangeValue = renderText(this.scene, xOffset - 5, 120, `${statValue > 0 ? "+" : ""}${Math.abs(statValue)}`, {
+                const statChangeValue = renderText(this.scene, xOffset - 5, 120, `${statValue > 0 ? "+" : ""}${statValue}`, {
                     color: statValue < 0 ? TextColors.bane : TextColors.boon
                 });
 
@@ -201,7 +201,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
                 const changedStat = renderText(this.scene, otherXOffset, 120, capitalize(stat));
                 const statValue = defenderStatMods[stat];
                 this.defenderStatMods.add(changedStat);
-                const statChangeValue = renderText(this.scene, otherXOffset + 35, 120, `${statValue > 0 ? "+" : ""}${Math.abs(statValue)}`, {
+                const statChangeValue = renderText(this.scene, otherXOffset + 35, 120, `${statValue > 0 ? "+" : ""}${statValue}`, {
                     color: statValue < 0 ? TextColors.bane : TextColors.boon
                 });
 

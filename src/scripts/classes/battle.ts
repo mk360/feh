@@ -234,6 +234,20 @@ const Robin = new FEH.Hero({
 
 Robin.equipSkill(SpdResRein3);
 
+const Ephraim = new FEH.Hero({
+    name: "Ephraim",
+    weaponColor: "green",
+    weaponType: "axe",
+    stats: {
+        hp: 46,
+        atk: 38,
+        spd: 27,
+        def: 37,
+        res: 26
+    },
+    movementType: "armored"
+});
+
 const Hector = new FEH.Hero({
     name: "Hector",
     weaponColor: "green",
@@ -275,6 +289,34 @@ ThunderArmads.onBeforeCombat = ({ wielder, enemy }) => {
         enemy.lowerCursor("followup", 1);
     }
 };
+
+const Garm = new FEH.Weapon();
+Garm.setName("Garm").setType("axe").setColor("green").setMight(16).setRange(1);
+
+Garm.onEquip = (wielder) => {
+    wielder.raiseStat("atk", 3);
+};
+
+Garm.onBeforeCombat = ({ wielder }) => {
+    if (wielder.statuses.length) {
+        wielder.raiseCursor("followup", 1);
+    }
+};
+
+Ephraim.setWeapon(Garm);
+
+const CloseDef3 = new FEH.PassiveSkill().setSlot("A").setName("Close Def 3");
+
+CloseDef3.onDefense = ({ wielder, enemy }) => {
+    if (enemy.getWeapon().range === 1) {
+        wielder.setBattleMods({
+            def: 6,
+            res: 6
+        });
+    }
+};
+
+Ephraim.equipSkill(CloseDef3);
 
 const DistantCounter = new FEH.PassiveSkill();
 DistantCounter.setName("Distant Counter");
@@ -472,6 +514,11 @@ battle.addHero(Ike, "team2", {
 battle.addHero(Corrin, "team2", {
     y: 7,
     x: 4,
+});
+
+battle.addHero(Ephraim, "team2", {
+    x: 5,
+    y: 7
 });
 
 battle.addHero(Lyn, "team2", {
