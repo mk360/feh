@@ -400,7 +400,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("map", "assets/testmap.png");
+    this.load.image("map", "assets/map.webp");
     this.load.image("dragonstone", "assets/blue dragonstone.webp");
     this.load.image("bow", "assets/bow.webp");
     this.load.image("movement-allowed", "assets/movement-allowed.png");
