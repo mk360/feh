@@ -216,10 +216,10 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.secondHero.nameplate.weaponIcon.setTexture(defender.hero.getInternalHero().getWeapon().type);
         this.secondHero.nameplate.heroName.setText(defender.hero.getInternalHero().name);
 
-        const firstDamaged = attacker.hero.getInternalHero().stats.hp / attacker.hero.getInternalHero().maxHP < 0.5 ? " damaged" : "";
-        const secondDamaged = defender.hero.getInternalHero().stats.hp / defender.hero.getInternalHero().maxHP < 0.5 ? " damaged" : "";
-        this.firstHero.portrait.setTexture(`${attacker.hero.getInternalHero().name} battle` + firstDamaged);
-        this.secondHero.portrait.setTexture(`${defender.hero.getInternalHero().name} battle` + secondDamaged);
+        const firstDamaged = attacker.hero.getInternalHero().stats.hp / attacker.hero.getInternalHero().maxHP < 0.5 ? "-damaged" : "";
+        const secondDamaged = defender.hero.getInternalHero().stats.hp / defender.hero.getInternalHero().maxHP < 0.5 ? "-damaged" : "";
+        this.firstHero.portrait.setTexture(attacker.hero.getInternalHero().name, 'portrait' + firstDamaged);
+        this.secondHero.portrait.setTexture(defender.hero.getInternalHero().name, 'portrait' + secondDamaged);
         this.secondHero.portrait.x = 1100;
         this.portraitDisplayTween.play();
 

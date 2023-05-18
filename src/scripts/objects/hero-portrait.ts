@@ -4,7 +4,6 @@ class HeroPortrait extends GameObjects.Image {
     constructor(scene: Scene, unit: string) {
         super(scene, -30, 0, `${unit} battle`);
         this.setOrigin(0);
-        this.setScale(0.5);
     }
 };
 
