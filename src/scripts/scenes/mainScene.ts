@@ -141,6 +141,7 @@ export default class MainScene extends Phaser.Scene {
       let previousSoundFile = "";
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
+        console.log("pointer down");
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         this.movementAllowedImages.setVisible(false);
         const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;
@@ -418,6 +419,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("Vengeful Fighter 3", "assets/skills/Vengeful Fighter 3.webp");
     this.load.image("Distant Counter", "assets/skills/Distant Counter.webp");
     this.load.image("Spd/Res Rein 3", "assets/skills/Spd Res Rein 3.webp");
+    this.load.image("Close Def 3", "assets/skills/Close Def 3.webp");
     this.load.image("Atk/Res Bond 3", "assets/skills/Atk Res Bond 3.webp");
     this.load.image("Atk/Res Form 3", "assets/skills/Atk Res Form 3.webp");
     this.load.image("Swift Sparrow 3", "assets/skills/Swift Sparrow 3.webp");
@@ -438,17 +440,14 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("weapon-icon", "assets/weapon_icon.png");
     this.load.image("weapon-bg", "assets/weapon.png");
     this.load.image("assist-icon", "assets/assist-icon.png");
-    this.load.image("chrom", "assets/battle/chrom.webp");
     this.load.image("special-icon", "assets/special-icon.png");
     // todo: compress into audio sprite
     this.load.audio("bgm", "assets/audio/leif's army in search of victory.mp3");
-    for (let hero of ["Ike", "Lyn", "Lucina", "Robin", "Corrin", "Ryoma", "Hector"]) {
+    for (let hero of ["Corrin", "Hector", "Ike", "Lucina", "Lyn", "Robin", "Ryoma", "Ephraim"]) {
+      this.load.atlas(hero, `assets/battle/${hero}.webp`, `assets/battle/${hero}.json`);
       this.load.audio(`${hero} 1`, `assets/audio/quotes/${hero}_1.wav`);
       this.load.audio(`${hero} 2`, `assets/audio/quotes/${hero}_2.wav`);
       this.load.audio(`${hero} 3`, `assets/audio/quotes/${hero}_3.wav`);
-      this.load.image(`${hero} battle`, `assets/battle/${hero} battle.webp`);
-      this.load.image(`${hero} damage`, `assets/battle/${hero} battle damage.webp`);
-      this.load.image(`${hero} map`, `assets/mini/${hero}.webp`);
     }
     this.load.image("hp plate", "assets/hp plate.png");
     this.load.image("stat-line", "assets/stat-glowing-line.png");
@@ -487,9 +486,9 @@ export default class MainScene extends Phaser.Scene {
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.image(0, 0, "test").setOrigin(0).setTint(0x423452);
+    this.sound.play("bgm", { volume: 0.1, loop: true });
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
-    this.sound.play("bgm", { volume: 0.1, loop: true });
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
 
     for (let y = 1; y < 9; y++) {
