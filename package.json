@@ -39,7 +39,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "feh-battles": "file:../feh-battles",
+    "feh-battles": "git://github.com/mk360/feh-battles.git",
     "phaser": "^3.55.2"
   },
   "devDependencies": {
