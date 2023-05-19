@@ -211,9 +211,9 @@ class CombatForecast extends Phaser.GameObjects.Container {
                 otherXOffset += 80
             }
         }
-        this.firstHero.nameplate.weaponIcon.setTexture(attacker.hero.getInternalHero().getWeapon().type);
+        this.firstHero.nameplate.weaponIcon.setTexture("weapons", attacker.hero.getInternalHero().getWeapon().color + "-" + attacker.hero.getInternalHero().getWeapon().type);
         this.firstHero.nameplate.heroName.setText(attacker.hero.getInternalHero().name);
-        this.secondHero.nameplate.weaponIcon.setTexture(defender.hero.getInternalHero().getWeapon().type);
+        this.secondHero.nameplate.weaponIcon.setTexture("weapons", defender.hero.getInternalHero().getWeapon().color + "-" + defender.hero.getInternalHero().getWeapon().type);
         this.secondHero.nameplate.heroName.setText(defender.hero.getInternalHero().name);
 
         const firstDamaged = attacker.hero.getInternalHero().stats.hp / attacker.hero.getInternalHero().maxHP < 0.5 ? "-damaged" : "";

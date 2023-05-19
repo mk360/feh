@@ -152,7 +152,6 @@ class UnitInfosBanner extends GameObjects.Container {
             });
         }
 
-        console.log(internalHero.getWeapon());
         this.nameplate.updateNameplate({
             name: internalHero.name,
             weaponType: internalHero.getWeapon().type,
