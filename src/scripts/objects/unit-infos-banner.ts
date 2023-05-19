@@ -167,18 +167,12 @@ class UnitInfosBanner extends GameObjects.Container {
 
         for (let skill of ["A", "B", "C", "S"] as const) {
             this[skill].off("pointerdown");
-
-            if (internalHero.skills[skill]) {
-                const skillName = internalHero.skills[skill].name;
-                this[skill].setTexture(skillName);
-                this[skill].setName(skillName);
-                this[skill].on("pointerdown", () => {
-                    this.skillInfos.setVisible(true);
-                })
-            } else {
-                this[skill].setTexture("empty-skill");
-                this[skill].setName("");
-            }
+            const skillName = internalHero.skills[skill].name;
+            this[skill].setTexture("skills", skillName);
+            this[skill].setName(skillName);
+            this[skill].on("pointerdown", () => {
+                this.skillInfos.setVisible(true);
+            });
         }
     }
 };
