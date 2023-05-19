@@ -20,7 +20,7 @@
 				"h": 67
 			}
 		},
-		"Atk Def Bond 3": {
+		"Atk/Def Bond 3": {
 			"frame": {
 				"x": 68,
 				"y": 1,
@@ -40,7 +40,7 @@
 				"h": 68
 			}
 		},
-		"Atk Def Solo 4": {
+		"Atk/Def Solo 4": {
 			"frame": {
 				"x": 136,
 				"y": 1,
@@ -60,7 +60,7 @@
 				"h": 75
 			}
 		},
-		"Atk Res Bond 3": {
+		"Atk/Res Bond 3": {
 			"frame": {
 				"x": 213,
 				"y": 1,
@@ -80,7 +80,7 @@
 				"h": 68
 			}
 		},
-		"Atk Res Form 3": {
+		"Atk/Res Form 3": {
 			"frame": {
 				"x": 281,
 				"y": 1,
@@ -120,7 +120,7 @@
 				"h": 68
 			}
 		},
-		"Atk Spd Bond 4": {
+		"Atk/Spd Bond 4": {
 			"frame": {
 				"x": 213,
 				"y": 71,
@@ -140,7 +140,7 @@
 				"h": 75
 			}
 		},
-		"Atk Spd Rein 3": {
+		"Atk/Spd Rein 3": {
 			"frame": {
 				"x": 290,
 				"y": 71,
@@ -400,7 +400,7 @@
 				"h": 68
 			}
 		},
-		"Seal Atk Def 2": {
+		"Seal Atk/Def 2": {
 			"frame": {
 				"x": 282,
 				"y": 281,
@@ -420,7 +420,7 @@
 				"h": 68
 			}
 		},
-		"Spd Res Rein 3": {
+		"Spd/Res Rein 3": {
 			"frame": {
 				"x": 349,
 				"y": 1,
@@ -540,7 +540,7 @@
 				"h": 68
 			}
 		},
-		"Threat Atk Def 3": {
+		"Threat Atk/Def 3": {
 			"frame": {
 				"x": 69,
 				"y": 357,
