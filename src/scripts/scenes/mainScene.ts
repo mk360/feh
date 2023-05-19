@@ -127,6 +127,7 @@ export default class MainScene extends Phaser.Scene {
     for (let hero of this[turn]) {
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
+
       hero.setInteractive({
         dropZone: true,
       }).setDepth(1);
@@ -141,7 +142,6 @@ export default class MainScene extends Phaser.Scene {
       let previousSoundFile = "";
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
-        console.log("pointer down");
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         this.movementAllowedImages.setVisible(false);
         const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;
@@ -403,22 +403,12 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("map", "assets/map.webp");
     this.load.image("movement-allowed", "assets/movement-allowed.png");
     this.load.atlas("weapons", "assets/sheets/weapons.webp", "assets/sheets/weapons.json");
+    this.load.atlas("skills", "assets/sheets/skills.webp", "assets/sheets/skills.json");
     this.load.audio("enabled-unit", "assets/audio/pointer-tap.mp3");
     this.load.audio("disabled-unit", "assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "assets/audio/hit.mp3");
     this.load.audio("ko", "assets/audio/ko.mp3");
     this.load.image("test", "assets/unit-bg-test.png");
-    this.load.image("Dragonskin", "assets/skills/Dragonskin.webp");
-    this.load.image("Sturdy Blow 2", "assets/skills/Sturdy Blow 2.webp");
-    this.load.image("Drive Spd 2", "assets/skills/Drive Spd 2.webp");
-    this.load.image("Sacae's Blessing", "assets/skills/Sacae's Blessing.webp");
-    this.load.image("Vengeful Fighter 3", "assets/skills/Vengeful Fighter 3.webp");
-    this.load.image("Distant Counter", "assets/skills/Distant Counter.webp");
-    this.load.image("Spd/Res Rein 3", "assets/skills/Spd Res Rein 3.webp");
-    this.load.image("Close Def 3", "assets/skills/Close Def 3.webp");
-    this.load.image("Atk/Res Bond 3", "assets/skills/Atk Res Bond 3.webp");
-    this.load.image("Atk/Res Form 3", "assets/skills/Atk Res Form 3.webp");
-    this.load.image("Swift Sparrow 3", "assets/skills/Swift Sparrow 3.webp");
     this.load.audio("hover", "assets/audio/hover on tile.mp3");
     this.load.audio("confirm", "assets/audio/confirm.mp3");
     this.load.image("nameplate", "assets/nameplate.png");
