@@ -412,8 +412,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.audio("hover", "assets/audio/hover on tile.mp3");
     this.load.audio("confirm", "assets/audio/confirm.mp3");
     this.load.image("nameplate", "assets/nameplate.png");
-    this.load.image("end-arrow", "assets/end-arrow.png");
-    this.load.image("empty-skill", "assets/empty-skill.png");
+    this.load.image("end-arrow", "assets/end-arrow-fixed.png");
     this.load.image("path-down-right", "assets/path-down-left.png");
     this.load.image("path-down-left", "assets/path-down-right.png");
     this.load.image("path-up-right", "assets/path-up-right.png");
