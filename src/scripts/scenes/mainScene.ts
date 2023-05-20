@@ -151,9 +151,9 @@ export default class MainScene extends Phaser.Scene {
         this.sound.play("enabled-unit");
         const n = this.rng.integerInRange(1, 3);
         if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
-        const soundFile = `${hero.getInternalHero().name} ${n}`;
-        this.sound.play(soundFile, { volume: 0.2 });
-        previousSoundFile = soundFile;
+        // const soundFile = `${hero.getInternalHero().name} ${n}`;
+        this.sound.playAudioSprite(hero.getInternalHero().name + " quotes", n.toString(), { volume: 0.2 });
+        // previousSoundFile = soundFile;
         this.unitInfosBanner.setVisible(true).setHero(hero);
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
@@ -418,7 +418,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("path-up-right", "assets/path-up-right.png");
     this.load.image("path-up-left", "assets/path-up-left.png");
     this.load.image("horizontal", "assets/horizontal.png");
-    this.load.image("vertical", "assets/vertical.png");
+    this.load.image("vertical", "assets/vertical-fixed.png");
     this.load.image("unit-bg", "assets/unitbg.png");
     this.load.image("rosary", "assets/rosary-current.png");
     this.load.image("rosary-arrow", "assets/rosary-arrow.png");
@@ -427,12 +427,10 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("assist-icon", "assets/assist-icon.png");
     this.load.image("special-icon", "assets/special-icon.png");
     // todo: compress into audio sprite
-    this.load.audio("bgm", "assets/audio/leif's army in search of victory.mp3");
+    this.load.audio("bgm", "assets/audio/leif's army in search of victory.ogg");
     for (let hero of ["Corrin", "Hector", "Ike", "Lucina", "Lyn", "Robin", "Ryoma", "Ephraim"]) {
       this.load.atlas(hero, `assets/battle/${hero}.webp`, `assets/battle/${hero}.json`);
-      this.load.audio(`${hero} 1`, `assets/audio/quotes/${hero}_1.wav`);
-      this.load.audio(`${hero} 2`, `assets/audio/quotes/${hero}_2.wav`);
-      this.load.audio(`${hero} 3`, `assets/audio/quotes/${hero}_3.wav`);
+      this.load.audioSprite(`${hero} quotes`, `assets/audio/quotes/${hero}.json`, `assets/audio/quotes/${hero}.m4a`);
     }
     this.load.image("hp plate", "assets/hp plate.png");
     this.load.image("stat-line", "assets/stat-glowing-line.png");
@@ -471,11 +469,10 @@ export default class MainScene extends Phaser.Scene {
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.image(0, 0, "test").setOrigin(0).setTint(0x423452);
-    this.sound.play("bgm", { volume: 0.1, loop: true });
+    const bgm = this.sound.play("bgm", { volume: 0.1, loop: true });
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
-
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
@@ -520,7 +517,7 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
-    this.setTurn("team1");
+    this.setTurn("team2");
 }
 
   displayRanges(coords: Coords, walkingRange: number, weaponRange: number) {

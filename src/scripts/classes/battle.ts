@@ -449,7 +449,7 @@ SealAtkDef2.onAfterCombat = ({ enemy, wielder }) => {
 const Bushido2 = new FEH.PassiveSkill().setName("Bushido II").setSlot("B");
 
 Bushido2.onBeforeCombat = ({ wielder, enemy, damage }) => {
-    wielder.raiseCursor("addedDamageMod", 7);
+    wielder.raiseCursor("damageIncrease", 7);
     if (enemy.getWeapon().effectiveAgainst.includes("flier")) {
         enemy.lowerCursor("effectiveness", 1);
     }
@@ -619,6 +619,7 @@ Lyn.setWeapon(Mulagir);
 Lyn.equipSkill(SwiftSparrow3);
 Lyn.equipSkill(SacaesBlessing);
 Lyn.equipSkill(AtkSmoke3);
+Lyn.equipSkill(SpdSmoke3);
 
 Ryoma.setWeapon(Raijinto);
 Ryoma.equipSkill(KestrelStance2);
