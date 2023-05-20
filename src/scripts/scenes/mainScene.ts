@@ -618,14 +618,14 @@ export default class MainScene extends Phaser.Scene {
 
   update() {
     this.fps.setText(this.sys.game.loop.actualFps.toString());
-    for (let hero of this.heroes) {
-      hero.update();
-    }
+    // for (let hero of this.heroes) {
+    //   hero.update();
+    // }
 
-    if (this.heroesWhoMoved.length === this[this.turn].length) {
-      const otherTeam = this.turn === "team1" ? "team2": "team1";
-      this.setTurn(otherTeam);
-    }
+    // if (this.heroesWhoMoved.length === this[this.turn].length) {
+    //   const otherTeam = this.turn === "team1" ? "team2": "team1";
+    //   this.setTurn(otherTeam);
+    // }
   }
 }
 
