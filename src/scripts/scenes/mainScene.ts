@@ -1,4 +1,4 @@
-import { GameObjects } from 'phaser';
+import { GameObjects, Geom } from 'phaser';
 import Hero from '../objects/hero';
 import TileType from '../../types/tiles';
 import UnitInfosBanner from '../objects/unit-infos-banner';
@@ -128,9 +128,7 @@ export default class MainScene extends Phaser.Scene {
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
 
-      hero.setInteractive({
-        dropZone: true,
-      }).setDepth(1);
+      hero.setInteractive(new Geom.Rectangle(0, 0, 50, 50)).setDepth(1);
       this.input.setDraggable(hero, true);
       const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.getInternalHero().name}`).setDepth(0);
       this.add.existing(img);
