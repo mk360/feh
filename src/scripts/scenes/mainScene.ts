@@ -1,4 +1,4 @@
-import { GameObjects, Geom } from 'phaser';
+import { Game, GameObjects, Geom } from 'phaser';
 import Hero from '../objects/hero';
 import TileType from '../../types/tiles';
 import UnitInfosBanner from '../objects/unit-infos-banner';
@@ -40,6 +40,7 @@ export default class MainScene extends Phaser.Scene {
   heroes: Hero[] = [];
   highlightedHero: Hero;
   team1: Hero[] = [];
+  fps: GameObjects.Text;
   team2: Hero[] = [];
   heroesWhoMoved: Hero[] = [];
   turn: "team1" | "team2" = "team1";
@@ -464,6 +465,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+    this.fps = this.add.text(90, 90, "");
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.image(0, 0, "test").setOrigin(0).setTint(0x423452);
@@ -615,6 +617,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   update() {
+    this.fps.setText(this.sys.game.loop.actualFps.toString());
     for (let hero of this.heroes) {
       hero.update();
     }
