@@ -1,0 +1,635 @@
+{
+	"frames": {
+		"Armor March 3": {
+			"frame": {
+				"x": 1,
+				"y": 1,
+				"w": 65,
+				"h": 67
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 65,
+				"h": 67
+			},
+			"sourceSize": {
+				"w": 65,
+				"h": 67
+			}
+		},
+		"Atk/Def Bond 3": {
+			"frame": {
+				"x": 68,
+				"y": 1,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Atk/Def Solo 4": {
+			"frame": {
+				"x": 136,
+				"y": 1,
+				"w": 75,
+				"h": 75
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 75,
+				"h": 75
+			},
+			"sourceSize": {
+				"w": 75,
+				"h": 75
+			}
+		},
+		"Atk/Res Bond 3": {
+			"frame": {
+				"x": 213,
+				"y": 1,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Atk/Res Form 3": {
+			"frame": {
+				"x": 281,
+				"y": 1,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Atk Smoke 3": {
+			"frame": {
+				"x": 1,
+				"y": 71,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Atk/Spd Bond 4": {
+			"frame": {
+				"x": 213,
+				"y": 71,
+				"w": 75,
+				"h": 75
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 75,
+				"h": 75
+			},
+			"sourceSize": {
+				"w": 75,
+				"h": 75
+			}
+		},
+		"Atk/Spd Rein 3": {
+			"frame": {
+				"x": 290,
+				"y": 71,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Bushido II": {
+			"frame": {
+				"x": 1,
+				"y": 141,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Close Def 3": {
+			"frame": {
+				"x": 69,
+				"y": 141,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Distant Counter": {
+			"frame": {
+				"x": 137,
+				"y": 141,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Dragonskin": {
+			"frame": {
+				"x": 290,
+				"y": 141,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Drive Spd 2": {
+			"frame": {
+				"x": 1,
+				"y": 211,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Hone Spd 2": {
+			"frame": {
+				"x": 69,
+				"y": 211,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Joint Drive Res": {
+			"frame": {
+				"x": 137,
+				"y": 211,
+				"w": 75,
+				"h": 75
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 75,
+				"h": 75
+			},
+			"sourceSize": {
+				"w": 75,
+				"h": 75
+			}
+		},
+		"Kestrel Stance 2": {
+			"frame": {
+				"x": 214,
+				"y": 211,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Null Follow-Up 3": {
+			"frame": {
+				"x": 282,
+				"y": 211,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Ostia's Pulse II": {
+			"frame": {
+				"x": 1,
+				"y": 281,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Res Smoke 3": {
+			"frame": {
+				"x": 69,
+				"y": 281,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Sacae's Blessing": {
+			"frame": {
+				"x": 214,
+				"y": 281,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Seal Atk/Def 2": {
+			"frame": {
+				"x": 282,
+				"y": 281,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Spd/Res Rein 3": {
+			"frame": {
+				"x": 349,
+				"y": 1,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Spd Smoke 3": {
+			"frame": {
+				"x": 358,
+				"y": 71,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Special Fighter 3": {
+			"frame": {
+				"x": 358,
+				"y": 141,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Sturdy Blow 2": {
+			"frame": {
+				"x": 350,
+				"y": 211,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Swift Sparrow 3": {
+			"frame": {
+				"x": 350,
+				"y": 281,
+				"w": 73,
+				"h": 74
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 73,
+				"h": 74
+			},
+			"sourceSize": {
+				"w": 73,
+				"h": 74
+			}
+		},
+		"Swordbreaker 3": {
+			"frame": {
+				"x": 1,
+				"y": 357,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Threat Atk/Def 3": {
+			"frame": {
+				"x": 69,
+				"y": 357,
+				"w": 75,
+				"h": 75
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 75,
+				"h": 75
+			},
+			"sourceSize": {
+				"w": 75,
+				"h": 75
+			}
+		},
+		"Vengeful Fighter 3": {
+			"frame": {
+				"x": 146,
+				"y": 357,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Warding Breath": {
+			"frame": {
+				"x": 214,
+				"y": 357,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		},
+		"Windsweep 3": {
+			"frame": {
+				"x": 282,
+				"y": 357,
+				"w": 66,
+				"h": 68
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 66,
+				"h": 68
+			},
+			"sourceSize": {
+				"w": 66,
+				"h": 68
+			}
+		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "spritesheet",
+		"format": "RGBA8888",
+		"size": {
+			"w": 425,
+			"h": 433
+		},
+		"scale": "1"
+	}
+}
