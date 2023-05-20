@@ -472,6 +472,7 @@ export default class MainScene extends Phaser.Scene {
     const bgm = this.sound.play("bgm", { volume: 0.1, loop: true });
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
+    console.log(battle.getMapEffects("team1", "turnStart"));
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {

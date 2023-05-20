@@ -704,22 +704,8 @@ class Battle {
         this.effectRunner = new FEH.MapEffectRunner(this.team1.map(({ hero }) => hero), this.team2.map(({ hero }) => hero));
     }
 
-    getMapEffects(team: "team1" | "team2", effect: "turnStart" | "afterCombat") {
-        const chosenTeam = this[team];
-        let effects = [];
-        for (let { hero } of chosenTeam) {
-            for (let skillSlot in hero.skills) {
-                const skill = hero.skills[skillSlot as keyof Hero["skills"]];
-                if (skill?.onTurnStart) {
-                    const x = skill.onTurnStart({
-                        wielder: hero
-                    });
-                    effects = effects.concat(x);
-                }
-            }
-        }
-
-        return effects;
+    getMapEffects(team: "team1" | "team2", effect: "turnStart") {
+        return this.effectRunner.runEffects(effect, team);
     }
 };
 
@@ -756,17 +742,15 @@ battle.addHero(Corrin, "team2", {
 });
 
 battle.addHero(Ephraim, "team2", {
-    x: 5,
+    x: 3,
     y: 7
 });
 
 battle.addHero(Lyn, "team2", {
-    y: 3,
-    x: 3
+    y: 7,
+    x: 5
 });
 
 battle.setAlliesAndEnemies();
-
-console.log(battle.startCombat(Ryoma, Ephraim));
 
 export default battle;
