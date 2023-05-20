@@ -17,7 +17,6 @@ class Hero extends GameObjects.Container {
         super(scene, x, y);
         this.setData("hero", data);
         this.setName(data.id);
-        scene.add.existing(this);
         this.image = new GameObjects.Image(scene, 0, 0, data.name, "map").setScale(0.7).setDepth(1);
         this.add(this.image);
         this.team = team;
