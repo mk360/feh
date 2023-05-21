@@ -483,7 +483,7 @@ export default class MainScene extends Phaser.Scene {
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.image(0, 0, "test").setOrigin(0).setTint(0x423452);
-    const bgm = this.sound.play("bgm", { volume: 0.1, loop: true });
+    // const bgm = this.sound.play("bgm", { volume: 0.1, loop: true });
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
@@ -500,8 +500,8 @@ export default class MainScene extends Phaser.Scene {
               this.sound.play("disabled-unit");
             }
             this.displayRange = false;
-            // this.movementAllowedImages.setVisible(true);
-            // this.movementAllowedTween.resume();
+            this.movementAllowedImages.setVisible(true);
+            this.movementAllowedTween.resume();
             this.movementArrows.clear(true);
           }
         });

@@ -8,6 +8,11 @@ const DEFAULT_HEIGHT = 1200
 const config = {
   type: Phaser.CANVAS,
   backgroundColor: '#000',
+  fps: {
+    forceSetTimeout: true,
+    target: 15,
+    min: 15,
+  },
   scale: {
     parent: 'phaser-game',
     mode: Phaser.Scale.FIT,
