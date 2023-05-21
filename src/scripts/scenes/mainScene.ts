@@ -49,7 +49,7 @@ export default class MainScene extends Phaser.Scene {
   movementAllowedImages: Phaser.GameObjects.Group;
   movementAllowedTween: Phaser.Tweens.Tween;
   movementArrows: Phaser.GameObjects.Group;
-  combatForecast: CombatForecast;
+  // combatForecast: CombatForecast;
   terrain: TileType[][] = [
     ["wall", "floor", "floor", "floor", "floor", "floor"],
     ["wall", "floor", "floor", "floor", "void", "floor"],
@@ -154,7 +154,7 @@ export default class MainScene extends Phaser.Scene {
         // const soundFile = `${hero.getInternalHero().name} ${n}`;
         this.sound.playAudioSprite(hero.getInternalHero().name + " quotes", n.toString(), { volume: 0.2 });
         // previousSoundFile = soundFile;
-        this.unitInfosBanner.setVisible(true).setHero(hero);
+        // this.unitInfosBanner.setVisible(true).setHero(hero);
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
       let previousTileString = "";
@@ -166,8 +166,8 @@ export default class MainScene extends Phaser.Scene {
           hoveredTile = target.name
         } else return;
         if (this.walkCoords.includes(target.name) && target.name !== previousTileString) {
-          this.combatForecast.setVisible(false);
-          this.unitInfosBanner.setVisible(true);
+          // this.combatForecast.setVisible(false);
+          // this.unitInfosBanner.setVisible(true);
           this.sound.play("hover");
           const targetTileXY = target.name.split('-').map(Number);
           const arrowPath = this.buildArrowPath({ ...currentCoords }, {
@@ -226,29 +226,29 @@ export default class MainScene extends Phaser.Scene {
           const [x, y] = target.name.split("-");
           if ((this.map[+y][+x]?.team ?? hero.team) !== hero.team) {
             const opponent = this.map[+y][+x];
-            this.unitInfosBanner.setVisible(false);
+            // this.unitInfosBanner.setVisible(false);
             const simulatedBattle = battle.startCombat(hero.getInternalHero(), opponent.getInternalHero());
-            this.combatForecast.setForecastData({
-              attacker: {
-                hero,
-                startHP: hero.getInternalHero().stats.hp,
-                endHP: simulatedBattle.atkRemainingHP,
-                statChanges: simulatedBattle.atkChanges,
-                turns: 1,
-                effective: simulatedBattle.atkEffective,
-                damage: simulatedBattle.atkDamage,
-              },
-              defender: {
-                hero: opponent,
-                startHP: opponent.getInternalHero().stats.hp,
-                endHP: simulatedBattle.defRemainingHP,
-                statChanges: simulatedBattle.defChanges,
-                effective: simulatedBattle.defEffective,
-                turns: 1,
-                damage: simulatedBattle.defDamage,
-              },
-            });
-            this.combatForecast.setVisible(true);
+            // this.combatForecast.setForecastData({
+            //   attacker: {
+            //     hero,
+            //     startHP: hero.getInternalHero().stats.hp,
+            //     endHP: simulatedBattle.atkRemainingHP,
+            //     statChanges: simulatedBattle.atkChanges,
+            //     turns: 1,
+            //     effective: simulatedBattle.atkEffective,
+            //     damage: simulatedBattle.atkDamage,
+            //   },
+            //   defender: {
+            //     hero: opponent,
+            //     startHP: opponent.getInternalHero().stats.hp,
+            //     endHP: simulatedBattle.defRemainingHP,
+            //     statChanges: simulatedBattle.defChanges,
+            //     effective: simulatedBattle.defEffective,
+            //     turns: 1,
+            //     damage: simulatedBattle.defDamage,
+            //   },
+            // });
+            // this.combatForecast.setVisible(true);
           }
         }
       });
@@ -259,8 +259,8 @@ export default class MainScene extends Phaser.Scene {
         this.children.remove(this.children.getByName("arrow"));
         this.children.remove(this.children.getByName("end-arrow"));
         if (this.walkCoords.includes(x2 + "-" + y2) && !this.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
-          this.combatForecast.setVisible(false);
-          this.unitInfosBanner.setVisible(true);
+          // this.combatForecast.setVisible(false);
+          // this.unitInfosBanner.setVisible(true);
           this.clearTiles([...this.walkCoords, ...this.attackCoords]);
           this.map[currentCoords.y][currentCoords.x] = null;
           currentCoords.x = x2;
@@ -341,7 +341,7 @@ export default class MainScene extends Phaser.Scene {
               onStart: () => {
                 this.sound.play("hit");
                 this.add.existing(damageText);
-                this.combatForecast
+                // this.combatForecast
                 this.tweens.add({
                   targets: [damageText],
                   y: defenderObject.image.getTopCenter().y + defenderObject.y,
@@ -398,7 +398,7 @@ export default class MainScene extends Phaser.Scene {
         this.displayRanges(pixelsToGrid(hero.x, hero.y), hero.getMovementRange(), hero.getWeaponRange());
         this.sound.play("enabled-unit");
         this.highlightedHero = hero;
-        this.unitInfosBanner.setVisible(true).setHero(hero);
+        // this.unitInfosBanner.setVisible(true).setHero(hero);
       });
     }
 
@@ -484,8 +484,8 @@ export default class MainScene extends Phaser.Scene {
     this.movementArrows = this.add.group();
     this.add.image(0, 0, "test").setOrigin(0).setTint(0x423452);
     // const bgm = this.sound.play("bgm", { volume: 0.1, loop: true });
-    this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
-    this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
+    // this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
+    // this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
