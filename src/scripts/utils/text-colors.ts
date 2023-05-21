@@ -1,9 +1,10 @@
 const TextColors = {
     numbers: "#EAEAA6",
-    boon: "#719DAF",
+    boon: "#89D5E3",
     bane: "#E99EAE",
-    regular: "#FFFFFF",
+    white: "#FFFFFF",
     healthyHP: "#F2C42A",
+    effective: "#87F640",
     criticalHP: "#CA384D",
     skillName: "#F5D04C"
 };

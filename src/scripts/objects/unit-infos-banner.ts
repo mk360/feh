@@ -71,8 +71,9 @@ class UnitInfosBanner extends GameObjects.Container {
 
         this.add(new GameObjects.Image(scene, blockX - 130, 111, "stat-line").setScale(0.2, 0.5).setOrigin(0));
         this.add(new GameObjects.Image(scene, blockX - 130, 136, "stat-line").setScale(0.2, 0.5).setOrigin(0));
-
-        this.add(renderText(scene, blockX - 120, 89, "Atk", { fontSize: "18px" }));
+        const atk = renderText(scene, blockX - 120, 89, "Atk", { fontSize: "18px" });
+        atk.setInteractive().on("pointerdown", console.log);
+        this.add(atk);
         this.add(renderText(scene, blockX - 10, 89, "Spd", { fontSize: "18px" }));
         this.add(renderText(scene, blockX - 120, 114, "Def", { fontSize: "18px" }));
         this.add(renderText(scene, blockX - 10, 114, "Res", { fontSize: "18px" }));
@@ -158,19 +159,22 @@ class UnitInfosBanner extends GameObjects.Container {
             weaponColor: internalHero.getWeapon().color,
         });
         this.maxHP.setText(`/ ${internalHero.maxHP}`);
-
-        for (let stat of ["atk", "def", "res", "spd"]) {
-            this[stat].setText(internalHero.stats[stat].toString());
+        const mapStats = internalHero.getMapStats();
+        const baseStats = internalHero.stats;
+        for (let stat of ["atk", "def", "res", "spd"] as const) {
+            this[stat].setText(mapStats[stat].toString());
+            this[stat].setColor(baseStats[stat] < mapStats[stat] ? TextColors.boon : baseStats[stat] > mapStats[stat] ? TextColors.bane : TextColors.numbers);
         }
 
         this.weaponName.setText(internalHero.getWeapon().name);
 
         for (let skill of ["A", "B", "C", "S"] as const) {
             this[skill].off("pointerdown");
-            const skillName = internalHero.skills[skill].name;
-            this[skill].setTexture("skills", skillName);
-            this[skill].setName(skillName);
-            this[skill].on("pointerdown", () => {
+            const skillData = internalHero.skills[skill];
+            this[skill].setTexture("skills", skillData.name);
+            this[skill].setName(skillData.name);
+            this[skill].setInteractive().on("pointerdown", () => {
+                this.skillInfos.setSkillDescription(skillData.name, skillData.description);
                 this.skillInfos.setVisible(true);
             });
         }

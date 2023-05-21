@@ -11,11 +11,14 @@ class Hero extends GameObjects.Container {
     image: GameObjects.Image;
     hpText: GameObjects.Text;
     team: "team1" | "team2";
+    statuses: string[];
+    statusesImage: GameObjects.Image;
 
     // todo: simplify constructor
     constructor(scene: Scene, x: number, y: number, data: HeroData, team: "team1" | "team2") {
         super(scene, x, y);
         this.setData("hero", data);
+        this.statuses = [];
         this.setName(data.id);
         this.image = new GameObjects.Image(scene, 0, 0, data.name, "map").setScale(0.7).setDepth(1);
         this.add(this.image);
@@ -54,6 +57,11 @@ class Hero extends GameObjects.Container {
         if (movementType === "cavalry") return 3;
         if (movementType === "armored") return 1;
         return 2;
+    }
+
+    getNextIndex(array: any[], curIndex: number) {
+        if (curIndex === array.length - 1) return 0;
+        return curIndex + 1;
     }
 
     getWeaponRange() {

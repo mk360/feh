@@ -142,6 +142,7 @@ const DraconicRage = new FEH.Weapon({
     range: 1,
     type: "dragonstone",
     color: "blue",
+    description: "Accelerates Special trigger (cooldown count-1). If the number of allies within 2 spaces (excluding unit) > the number of foes within 2 spaces (excluding target), grants Atk/Spd+5 during combat. If foe's Range = 2, calculates damage using the lower of foe's Def or Res."
 });
 
 DraconicRage.onBeforeCombat = ({ wielder, enemy }) => {
@@ -173,6 +174,7 @@ const Expiration = new FEH.Weapon({
     range: 1,
     type: "dragonstone",
     color: "colorless",
+    description: "Unit can counterattack regardless of foe's range. If foe's Range = 2, calculates damage using the lower of foe's Def or Res."
 });
 
 Expiration.onEquip = (wielder) => {
@@ -190,7 +192,8 @@ const Geirskogul = new FEH.Weapon({
     type: "lance",
     color: "blue",
     might: 16,
-    range: 1
+    range: 1,
+    description: "Grants Def+3. If allies within 2 spaces use sword, lance, axe, bow, dagger, or beast damage, grants Atk/Spd+3 to those allies during combat."
 });
 
 Geirskogul.onBeforeAllyCombat = ({ ally, wielder }) => {
@@ -207,7 +210,8 @@ const ThunderArmads = new FEH.Weapon({
     type: "axe",
     color: "green",
     might: 16,
-    range: 1
+    range: 1,
+    description: "Grants Def+3. If unit is within 3 spaces of an ally, inflicts Atk/Def-5 on foe during combat and foe cannot make a follow-up attack."
 });
 
 ThunderArmads.onEquip = (wielder) => {
@@ -248,7 +252,8 @@ const Raijinto = new FEH.Weapon({
     might: 16,
     type: "sword",
     color: "red",
-    name: "Raijinto"
+    name: "Raijinto",
+    description: "Unit can counterattack regardless of range."
 });
 
 Raijinto.onDefense = ({ wielder }) => {
@@ -275,6 +280,7 @@ VengefulFighter3.onDefense = ({ wielder }) => {
 const Dragonskin = new FEH.PassiveSkill();
 Dragonskin.setName("Dragonskin");
 Dragonskin.setSlot("A");
+Dragonskin.setDescription("Neutralizes \"effective against flying\" bonuses. If foe initiates combat, grants Def/Res+4 during combat.");
 Dragonskin.onBeforeCombat = ({ enemy }) => {
     if (enemy.getWeapon().effectiveAgainst.includes("flier")) {
         enemy.lowerCursor("effectiveness", 1);
@@ -747,7 +753,7 @@ battle.addHero(Ephraim, "team2", {
 });
 
 battle.addHero(Lyn, "team2", {
-    y: 7,
+    y: 3,
     x: 5
 });
 

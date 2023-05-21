@@ -1,4 +1,4 @@
-import { Game, GameObjects, Geom } from 'phaser';
+import { Game, GameObjects, Geom, Structs } from 'phaser';
 import Hero from '../objects/hero';
 import TileType from '../../types/tiles';
 import UnitInfosBanner from '../objects/unit-infos-banner';
@@ -125,11 +125,12 @@ export default class MainScene extends Phaser.Scene {
     const otherTeam = turn === "team1" ? "team2" : "team1";
     this.turn = turn;
     this.heroesWhoMoved = [];
+    const effects = battle.getMapEffects(turn, "turnStart");
     for (let hero of this[turn]) {
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
 
-      hero.setInteractive(new Geom.Rectangle(0, 0, 50, 50)).setDepth(1);
+      hero.setInteractive(new Geom.Rectangle(0, 0, 40, 40)).setDepth(1);
       this.input.setDraggable(hero, true);
       const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.getInternalHero().name}`).setDepth(0);
       this.add.existing(img);
@@ -219,6 +220,8 @@ export default class MainScene extends Phaser.Scene {
             // and render path
           }
           previousTileString = target.name;
+          (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).x = target.x;
+              (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).y = target.y;
         } else if (this.attackCoords.includes(target.name)) {
           const [x, y] = target.name.split("-");
           if ((this.map[+y][+x]?.team ?? hero.team) !== hero.team) {
@@ -232,6 +235,7 @@ export default class MainScene extends Phaser.Scene {
                 endHP: simulatedBattle.atkRemainingHP,
                 statChanges: simulatedBattle.atkChanges,
                 turns: 1,
+                effective: simulatedBattle.atkEffective,
                 damage: simulatedBattle.atkDamage,
               },
               defender: {
@@ -239,6 +243,7 @@ export default class MainScene extends Phaser.Scene {
                 startHP: opponent.getInternalHero().stats.hp,
                 endHP: simulatedBattle.defRemainingHP,
                 statChanges: simulatedBattle.defChanges,
+                effective: simulatedBattle.defEffective,
                 turns: 1,
                 damage: simulatedBattle.defDamage,
               },
@@ -396,6 +401,14 @@ export default class MainScene extends Phaser.Scene {
         this.unitInfosBanner.setVisible(true).setHero(hero);
       });
     }
+
+    for (let effect of effects) {
+      const target = this.children.getByName(effect.targetHeroId) as Hero;
+      if (effect.appliedEffect.stats) {
+        target.getInternalHero().setMapMods(effect.appliedEffect.stats);
+        console.log(target);
+      }
+    }
   }
 
   preload() {
@@ -416,6 +429,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("path-down-left", "assets/path-down-right.png");
     this.load.image("path-up-right", "assets/path-up-right.png");
     this.load.image("path-up-left", "assets/path-up-left.png");
+    this.load.image("buff", "assets/buff-arrow.png");
     this.load.image("horizontal", "assets/horizontal.png");
     this.load.image("vertical", "assets/vertical-fixed.png");
     this.load.image("unit-bg", "assets/unitbg.png");
@@ -472,7 +486,6 @@ export default class MainScene extends Phaser.Scene {
     const bgm = this.sound.play("bgm", { volume: 0.1, loop: true });
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
-    console.log(battle.getMapEffects("team1", "turnStart"));
     this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
@@ -498,7 +511,7 @@ export default class MainScene extends Phaser.Scene {
         });
       }
     }
-
+    
     for (let { hero, x, y } of battle.team1) {
       this.addHero({ x, y, hero }, "team1");
     }
@@ -518,7 +531,7 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
-    this.setTurn("team2");
+    this.setTurn("team1");
 }
 
   displayRanges(coords: Coords, walkingRange: number, weaponRange: number) {
@@ -559,6 +572,7 @@ export default class MainScene extends Phaser.Scene {
 
   // todo: try to split function into distinct ones for walking and attacking
   getTilesInRange(tile: Coords, range: number, existingTiles?: Map<string, Coords>, checkForAttacks?: boolean) {
+    new Structs.Set()
     let tiles = existingTiles ? Array.from(existingTiles.values()) : [tile];
     const tileset = existingTiles ? new Map(existingTiles || undefined) : new Map<string, Coords>();
     const hero = this.map[tile.y][tile.x];
@@ -618,14 +632,14 @@ export default class MainScene extends Phaser.Scene {
 
   update() {
     this.fps.setText(this.sys.game.loop.actualFps.toString());
-    // for (let hero of this.heroes) {
-    //   hero.update();
-    // }
+    for (let hero of this.heroes) {
+      hero.update();
+    }
 
-    // if (this.heroesWhoMoved.length === this[this.turn].length) {
-    //   const otherTeam = this.turn === "team1" ? "team2": "team1";
-    //   this.setTurn(otherTeam);
-    // }
+    if (this.heroesWhoMoved.length === this[this.turn].length) {
+      const otherTeam = this.turn === "team1" ? "team2": "team1";
+      this.setTurn(otherTeam);
+    }
   }
 }
 
