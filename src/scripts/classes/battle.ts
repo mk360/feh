@@ -294,7 +294,7 @@ Dragonskin.onDefense = ({ wielder }) => {
     });
 };
 
-const SturdyBlow2 = new FEH.PassiveSkill().setName("Sturdy Blow 2").setSlot("A");
+const SturdyBlow2 = new FEH.PassiveSkill().setName("Sturdy Blow 2").setSlot("A").setDescription("If unit initiates combat, grants Atk/Def+4 during combat.");
 
 SturdyBlow2.onInitiate = ({ wielder }) => {
     wielder.setBattleMods({
@@ -303,7 +303,7 @@ SturdyBlow2.onInitiate = ({ wielder }) => {
     });
 };
 
-const DriveSpd2 = new FEH.PassiveSkill().setName("Drive Spd 2").setSlot("C");
+const DriveSpd2 = new FEH.PassiveSkill().setName("Drive Spd 2").setSlot("C").setDescription("Grants Spd+3 to allies within 2 spaces during combat.");
 
 DriveSpd2.onBeforeAllyCombat = ({ ally, wielder }) => {
     if (wielder.getDistance(ally) <= 2) {
@@ -313,7 +313,7 @@ DriveSpd2.onBeforeAllyCombat = ({ ally, wielder }) => {
     }
 };
 
-const AtkResBond3 = new FEH.PassiveSkill();
+const AtkResBond3 = new FEH.PassiveSkill().setDescription("If unit is adjacent to an ally, grants Atk/Res+5 during combat.");
 AtkResBond3.setName("Atk/Res Bond 3").setSlot("S");
 
 AtkResBond3.onBeforeCombat = ({ wielder }) => {
@@ -330,7 +330,7 @@ AtkResBond3.onBeforeCombat = ({ wielder }) => {
 };
 
 const AtkDefBond3 = new FEH.PassiveSkill();
-AtkDefBond3.setName("Atk/Def Bond 3").setSlot("A");
+AtkDefBond3.setName("Atk/Def Bond 3").setSlot("A").setDescription("If unit is adjacent to an ally, grants Atk/Def+5 during combat.");
 
 AtkDefBond3.onBeforeCombat = ({ wielder }) => {
     for (let ally of wielder.allies) {
@@ -345,7 +345,7 @@ AtkDefBond3.onBeforeCombat = ({ wielder }) => {
     }
 };
 
-const AtkResForm3 = new FEH.PassiveSkill().setName("Atk/Res Form 3").setSlot("S");
+const AtkResForm3 = new FEH.PassiveSkill().setName("Atk/Res Form 3").setSlot("S").setDescription("If unit is within 2 spaces of an ally, grants Atk/Res+X to unit during combat (X = 2 × number of allies within 2 spaces, + 1; max 7).");
 const SacaesBlessing = new FEH.PassiveSkill().setName("Sacae's Blessing").setSlot("B");
 
 SacaesBlessing.onInitiate = ({ enemy }) => {
@@ -370,7 +370,7 @@ AtkResForm3.onBeforeCombat = ({ wielder }) => {
 
 AtkResBond3.slot = "A";
 
-const SpdResRein3 = new FEH.PassiveSkill().setName("Spd/Res Rein 3").setSlot("C");
+const SpdResRein3 = new FEH.PassiveSkill().setName("Spd/Res Rein 3").setSlot("C").setDescription("Inflicts Spd/Res-4 on foes within 2 spaces during combat.");
 
 SpdResRein3.onBeforeAllyCombat = ({ wielder, enemy }) => {
     if (wielder.getDistance(enemy) <= 2) {
@@ -388,7 +388,7 @@ SpdResRein3.onBeforeCombat = ({ enemy }) => {
     });
 };
 
-const KestrelStance2 = new FEH.PassiveSkill().setName("Kestrel Stance 2").setSlot("A");
+const KestrelStance2 = new FEH.PassiveSkill().setName("Kestrel Stance 2").setSlot("A").setDescription("If foe initiates combat, grants Atk/Spd+4 during combat.");
 
 KestrelStance2.onDefense = ({ wielder }) => {
     wielder.setBattleMods({
@@ -397,7 +397,7 @@ KestrelStance2.onDefense = ({ wielder }) => {
     });
 };
 
-const AtkSpdRein3 = new FEH.PassiveSkill().setName("Atk/Spd Rein 3").setSlot("C");
+const AtkSpdRein3 = new FEH.PassiveSkill().setName("Atk/Spd Rein 3").setSlot("C").setDescription("Inflicts Atk/Spd-4 on foes within 2 spaces during combat.");
 
 AtkSpdRein3.onBeforeAllyCombat = ({ wielder, enemy }) => {
     if (wielder.getDistance(enemy) <= 2) {

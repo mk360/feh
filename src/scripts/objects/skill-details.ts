@@ -26,11 +26,9 @@ class R extends GameObjects.Container {
             content: name
         });
         this.add(this.skillName);
-        this.skillDesc = renderText(this.scene, this.contentContainer.getLeftCenter().x + 10, this.skillName.getBottomCenter().y + 10, desc, {
-            wordWrapWidth: 50,
-            wordWrapUseAdvanced: true,
-        });
+        this.skillDesc = renderText(this.scene, this.contentContainer.getLeftCenter().x + 10, this.skillName.getBottomCenter().y + 10, desc);
         this.add(this.skillDesc);
+        this.skillDesc.setWordWrapWidth(390);
     }
 };
 
