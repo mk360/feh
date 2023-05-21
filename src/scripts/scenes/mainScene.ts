@@ -492,19 +492,19 @@ export default class MainScene extends Phaser.Scene {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
         const name = x + "-" + y;
         const r = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.2).setName(name).setInteractive(undefined, undefined, true);
-        r.on("pointerdown", () => {
-          const [x, y] = name.split("-");
-          if (!this.map[+y][+x]) {
-            this.clearTiles([...this.walkCoords, ...this.attackCoords]);
-            if (this.displayRange) {
-              this.sound.play("disabled-unit");
-            }
-            this.displayRange = false;
-            this.movementAllowedImages.setVisible(true);
-            this.movementAllowedTween.resume();
-            this.movementArrows.clear(true);
-          }
-        });
+        // r.on("pointerdown", () => {
+        //   const [x, y] = name.split("-");
+        //   if (!this.map[+y][+x]) {
+        //     this.clearTiles([...this.walkCoords, ...this.attackCoords]);
+        //     if (this.displayRange) {
+        //       this.sound.play("disabled-unit");
+        //     }
+        //     this.displayRange = false;
+        //     this.movementAllowedImages.setVisible(true);
+        //     this.movementAllowedTween.resume();
+        //     this.movementArrows.clear(true);
+        //   }
+        // });
         // uncomment if you need to check tile coordinates
         this.add.text(r.getCenter().x, r.getCenter().y, name, {
           fontSize: "18px"
