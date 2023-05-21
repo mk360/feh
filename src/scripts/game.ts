@@ -6,7 +6,7 @@ const DEFAULT_WIDTH = 750
 const DEFAULT_HEIGHT = 1200
 
 const config = {
-  type: Phaser.CANVAS,
+  type: Phaser.WEBGL,
   backgroundColor: '#000',
   fps: {
     forceSetTimeout: true,
