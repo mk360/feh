@@ -147,7 +147,7 @@ export default class MainScene extends Phaser.Scene {
         const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;
         img.setVisible(true);
         pathStart = this.add.image(img.x, img.y, "rosary").setDisplaySize(img.width, img.height).setScale(1.35).setName("arrow");
-        this.movementAllowedTween.pause();
+        // this.movementAllowedTween.pause();
         this.sound.play("enabled-unit");
         const n = this.rng.integerInRange(1, 3);
         if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
@@ -273,7 +273,7 @@ export default class MainScene extends Phaser.Scene {
           this.movementArrows.setVisible(false);
           this.movementArrows.clear(true);
           this.movementAllowedImages.setVisible(true);
-          this.movementAllowedTween.resume();
+          // this.movementAllowedTween.resume();
           (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).setVisible(false);
           this.sound.play("confirm", { volume: 0.4 });
           this.endAction(hero);
@@ -377,13 +377,13 @@ export default class MainScene extends Phaser.Scene {
       });
     }
 
-    this.movementAllowedTween = this.tweens.add({
-      targets: this.movementAllowedImages.getChildren(),
-      loop: -1,
-      yoyo: true,
-      duration: 900,
-      alpha: 0
-    });
+    // this.movementAllowedTween = this.tweens.add({
+    //   targets: this.movementAllowedImages.getChildren(),
+    //   loop: -1,
+    //   yoyo: true,
+    //   duration: 900,
+    //   alpha: 0
+    // });
 
     for (let hero of this[otherTeam]) {
       hero.off("dragover");
@@ -492,19 +492,19 @@ export default class MainScene extends Phaser.Scene {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
         const name = x + "-" + y;
         const r = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.2).setName(name).setInteractive(undefined, undefined, true);
-        // r.on("pointerdown", () => {
-        //   const [x, y] = name.split("-");
-        //   if (!this.map[+y][+x]) {
-        //     this.clearTiles([...this.walkCoords, ...this.attackCoords]);
-        //     if (this.displayRange) {
-        //       this.sound.play("disabled-unit");
-        //     }
-        //     this.displayRange = false;
-        //     this.movementAllowedImages.setVisible(true);
-        //     this.movementAllowedTween.resume();
-        //     this.movementArrows.clear(true);
-        //   }
-        // });
+        r.on("pointerdown", () => {
+          const [x, y] = name.split("-");
+          if (!this.map[+y][+x]) {
+            this.clearTiles([...this.walkCoords, ...this.attackCoords]);
+            if (this.displayRange) {
+              this.sound.play("disabled-unit");
+            }
+            this.displayRange = false;
+            // this.movementAllowedImages.setVisible(true);
+            // this.movementAllowedTween.resume();
+            this.movementArrows.clear(true);
+          }
+        });
         // uncomment if you need to check tile coordinates
         this.add.text(r.getCenter().x, r.getCenter().y, name, {
           fontSize: "18px"
