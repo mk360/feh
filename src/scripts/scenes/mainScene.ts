@@ -1,4 +1,4 @@
-import { Game, GameObjects, Geom, Structs } from 'phaser';
+import { GameObjects, Geom, Structs } from 'phaser';
 import Hero from '../objects/hero';
 import TileType from '../../types/tiles';
 import UnitInfosBanner from '../objects/unit-infos-banner';
@@ -10,7 +10,7 @@ import HeroData from "feh-battles/dec/hero";
 
 const squareSize = 125;
 const squaresOffset = 63;
-const fixedY = 90;
+const fixedY = 120;
 
 function gridToPixels(x: number, y: number) {
   return {
@@ -40,7 +40,6 @@ export default class MainScene extends Phaser.Scene {
   heroes: Hero[] = [];
   highlightedHero: Hero;
   team1: Hero[] = [];
-  fps: GameObjects.Text;
   team2: Hero[] = [];
   heroesWhoMoved: Hero[] = [];
   turn: "team1" | "team2" = "team1";
@@ -120,6 +119,17 @@ export default class MainScene extends Phaser.Scene {
     return x;
   }
 
+  killHero(hero: Hero) {
+    this[hero.team] = this[hero.team].filter(({ name }) => name !== hero.name);
+    this.heroes = this.heroes.filter(({ name }) => name !== hero.name);
+    const { x, y } = pixelsToGrid(hero.x, hero.y);
+    this.map[y][x] = null;
+    this.children.remove(hero);
+    battle.killHero(hero.getInternalHero());
+    hero.destroy();
+    hero = null;
+  }
+
   setTurn(turn: "team1" | "team2") {
     this.movementAllowedImages.clear();
     const otherTeam = turn === "team1" ? "team2" : "team1";
@@ -130,7 +140,7 @@ export default class MainScene extends Phaser.Scene {
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
 
-      hero.setInteractive(new Geom.Rectangle(0, 0, 40, 40)).setDepth(1);
+      hero.setInteractive(new Geom.Rectangle(0, 0, 40, 40));
       this.input.setDraggable(hero, true);
       const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.getInternalHero().name}`).setDepth(0);
       this.add.existing(img);
@@ -234,7 +244,7 @@ export default class MainScene extends Phaser.Scene {
                 startHP: hero.getInternalHero().stats.hp,
                 endHP: simulatedBattle.atkRemainingHP,
                 statChanges: simulatedBattle.atkChanges,
-                turns: 1,
+                turns: simulatedBattle.atkTurns,
                 effective: simulatedBattle.atkEffective,
                 damage: simulatedBattle.atkDamage,
               },
@@ -244,7 +254,7 @@ export default class MainScene extends Phaser.Scene {
                 endHP: simulatedBattle.defRemainingHP,
                 statChanges: simulatedBattle.defChanges,
                 effective: simulatedBattle.defEffective,
-                turns: 1,
+                turns: simulatedBattle.defTurns,
                 damage: simulatedBattle.defDamage,
               },
             });
@@ -293,32 +303,26 @@ export default class MainScene extends Phaser.Scene {
             const deadUnit = [hero, target].find(h => h.getInternalHero().stats.hp === 0);
             if (deadUnit) {
               this.tweens.add({
-              targets: deadUnit,
-              alpha: 0,
-              delay: 700,
-              onStart: () => {
-                this.sound.play("ko", { volume: 0.4 });
-              },
-              onComplete: () => {
-          //       this.heroes = this.heroes.filter(h => h.name !== deadUnit.name);
-          //       this[deadUnit.team] = this[deadUnit.team].filter(h => h.name !== deadUnit.name);
-          //       const { x, y } = pixelsToGrid(deadUnit.x, deadUnit.y);
-          //       this.map[y][x] = null;
-          //       deadUnit.destroy();
-          //       this.movementArrows.setVisible(false);
-          //       this.movementArrows.clear(true);
-          //       if (survivingUnit.team === this.turn) {
-          //         this.endAction(survivingUnit);
-          //       }
-                this.game.input.enabled = true;
-          //     },
-          //     duration: 900
-          //   });
-          //   } else {
-          //     this.endAction(hero);
-          //     this.game.input.enabled = true;
-            }
+                targets: deadUnit,
+                alpha: 0,
+                delay: 700,
+                onStart: () => {
+                  this.sound.play("ko", { volume: 0.4 });
+                },
+                onComplete: () => {  
+                  this.game.input.enabled = true;
+                  if (hero.getInternalHero().stats.hp) {
+                    this.endAction(hero);
+                  }
+                  this.children.remove(this.children.getByName("movement-" + deadUnit.getInternalHero().name));
+                  this.killHero(deadUnit);
+                  this.movementAllowedImages.setVisible(true);
+                  this.movementAllowedTween.resume();
+                }
               });
+            } else {
+              this.endAction(hero);
+              this.game.input.enabled = true;
             }
           });
           for (let i = 0; i < turns.outcome.length; i++) {
@@ -354,6 +358,9 @@ export default class MainScene extends Phaser.Scene {
                   },
                   onStart: () => {
                     defenderObject.getInternalHero().stats.hp = turn.remainingHP;
+                    const attackerRatio = hero.getInternalHero().stats.hp / attackerObject.getInternalHero().maxHP;
+                    const defenderHPRatio = target.getInternalHero().stats.hp / defenderObject.getInternalHero().maxHP;
+                    this.combatForecast.updatePortraits(attackerRatio, defenderHPRatio);
                   }
                 });
               },
@@ -406,7 +413,6 @@ export default class MainScene extends Phaser.Scene {
       const target = this.children.getByName(effect.targetHeroId) as Hero;
       if (effect.appliedEffect.stats) {
         target.getInternalHero().setMapMods(effect.appliedEffect.stats);
-        console.log(target);
       }
     }
   }
@@ -437,6 +443,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("rosary-arrow", "assets/rosary-arrow.png");
     this.load.image("weapon-icon", "assets/weapon_icon.png");
     this.load.image("weapon-bg", "assets/weapon.png");
+    this.load.image("unit-banner-bg", "assets/unit-banner-bg.png");
     this.load.image("assist-icon", "assets/assist-icon.png");
     this.load.image("special-icon", "assets/special-icon.png");
     // todo: compress into audio sprite
@@ -479,14 +486,12 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    this.fps = this.add.text(90, 90, "");
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.image(0, 0, "test").setOrigin(0).setTint(0x423452);
     const bgm = this.sound.play("bgm", { volume: 0.1, loop: true });
-    this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
-    this.add.image(0, 150, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
+    this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
@@ -530,6 +535,8 @@ export default class MainScene extends Phaser.Scene {
         d.y = dragY;
       }
     });
+
+    this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
 
     this.setTurn("team1");
 }
@@ -631,7 +638,6 @@ export default class MainScene extends Phaser.Scene {
   }
 
   update() {
-    this.fps.setText(this.sys.game.loop.actualFps.toString());
     for (let hero of this.heroes) {
       hero.update();
     }

@@ -129,8 +129,12 @@ Mulagir.onBeforeCombat = ({ enemy, wielder }) => {
     }
 };
 
+Mulagir.setDescription("Effective against flying foes. Grants Spd+3. Neutralizes magic foe's bonuses (from skills like Fortify, Rally, etc.) during combat.");
+
 const Ragnell = new FEH.Weapon();
 Ragnell.setType("sword").setColor("red").setMight(19).setName("Ragnell");
+
+Ragnell.setDescription("Unit can counterattack regardless of range.");
 
 Ragnell.onDefense = (effect) => {
     effect.wielder.raiseCursor("counterattack", 1);
@@ -177,7 +181,7 @@ const Expiration = new FEH.Weapon({
     description: "Unit can counterattack regardless of foe's range. If foe's Range = 2, calculates damage using the lower of foe's Def or Res."
 });
 
-Expiration.onEquip = (wielder) => {
+Expiration.onDefense = ({ wielder }) => {
     wielder.raiseCursor("counterattack", 1);
 };
 
@@ -267,9 +271,13 @@ DistantCounter.onDefense = ({ wielder }) => {
     wielder.raiseCursor("counterattack", 1);
 }
 
+DistantCounter.setDescription("Unit can counterattack regardless of foe's range.");
+
 const VengefulFighter3 = new FEH.PassiveSkill();
 VengefulFighter3.setName("Vengeful Fighter 3");
 VengefulFighter3.setSlot("B");
+
+VengefulFighter3.setDescription("If unit's HP ≥ 50% and foe initiates combat, grants Special cooldown charge +1 per unit's attack, and unit makes a guaranteed follow-up attack. (Does not stack.)")
 
 VengefulFighter3.onDefense = ({ wielder }) => {
     if (wielder.stats.hp / wielder.maxHP >= 0.5) {
@@ -423,6 +431,8 @@ WardingBreath.onDefense = ({ wielder }) => {
     });
 };
 
+WardingBreath.setDescription("If foe initiates combat, grants Res+4 during combat and Special cooldown charge +1 per attack. (Only highest value applied. Does not stack.)")
+
 const JointDriveRes = new FEH.PassiveSkill().setName("Joint Drive Res").setSlot("C");
 
 JointDriveRes.onBeforeAllyCombat = ({ ally, wielder }) => {
@@ -445,12 +455,16 @@ JointDriveRes.onBeforeCombat = ({ wielder }) => {
     }
 };
 
+JointDriveRes.setDescription("Grants Res+4 to allies within 2 spaces during combat. If unit is within 2 spaces of an ally, grants Res+4 to unit during combat.")
+
 const SealAtkDef2 = new FEH.PassiveSkill().setName("Seal Atk/Def 2").setSlot("B");
 
 SealAtkDef2.onAfterCombat = ({ enemy, wielder }) => {
     const targetEnemies = enemy.allies.filter((ally) => ally.getDistance(enemy) <= 2);
     return [];
 };
+
+SealAtkDef2.setDescription("Inflicts Atk/Def-5 on foe through its next action after combat.");
 
 const Bushido2 = new FEH.PassiveSkill().setName("Bushido II").setSlot("B");
 
@@ -461,13 +475,13 @@ Bushido2.onBeforeCombat = ({ wielder, enemy, damage }) => {
     }
     if (wielder.getBattleStats().spd > enemy.getBattleStats().spd) {
         const reductionPercentage = Math.min(40, (wielder.getBattleStats().spd - enemy.getBattleStats().spd) * 4);
-        console.log({ reductionPercentage, damage });
-        wielder.raiseCursor("damageReduction", damage - Math.floor(damage * reductionPercentage));
+        // wielder.raiseCursor("damageReduction", damage - Math.floor(damage * reductionPercentage));
     }
 };
 
+Bushido2.setDescription("Neutralizes \"effective against flying\" bonuses. Deals +7 damage. If unit's Spd > foe's Spd, reduces damage from attacks during combat and from area-of-effect Specials (excluding Røkkr area-of-effect Specials) by percentage = difference between stats × 4 (max 40%).")
 
-const CloseDef3 = new FEH.PassiveSkill().setSlot("A").setName("Close Def 3");
+const CloseDef3 = new FEH.PassiveSkill().setSlot("A").setName("Close Def 3").setDescription("If foe initiates combat and uses sword, lance, axe, dragonstone, or beast damage, grants Def/Res+6 during combat.");
 
 CloseDef3.onDefense = ({ wielder, enemy }) => {
     if (enemy.getWeapon().range === 1) {
@@ -479,7 +493,7 @@ CloseDef3.onDefense = ({ wielder, enemy }) => {
 };
 
 
-const SwiftSparrow3 = new FEH.PassiveSkill().setName("Swift Sparrow 3").setSlot("A");
+const SwiftSparrow3 = new FEH.PassiveSkill().setName("Swift Sparrow 3").setSlot("A").setDescription("If unit initiates combat, grants Atk+6, Spd+7 during combat.");
 
 SwiftSparrow3.onInitiate = ({ wielder }) => {
     wielder.setBattleMods({
@@ -488,7 +502,7 @@ SwiftSparrow3.onInitiate = ({ wielder }) => {
     });
 };
 
-const OstiasPulse2 = new FEH.PassiveSkill().setName("Ostia's Pulse II").setSlot("C");
+const OstiasPulse2 = new FEH.PassiveSkill().setName("Ostia's Pulse II").setSlot("C").setDescription("At start of turn, grants Def/Res+6 to unit and allies for one turn, and also, if any unit or ally's Special cooldown count is at its maximum value, grants them Special cooldown count-1. All effects granted only if the number of that unit or ally's movement type on the current team is ≤ 2.");
 
 OstiasPulse2.onTurnStart = ({ wielder }) => {
     const effects: Effect[] = [];
@@ -523,7 +537,7 @@ OstiasPulse2.onTurnStart = ({ wielder }) => {
     return effects;
 };
 
-const Windsweep3 = new FEH.PassiveSkill().setName("Windsweep 3").setSlot("B");
+const Windsweep3 = new FEH.PassiveSkill().setName("Windsweep 3").setSlot("B").setDescription("If unit initiates combat, unit cannot make a follow-up attack. If unit's Spd > foe's Spd and foe uses sword, lance, axe, bow, dagger, or beast damage, foe cannot counterattack.");
 
 Windsweep3.onInitiate = ({ wielder, enemy }) => {
     wielder.lowerCursor("followup", 1);
@@ -532,7 +546,9 @@ Windsweep3.onInitiate = ({ wielder, enemy }) => {
     }
 };
 
-const AtkSpdBond4 = new FEH.PassiveSkill().setName("Atk/Spd Bond 4").setSlot("S");
+Windsweep3.setDescription("If unit initiates combat, unit cannot make a follow-up attack. If unit's Spd > foe's Spd and foe uses sword, lance, axe, bow, dagger, or beast damage, foe cannot counterattack.")
+
+const AtkSpdBond4 = new FEH.PassiveSkill().setName("Atk/Spd Bond 4").setSlot("S").setDescription("If unit is adjacent to an ally, grants Atk/Spd+7 to unit and neutralizes unit's penalties to Atk/Spd during combat.");
 
 AtkSpdBond4.onBeforeCombat = ({ wielder }) => {
     for (let ally of wielder.allies) {
@@ -553,13 +569,13 @@ AtkSpdBond4.onBeforeCombat = ({ wielder }) => {
     }
 };
 
-const NullFollowUp3 = new FEH.PassiveSkill().setName("Null Follow-Up 3").setSlot("B");
+const NullFollowUp3 = new FEH.PassiveSkill().setName("Null Follow-Up 3").setSlot("B").setDescription("Neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.");
 
 NullFollowUp3.onBeforeCombat = ({ wielder }) => {
     wielder.raiseCursor("followup", 1);
 };
 
-const Swordbreaker3 = new FEH.PassiveSkill().setName("Swordbreaker 3").setSlot("B");
+const Swordbreaker3 = new FEH.PassiveSkill().setName("Swordbreaker 3").setSlot("B").setDescription("If unit's HP ≥ 50% in combat against a sword foe, unit makes a guaranteed follow-up attack and foe cannot make a follow-up attack.");
 
 Swordbreaker3.onBeforeCombat = ({ wielder, enemy }) => {
     if (enemy.getWeapon().type === "sword") {
@@ -568,7 +584,7 @@ Swordbreaker3.onBeforeCombat = ({ wielder, enemy }) => {
     }
 };
 
-const AtkDefSolo4 = new FEH.PassiveSkill().setName("Atk/Def Solo 4").setSlot("S");
+const AtkDefSolo4 = new FEH.PassiveSkill().setName("Atk/Def Solo 4").setSlot("S").setDescription("If unit is not adjacent to an ally, grants Atk/Def+7 during combat.");
 
 AtkDefSolo4.onBeforeCombat = ({ wielder }) => {
     for (let ally of wielder.allies) {
@@ -581,12 +597,12 @@ AtkDefSolo4.onBeforeCombat = ({ wielder }) => {
     });
 };
 
-const SpdSmoke3 = new FEH.PassiveSkill().setName("Spd Smoke 3").setSlot("S");
-const AtkSmoke3 = new FEH.PassiveSkill().setName("Atk Smoke 3").setSlot("C");
-const ResSmoke3 = new FEH.PassiveSkill().setName("Res Smoke 3").setSlot("S");
-const HoneSpd2 = new FEH.PassiveSkill().setName("Hone Spd 2").setSlot("C");
-const ArmorMarch3 = new FEH.PassiveSkill().setName("Armor March 3").setSlot("S");
-const SpecialFighter3 = new FEH.PassiveSkill().setName("Special Fighter 3").setSlot("B");
+const SpdSmoke3 = new FEH.PassiveSkill().setName("Spd Smoke 3").setSlot("S").setDescription("Inflicts Spd-7 on foes within 2 spaces of target through their next actions after combat.");
+const AtkSmoke3 = new FEH.PassiveSkill().setName("Atk Smoke 3").setSlot("C").setDescription("Inflicts Atk-7 on foes within 2 spaces of target through their next actions after combat.");
+const ResSmoke3 = new FEH.PassiveSkill().setName("Res Smoke 3").setSlot("S").setDescription("Inflicts Res-7 on foes within 2 spaces of target through their next actions after combat.");
+const HoneSpd2 = new FEH.PassiveSkill().setName("Hone Spd 2").setSlot("C").setDescription("At start of turn, grants Spd+4 to adjacent allies for 1 turn.");
+const ArmorMarch3 = new FEH.PassiveSkill().setName("Armor March 3").setSlot("S").setDescription("At start of turn, if unit is adjacent to an armored ally, unit and adjacent armored allies can move 1 extra space. (That turn only. Does not stack.)");
+const SpecialFighter3 = new FEH.PassiveSkill().setName("Special Fighter 3").setSlot("B").setDescription("At start of combat, if unit's HP ≥ 50%, grants Special cooldown charge +1 to unit and inflicts Special cooldown charge -1 on foe per attack. (Only highest value applied. Does not stack.)");
 
 
 Hector.equipSkill(DistantCounter);
@@ -668,6 +684,17 @@ class Battle {
         this.map[previousCoordinates.y][previousCoordinates.x] = null;
         hero.coordinates = destination;
         this.map[destination.y][destination.x] = hero;
+    }
+
+    killHero(hero: Hero) {
+        for (let ally of hero.allies) {
+            ally.allies = ally.allies.filter(({ id }) => id !== hero.id);
+        }
+        for (let enemy of hero.enemies) {
+            enemy.enemies = enemy.enemies.filter(({ id }) => id !== hero.id);
+        }
+        this.team1 = this.team1.filter(({ hero: teamMember }) => teamMember.id !== hero.id);
+        this.team2 = this.team2.filter(({ hero: teamMember }) => teamMember.id !== hero.id);
     }
 
     addHero(hero: Hero, team: "team1" | "team2", startingCoordinates: { x: number; y: number }) {
@@ -753,7 +780,7 @@ battle.addHero(Ephraim, "team2", {
 });
 
 battle.addHero(Lyn, "team2", {
-    y: 3,
+    y: 7,
     x: 5
 });
 

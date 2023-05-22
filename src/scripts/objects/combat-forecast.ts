@@ -180,18 +180,19 @@ class CombatForecast extends Phaser.GameObjects.Container {
             targets: this.secondHero.portrait,
         });
 
-        this.attackerRoundDamage = renderText(scene, 230, 96, "59", {
+        this.attackerRoundDamage = renderText(scene, 230, 100, "", {
             fontSize: "18px"
         });
         this.attackerRoundCount = renderText(scene, this.attackerRoundDamage.getRightCenter().x + 1, this.attackerRoundDamage.getTopCenter().y, "×2", {
             fontSize: "18px"
         })
-        this.defenderRoundDamage = renderText(scene, this.attackerRoundDamage.getRightCenter().x + 200, this.attackerRoundDamage.getTopCenter().y, "-", {
+        this.defenderRoundDamage = renderText(scene, this.attackerRoundDamage.getRightCenter().x + 240, this.attackerRoundDamage.getTopCenter().y, "-", {
             fontSize: "18px"
         });
-        const damageUnderline = new GameObjects.Image(scene, this.attackerRoundDamage.getBottomLeft().x + 10, this.attackerRoundDamage.getBottomLeft().y - 4, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5);
+        this.defenderRoundCount = renderText(scene, this.defenderRoundDamage.getRightCenter().x, this.defenderRoundDamage.getTopCenter().y, "");
+        const damageUnderline = new GameObjects.Image(scene, this.attackerRoundDamage.getBottomLeft().x + 10, this.attackerRoundDamage.getBottomLeft().y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5);
         this.add(damageUnderline);
-        this.add(new GameObjects.Image(scene, damageUnderline.x + 220, damageUnderline.y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5));
+        this.add(new GameObjects.Image(scene, damageUnderline.x + 240, damageUnderline.y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5));
         this.add(this.defenderRoundDamage);
         this.add(this.attackerRoundCount);
         this.add(this.attackerRoundDamage);
@@ -211,7 +212,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         const defenderStatMods = defender.statChanges;
         this.attackerRoundDamage.setText(attacker.damage.toString());
         this.attackerRoundDamage.setColor(attacker.effective ? TextColors.effective : TextColors.white);
-        this.attackerRoundCount.setText(attacker.turns >= 2 ? "×" + attacker.turns.toString() : "");
+        this.attackerRoundCount.setText(attacker.turns >= 2 ? "×" + attacker.turns.toString() : "").setX(this.attackerRoundDamage.getRightCenter().x);
         let xOffset = this.firstSideBg.getCenter().x - 35;
         for (let stat in attackerStatMods) {
             if (attackerStatMods[stat]) {
@@ -232,10 +233,10 @@ class CombatForecast extends Phaser.GameObjects.Container {
         let otherXOffset = this.firstSideBg.getCenter().x + 5;
         for (let stat in defenderStatMods) {
             if (defenderStatMods[stat]) {
-                const changedStat = renderText(this.scene, otherXOffset, 123, capitalize(stat));
+                const changedStat = renderText(this.scene, otherXOffset, 140, capitalize(stat));
                 const statValue = defenderStatMods[stat];
                 this.defenderStatMods.add(changedStat);
-                const statChangeValue = renderText(this.scene, otherXOffset + 60, 123, `${statValue > 0 ? "+" : ""}${statValue}`, {
+                const statChangeValue = renderText(this.scene, otherXOffset + 60, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
                     color: statValue < 0 ? TextColors.bane : TextColors.boon
                 });
 
@@ -250,8 +251,8 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.secondHero.nameplate.weaponIcon.setTexture("weapons", defender.hero.getInternalHero().getWeapon().color + "-" + defender.hero.getInternalHero().getWeapon().type);
         this.secondHero.nameplate.heroName.setText(defender.hero.getInternalHero().name);
 
-        const firstDamaged = attacker.hero.getInternalHero().stats.hp / attacker.hero.getInternalHero().maxHP < 0.5 ? "-damaged" : "";
-        const secondDamaged = defender.hero.getInternalHero().stats.hp / defender.hero.getInternalHero().maxHP < 0.5 ? "-damaged" : "";
+        const firstDamaged = attacker.hero.getInternalHero().stats.hp / attacker.hero.getInternalHero().maxHP < 0.5 ? "-damage" : "";
+        const secondDamaged = defender.hero.getInternalHero().stats.hp / defender.hero.getInternalHero().maxHP < 0.5 ? "-damage" : "";
         this.firstHero.portrait.setTexture(attacker.hero.getInternalHero().name, 'portrait' + firstDamaged);
         this.secondHero.portrait.setTexture(defender.hero.getInternalHero().name, 'portrait' + secondDamaged);
         this.secondHero.portrait.x = 1100;
@@ -332,6 +333,9 @@ class CombatForecast extends Phaser.GameObjects.Container {
 
         this.add(this.secondHero.predictedHP);
         this.add(this.secondHero.previousHP);
+        this.defenderRoundDamage.setText(params.defender.damage && params.defender.turns ? params.defender.damage.toString() : "-");
+        console.log(params.defender.turns);
+        this.defenderRoundCount.setText("×" + params.defender.turns).setX(this.defenderRoundDamage.getRightCenter().x + 5);
     }
 
     runKOTween(target: GameObjects.Image) {
@@ -348,26 +352,30 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
     }
 
-    updatePortraits({ attacker, defender }: { attacker: { startHP: number; endHP: number }, defender: { startHP: number; endHP: number }}) {
-        
-    }
+    updatePortraits(attackerHPRatio: number, defenderHPRatio: number) {
+        if (attackerHPRatio < 0.5 && !this.firstHero.portrait.frame.name.includes("damage")) {
+            this.scene.tweens.create({
+                targets: [this.firstHero.portrait],
+                alpha: 0,
+                duration: 100,
+                yoyo: true,
+                onYoyo: () => {
+                    this.firstHero.portrait.setFrame("portrait-damage");
+                }
+            }).play();
+        }
 
-    updatePortrait(portrait: GameObjects.Image, hero: Hero, previousHP: number, nextHP: number) {
-        // const shouldSwitch = (previousHP > hero.maxHP / 2 && nextHP < hero.maxHP / 2) || (previousHP < hero.maxHP / 2 && nextHP > hero.maxHP / 2);
-        // if (shouldSwitch) {
-        //     const hpRatio = nextHP / hero.maxHP;
-        //     const targetTexture = hpRatio < 0.5 ? `${hero.name} battle damaged` : `${hero.name} battle`;
-
-        //     this.scene.tweens.create({
-        //         targets: [portrait],
-        //         alpha: 0,
-        //         duration: 200,
-        //         yoyo: true,
-        //         onYoyo: () => {
-        //             portrait.setTexture(targetTexture);
-        //         }
-        //     }).play();
-        // }
+        if (defenderHPRatio < 0.5 && !this.secondHero.portrait.frame.name.includes("damage")) {
+            this.scene.tweens.create({
+                targets: [this.secondHero.portrait],
+                alpha: 0,
+                duration: 100,
+                yoyo: true,
+                onYoyo: () => {
+                    this.secondHero.portrait.setFrame("portrait-damage");
+                }
+            }).play();
+        }
     }
 }
 
