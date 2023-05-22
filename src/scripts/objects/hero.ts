@@ -38,6 +38,8 @@ class Hero extends GameObjects.Container {
         gradient.addColorStop(0.7, this.team === "team1" ? "#54DFF4" : "#FA4D69");
         this.hpText.setFill(gradient);
         this.add(this.hpText);
+        this.statusesImage = new GameObjects.Image(scene, 45, 45, "buff");
+        this.add(this.statusesImage);
         this.setSize(this.image.width, this.image.height);
     }
 
