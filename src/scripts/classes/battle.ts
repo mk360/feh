@@ -4,6 +4,7 @@ import Coords from "../../interfaces/coords";
 import MapEffectRunner from "feh-battles/dec/map-effect";
 import { Effect } from "feh-battles/dec/base_skill";
 import Stats from "../../interfaces/stats";
+import { CombatOutcome } from "feh-battles/dec/combat";
 
 const Ryoma = new FEH.Hero({
     name: "Ryoma",
@@ -225,8 +226,17 @@ ThunderArmads.onEquip = (wielder) => {
 ThunderArmads.onBeforeCombat = ({ wielder, enemy }) => {
     let allies = 0;
     let enemies = 0;
+    let appliedDebuff = false;
     for (let ally of wielder.allies) {
         if (wielder.getDistance(ally) <= 2) allies++;
+        if (wielder.getDistance(ally) <= 3 && !appliedDebuff) {
+            enemy.setBattleMods({
+                atk: -5,
+                def: -5
+            });
+            appliedDebuff = true;
+            enemy.lowerCursor("followup", 1);
+        }
     }
 
     for (let e of wielder.enemies) {
@@ -604,6 +614,75 @@ const HoneSpd2 = new FEH.PassiveSkill().setName("Hone Spd 2").setSlot("C").setDe
 const ArmorMarch3 = new FEH.PassiveSkill().setName("Armor March 3").setSlot("S").setDescription("At start of turn, if unit is adjacent to an armored ally, unit and adjacent armored allies can move 1 extra space. (That turn only. Does not stack.)");
 const SpecialFighter3 = new FEH.PassiveSkill().setName("Special Fighter 3").setSlot("B").setDescription("At start of combat, if unit's HP ≥ 50%, grants Special cooldown charge +1 to unit and inflicts Special cooldown charge -1 on foe per attack. (Only highest value applied. Does not stack.)");
 
+AtkSmoke3.onAfterCombat = ({ enemy }) => {
+    let effects: Effect[] = [];
+    for (let ally of enemy.allies) {
+        if (enemy.getDistance(ally) <= 2) {
+            effects.push({
+                targetHeroId: ally.id,
+                appliedEffect: {
+                    stats: {
+                        atk: -7,
+                    }
+                }
+            });
+        }
+    }
+    return effects;
+};
+
+ResSmoke3.onAfterCombat = ({ enemy }) => {
+    let effects: Effect[] = [];
+    for (let ally of enemy.allies) {
+        if (enemy.getDistance(ally) <= 2) {
+            effects.push({
+                targetHeroId: ally.id,
+                appliedEffect: {
+                    stats: {
+                        res: -7,
+                    }
+                }
+            });
+        }
+    }
+    return effects;
+};
+
+SpdSmoke3.onAfterCombat = ({ enemy }) => {
+    let effects: Effect[] = [];
+    for (let ally of enemy.allies) {
+        if (enemy.getDistance(ally) <= 2) {
+            effects.push({
+                targetHeroId: ally.id,
+                appliedEffect: {
+                    stats: {
+                        spd: -7,
+                    }
+                }
+            });
+        }
+    }
+    return effects;
+};
+
+HoneSpd2.onTurnStart = ({ wielder }) => {
+    let effects: Effect[] = [];
+    for (let ally of wielder.allies) {
+        if (wielder.getDistance(ally) === 1) {
+            effects.push({
+                targetHeroId: ally.id,
+                appliedEffect: {
+                    stats: {
+                        spd: 4
+                    }
+                }
+            });
+        }
+    }
+
+    return effects;
+};
+
 
 Hector.equipSkill(DistantCounter);
 Hector.equipSkill(VengefulFighter3);
@@ -675,6 +754,18 @@ class Battle {
         }
     }
 
+    resetEffects(team: "team1" | "team2") {
+        for (let { hero } of this[team]) {
+            hero.mapMods = {
+                atk: 0,
+                spd: 0,
+                res: 0,
+                def: 0,
+            };
+            hero.statuses = [];
+        }
+    }
+
     getDistance(tile1: Coords, tile2: Coords) {
         return Math.abs(tile1.x - tile2.x) + Math.abs(tile1.y - tile2.y);
     }
@@ -737,8 +828,16 @@ class Battle {
         this.effectRunner = new FEH.MapEffectRunner(this.team1.map(({ hero }) => hero), this.team2.map(({ hero }) => hero));
     }
 
-    getMapEffects(team: "team1" | "team2", effect: "turnStart") {
-        return this.effectRunner.runEffects(effect, team);
+    getTurnStartEffects(team: "team1" | "team2") {
+        return this.effectRunner.runTurnStartEffects(team);
+    }
+
+    getPostCombatEffects(hero: Hero, enemy: Hero, combatOutcome: CombatOutcome) {
+        return this.effectRunner.runAfterCombatEffects({
+            hero,
+            enemy,
+            combatOutcome
+        });
     }
 };
 

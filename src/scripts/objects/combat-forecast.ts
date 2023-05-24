@@ -38,8 +38,6 @@ class CombatForecast extends Phaser.GameObjects.Container {
     private attackerRoundDamage: GameObjects.Text;
     private defenderRoundCount: GameObjects.Text;
     private defenderRoundDamage: GameObjects.Text;
-    private firstPortraitSwitchingTween: Tweens.Tween;
-    private secondPortraitSwitchingTween: Tweens.Tween;
     private firstSideBg: GameObjects.Rectangle;
 
     private firstHero: RenderedHero = {
@@ -153,26 +151,6 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.add(otherArrow);
         this.add(this.firstHero.previousHP);
         this.add(this.firstHero.predictedHP);
-
-        this.firstPortraitSwitchingTween = scene.tweens.create({
-            duration: 300,
-            targets: [this.firstHero.portrait],
-            yoyo: true,
-            alpha: 0,
-            onYoyo: () => {
-
-            }
-        });
-
-        this.secondPortraitSwitchingTween = scene.tweens.create({
-            duration: 300,
-            targets: [this.secondHero.portrait],
-            yoyo: true,
-            alpha: 0,
-            onYoyo: () => {
-
-            }
-        });
 
         this.portraitDisplayTween = scene.tweens.create({
             duration: 300,

@@ -13,6 +13,7 @@ class Hero extends GameObjects.Container {
     team: "team1" | "team2";
     statuses: string[];
     statusesImage: GameObjects.Image;
+    statusIndex = 0;
 
     // todo: simplify constructor
     constructor(scene: Scene, x: number, y: number, data: HeroData, team: "team1" | "team2") {
@@ -38,7 +39,7 @@ class Hero extends GameObjects.Container {
         gradient.addColorStop(0.7, this.team === "team1" ? "#54DFF4" : "#FA4D69");
         this.hpText.setFill(gradient);
         this.add(this.hpText);
-        this.statusesImage = new GameObjects.Image(scene, 45, 45, "buff");
+        this.statusesImage = new GameObjects.Image(scene, 45, 45, "");
         this.add(this.statusesImage);
         this.setSize(this.image.width, this.image.height);
     }
@@ -52,6 +53,18 @@ class Hero extends GameObjects.Container {
         this.hpText.setText(hp.toString());
         const hpRatio = hp / maxHP;
         this.hpBar.displayWidth = fullWidth * hpRatio;
+        this.statusesImage.setVisible(!!this.statuses.length);
+        if (this.statuses[0]) {
+            this.statusesImage.setTexture(this.statuses[this.statusIndex]);
+        }
+    }
+
+    toggleStatuses() {
+        if (this.statusIndex + 1 === this.statuses.length) {
+            this.statusIndex = 0;
+        } else {
+            this.statusIndex++;
+        }
     }
 
     getMovementRange() {

@@ -59,6 +59,7 @@ export default class MainScene extends Phaser.Scene {
     ["floor", "floor", "floor", "floor", "floor", "floor"],
     ["tree", "void", "void", "void", "void", "tree"]
   ];
+  updateDelta = 0;
 
   constructor() {
     super({ key: 'MainScene' });
@@ -135,8 +136,10 @@ export default class MainScene extends Phaser.Scene {
     const otherTeam = turn === "team1" ? "team2" : "team1";
     this.turn = turn;
     this.heroesWhoMoved = [];
-    const effects = battle.getMapEffects(turn, "turnStart");
+    battle.resetEffects("team1");
+    const effects = battle.getTurnStartEffects(turn);
     for (let hero of this[turn]) {
+      hero.statuses = [];
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
 
@@ -152,6 +155,7 @@ export default class MainScene extends Phaser.Scene {
       let previousSoundFile = "";
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
+        console.log(hero.getInternalHero().statuses);
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         this.movementAllowedImages.setVisible(false);
         const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;
@@ -294,6 +298,7 @@ export default class MainScene extends Phaser.Scene {
           const [xCoord, yCoord] = finalLandingTile.split("-");
           this.moveHero(hero, currentCoords, { x: +xCoord, y: +yCoord });
           currentCoords.x = +xCoord;
+          this.movementAllowedImages.setVisible(false);
           currentCoords.y = +yCoord;
           const target = this.map[y2][x2];
           const turns = battle.startCombat(hero.getInternalHero(), target.getInternalHero());
@@ -309,7 +314,7 @@ export default class MainScene extends Phaser.Scene {
                 onStart: () => {
                   this.sound.play("ko", { volume: 0.4 });
                 },
-                onComplete: () => {  
+                onComplete: () => {
                   this.game.input.enabled = true;
                   if (hero.getInternalHero().stats.hp) {
                     this.endAction(hero);
@@ -318,11 +323,19 @@ export default class MainScene extends Phaser.Scene {
                   this.killHero(deadUnit);
                   this.movementAllowedImages.setVisible(true);
                   this.movementAllowedTween.resume();
+                  this.combatForecast.setVisible(false);
                 }
               });
             } else {
+              this.combatForecast.setVisible(false);
               this.endAction(hero);
               this.game.input.enabled = true;
+            }
+            const s = battle.getPostCombatEffects(hero.getInternalHero(), target.getInternalHero(), turns);
+            for (let ef of s) {
+              const h = this.children.getByName(ef.targetHeroId) as Hero;
+              h.statuses.push("debuff");
+              h.getInternalHero().setMapMods(ef.appliedEffect.stats);
             }
           });
           for (let i = 0; i < turns.outcome.length; i++) {
@@ -413,6 +426,7 @@ export default class MainScene extends Phaser.Scene {
       const target = this.children.getByName(effect.targetHeroId) as Hero;
       if (effect.appliedEffect.stats) {
         target.getInternalHero().setMapMods(effect.appliedEffect.stats);
+        target.statuses.push("buff");
       }
     }
   }
@@ -436,6 +450,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("path-up-right", "assets/path-up-right.png");
     this.load.image("path-up-left", "assets/path-up-left.png");
     this.load.image("buff", "assets/buff-arrow.png");
+    this.load.image("debuff", "assets/debuff-arrow.png");
     this.load.image("horizontal", "assets/horizontal.png");
     this.load.image("vertical", "assets/vertical-fixed.png");
     this.load.image("unit-bg", "assets/unitbg.png");
@@ -637,7 +652,14 @@ export default class MainScene extends Phaser.Scene {
     return true;
   }
 
-  update() {
+  update(time: number, delta: number) {
+    this.updateDelta += delta;
+    if (this.updateDelta >= 16.67 * 60) { // 60 frames
+      this.updateDelta = 0;
+      for (let hero of this.heroes) {
+        hero.toggleStatuses();
+      }
+    }
     for (let hero of this.heroes) {
       hero.update();
     }
