@@ -10,74 +10,168 @@ const Ryoma = new FEH.Hero({
     name: "Ryoma",
     weaponColor: "red",
     weaponType: "sword",
-    stats: {
-        hp: 41,
-        atk: 34,
-        spd: 39,
-        def: 28,
-        res: 20
+    // stats: {
+    //     hp: 41,
+    //     atk: 34,
+    //     spd: 39,
+    //     def: 28,
+    //     res: 20
+    // },
+    lv1Stats: {
+        hp: 17,
+        atk: 8,
+        spd: 11,
+        def: 6,
+        res: 5
+    },
+    growthRates: {
+        hp: 55,
+        atk: 60,
+        spd: 65,
+        def: 50,
+        res: 35
     },
     movementType: "flier"
 });
 
 const Lyn = new FEH.Hero({
     name: "Lyn",
-    stats: {
-        hp: 35,
-        atk: 33,
-        spd: 35,
-        def: 18,
-        res: 28
+    // stats: {
+    //     hp: 35,
+    //     atk: 33,
+    //     spd: 35,
+    //     def: 18,
+    //     res: 28
+    // },
+    lv1Stats: {
+        hp: 16,
+        atk: 7,
+        spd: 9,
+        def: 5,
+        res: 6
     },
+    growthRates: {
+        hp: 45,
+        atk: 60,
+        spd: 60,
+        def: 30,
+        res: 50
+    },
+    weaponColor: "colorless",
+    weaponType: "bow",
     movementType: "cavalry"
 });
 
 const Ike = new FEH.Hero({
     name: "Ike",
-    stats: {
-        hp: 41,
-        atk: 36,
-        spd: 30,
-        def: 35,
-        res: 21
+    // stats: {
+    //     hp: 41,
+    //     atk: 36,
+    //     spd: 30,
+    //     def: 35,
+    //     res: 21
+    // },
+    lv1Stats: {
+        hp: 19,
+        atk: 10,
+        spd: 6,
+        def: 9,
+        res: 10
     },
+    growthRates: {
+        hp: 50,
+        atk: 60,
+        spd: 55,
+        def: 60,
+        res: 40
+    },
+    weaponColor: "red",
+    weaponType: "sword",
     movementType: "infantry"
 });
 
 const Corrin = new FEH.Hero({
     name: "Corrin",
-    stats: {
-        hp: 42,
-        atk: 35,
-        spd: 35,
-        def: 31,
-        res: 24   
+    // stats: {
+    //     hp: 42,
+    //     atk: 35,
+    //     spd: 35,
+    //     def: 31,
+    //     res: 24   
+    // },
+    lv1Stats: {
+        hp: 16,
+        atk: 7,
+        spd: 7,
+        def: 5,
+        res: 5
     },
+    growthRates: {
+        hp: 60,
+        atk: 65,
+        spd: 65,
+        def: 60,
+        res: 45
+    },
+    weaponColor: "blue",
+    weaponType: "dragonstone",
     movementType: "infantry",
 });
 
 const Lucina = new FEH.Hero({
     name: "Lucina",
     movementType: "infantry",
-    stats: {
-        hp: 41,
-        atk: 34,
-        spd: 36,
-        def: 27,
-        res: 19
-    }
+    weaponColor: "blue",
+    weaponType: "lance",
+    lv1Stats: {
+        hp: 17,
+        atk: 8,
+        spd: 10,
+        def: 8,
+        res: 4
+    },
+    growthRates: {
+        hp: 55,
+        atk: 60,
+        spd: 60,
+        def: 45,
+        res: 35
+    },
+    bane: "atk",
+    boon: "def",
+    // stats: {
+    //     hp: 41,
+    //     atk: 34,
+    //     spd: 36,
+    //     def: 27,
+    //     res: 19
+    // }
 });
 
 const Robin = new FEH.Hero({
     name: "Robin",
     weaponColor: "colorless",
     weaponType: "dragonstone",
-    stats: {
-        hp: 40,
-        atk: 32,
-        spd: 35,
-        def: 30,
-        res: 25
+    // stats: {
+    //     hp: 40,
+    //     atk: 32,
+    //     spd: 35,
+    //     def: 30,
+    //     res: 25
+    // },
+    lv1Stats: {
+        hp: 16,
+        atk: 8,
+        spd: 9,
+        def: 8,
+        res: 6
+    },
+    growthRates: {
+        hp: 55,
+        atk: 55,
+        spd: 60,
+        def: 50,
+        res: 45
     },
     movementType: "flier"
 });
@@ -86,12 +180,26 @@ const Ephraim = new FEH.Hero({
     name: "Ephraim",
     weaponColor: "green",
     weaponType: "axe",
-    stats: {
-        hp: 46,
-        atk: 38,
-        spd: 27,
-        def: 37,
-        res: 26
+    // stats: {
+    //     hp: 46,
+    //     atk: 38,
+    //     spd: 27,
+    //     def: 37,
+    //     res: 26
+    // },
+    lv1Stats: {
+        hp: 22,
+        atk: 10,
+        spd: 5,
+        def: 11,
+        res: 7
+    },
+    growthRates: {
+        hp: 55,
+        atk: 65,
+        spd: 50,
+        def: 60,
+        res: 45
     },
     movementType: "armored"
 });
@@ -100,12 +208,26 @@ const Hector = new FEH.Hero({
     name: "Hector",
     weaponColor: "green",
     weaponType: "axe",
-    stats: {
-        hp: 47,
-        atk: 40,
-        spd: 23,
-        def: 38,
-        res: 26
+    // stats: {
+    //     hp: 47,
+    //     atk: 40,
+    //     spd: 23,
+    //     def: 38,
+    //     res: 26
+    // },
+    lv1Stats: {
+        hp: 23,
+        atk: 10,
+        spd: 6,
+        def: 12,
+        res: 4
+    },
+    growthRates: {
+        hp: 55,
+        atk: 70,
+        spd: 40,
+        def: 60,
+        res: 50
     },
     movementType: "armored"
 });
@@ -200,6 +322,10 @@ const Geirskogul = new FEH.Weapon({
     range: 1,
     description: "Grants Def+3. If allies within 2 spaces use sword, lance, axe, bow, dagger, or beast damage, grants Atk/Spd+3 to those allies during combat."
 });
+
+Geirskogul.onEquip = (wielder) => {
+    wielder.raiseStat("def", 3);
+}
 
 Geirskogul.onBeforeAllyCombat = ({ ally, wielder }) => {
     if (ally.getDistance(wielder) <= 2 && ["sword", "lance", "axe", "bow", "dagger", "beast"].includes(ally.getWeapon().type)) {
