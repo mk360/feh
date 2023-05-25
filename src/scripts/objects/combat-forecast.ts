@@ -312,7 +312,6 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.add(this.secondHero.predictedHP);
         this.add(this.secondHero.previousHP);
         this.defenderRoundDamage.setText(params.defender.damage && params.defender.turns ? params.defender.damage.toString() : "-");
-        console.log(params.defender.turns);
         this.defenderRoundCount.setText("×" + params.defender.turns).setX(this.defenderRoundDamage.getRightCenter().x + 5);
     }
 

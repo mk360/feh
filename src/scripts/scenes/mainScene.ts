@@ -136,14 +136,12 @@ export default class MainScene extends Phaser.Scene {
     const otherTeam = turn === "team1" ? "team2" : "team1";
     this.turn = turn;
     this.heroesWhoMoved = [];
-    battle.resetEffects("team1");
+    battle.resetEffects(turn);
     const effects = battle.getTurnStartEffects(turn);
     for (let hero of this[turn]) {
       hero.statuses = [];
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
-
-      hero.setInteractive(new Geom.Rectangle(0, 0, 40, 40));
       this.input.setDraggable(hero, true);
       const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.getInternalHero().name}`).setDepth(0);
       this.add.existing(img);
@@ -155,7 +153,6 @@ export default class MainScene extends Phaser.Scene {
       let previousSoundFile = "";
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
-        console.log(hero.getInternalHero().statuses);
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         this.movementAllowedImages.setVisible(false);
         const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;

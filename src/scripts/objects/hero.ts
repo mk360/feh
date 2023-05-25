@@ -41,7 +41,7 @@ class Hero extends GameObjects.Container {
         this.add(this.hpText);
         this.statusesImage = new GameObjects.Image(scene, 45, 45, "");
         this.add(this.statusesImage);
-        this.setSize(this.image.width, this.image.height);
+        this.setSize(120, 120);
     }
 
     getInternalHero() {
