@@ -334,7 +334,9 @@ export default class MainScene extends Phaser.Scene {
         } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
           const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
           const coordsArray = [`${hero.getInternalHero().coordinates.x}-${hero.getInternalHero().coordinates.y}`];
-          const [finalLandingTile] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords) || coordsArray;
+          const overlap = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
+          console.log({ overlap });
+          const [finalLandingTile] = overlap.length ? overlap : coordsArray;
           const [xCoord, yCoord] = finalLandingTile.split("-");
           this.moveHero(hero, currentCoords, { x: +xCoord, y: +yCoord });
           currentCoords.x = +xCoord;
@@ -468,7 +470,7 @@ export default class MainScene extends Phaser.Scene {
 
     for (let effect of effects) {
       const target = this.children.getByName(effect.targetHeroId) as Hero;
-      if (effect.appliedEffect.stats) {
+      if (target && effect.appliedEffect.stats) {
         target.getInternalHero().setMapMods(effect.appliedEffect.stats);
         target.statuses.push("buff");
         if (this.turn === "team2") {
@@ -579,9 +581,9 @@ export default class MainScene extends Phaser.Scene {
           }
         });
         // uncomment if you need to check tile coordinates
-        // this.add.text(r.getCenter().x, r.getCenter().y, name, {
-        //   fontSize: "18px"
-        // });
+        this.add.text(r.getCenter().x, r.getCenter().y, name, {
+          fontSize: "18px"
+        });
       }
     }
     
@@ -656,7 +658,6 @@ export default class MainScene extends Phaser.Scene {
 
   // todo: try to split function into distinct ones for walking and attacking
   getTilesInRange(tile: Coords, range: number, existingTiles?: Map<string, Coords>, checkForAttacks?: boolean) {
-    new Structs.Set()
     let tiles = existingTiles ? Array.from(existingTiles.values()) : [tile];
     const tileset = existingTiles ? new Map(existingTiles || undefined) : new Map<string, Coords>();
     const hero = this.map[tile.y][tile.x];
