@@ -1,5 +1,5 @@
 {
-  "name": "phaser-project-template",
+  "name": "fire-emblem-heroes",
   "version": "3.55.2",
   "description": "Phaser 3 starter template with TypeScript and webpack.",
   "homepage": "https://mk360.github.io/feh",
@@ -13,13 +13,11 @@
     "format:write": "prettier --write src/scripts/**"
   },
   "keywords": [
-    "Phaser",
+    "Fire Emblem Heroes",
     "Phaser 3",
-    "Phaser3",
     "html5 game",
     "TypeScript",
-    "webpack",
-    "starter"
+    "webpack"
   ],
   "author": {
     "name": "Mohamed Kassar",
