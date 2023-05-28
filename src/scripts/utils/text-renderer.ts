@@ -35,7 +35,7 @@ export function renderBoonText(config: TextRenderingConfig) {
 export function renderSkillNameText(config: TextRenderingConfig) {
     const { text } = renderTextWith2DContext(config);
     text.setColor(TextColors.skillName);
-    text.setFontSize(20);
+    text.setFontSize(18);
     return text;
 }
 

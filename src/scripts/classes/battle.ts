@@ -375,7 +375,7 @@ ThunderArmads.onBeforeCombat = ({ wielder, enemy }) => {
 };
 
 const Garm = new FEH.Weapon();
-Garm.setName("Garm").setType("axe").setColor("green").setMight(16).setRange(1);
+Garm.setName("Garm").setType("axe").setColor("green").setMight(16).setRange(1).setDescription("Grants Atk+3. If a bonus granted by a skill like Rally or Hone and/or 1 extra space of movement granted by a skill like Armor March or Armored Boots is active, unit makes a guaranteed follow-up attack.");
 
 Garm.onEquip = (wielder) => {
     wielder.raiseStat("atk", 3);
@@ -605,7 +605,7 @@ SealAtkDef2.setDescription("Inflicts Atk/Def-5 on foe through its next action af
 const Bushido2 = new FEH.PassiveSkill().setName("Bushido II").setSlot("B");
 
 Bushido2.onBeforeCombat = ({ wielder, enemy, damage }) => {
-    wielder.raiseCursor("damageIncrease", 7);
+    enemy.raiseCursor("damageIncrease", 7);
     if (enemy.getWeapon().effectiveAgainst.includes("flier")) {
         enemy.lowerCursor("effectiveness", 1);
     }
@@ -1001,7 +1001,7 @@ battle.addHero(Corrin, "team2", {
 
 battle.addHero(Ephraim, "team2", {
     x: 3,
-    y: 7
+    y: 3
 });
 
 battle.addHero(Lyn, "team2", {

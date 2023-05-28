@@ -1,4 +1,4 @@
-import { GameObjects, Geom, Structs } from 'phaser';
+import { GameObjects, Geom, Structs, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import TileType from '../../types/tiles';
 import UnitInfosBanner from '../objects/unit-infos-banner';
@@ -7,6 +7,7 @@ import CombatForecast from '../objects/combat-forecast';
 import Coords from '../../interfaces/coords';
 import battle from '../classes/battle';
 import HeroData from "feh-battles/dec/hero";
+import InteractionIndicator from '../objects/interaction-indicator';
 
 const squareSize = 125;
 const squaresOffset = 63;
@@ -26,10 +27,7 @@ function pixelsToGrid(x: number, y: number) {
   };
 }
 
-// store the "allowed movement" graphic in an array,
-// hide all of them except the moving unit
-// make the graphic follow the unit when they're dragged around
-// put the rosary graphic where the unit was
+const dblClickMargin = 300;
 
 export default class MainScene extends Phaser.Scene {
   unitInfosBanner: UnitInfosBanner;
@@ -49,6 +47,8 @@ export default class MainScene extends Phaser.Scene {
   movementAllowedTween: Phaser.Tweens.Tween;
   movementArrows: Phaser.GameObjects.Group;
   combatForecast: CombatForecast;
+  interactionIndicator: InteractionIndicator;
+  interactionIndicatorTween: Tweens.Tween;
   terrain: TileType[][] = [
     ["wall", "floor", "floor", "floor", "floor", "floor"],
     ["wall", "floor", "floor", "floor", "void", "floor"],
@@ -59,6 +59,7 @@ export default class MainScene extends Phaser.Scene {
     ["floor", "floor", "floor", "floor", "floor", "floor"],
     ["tree", "void", "void", "void", "void", "tree"]
   ];
+  fpsText: GameObjects.Text;
   updateDelta = 0;
 
   constructor() {
@@ -84,8 +85,9 @@ export default class MainScene extends Phaser.Scene {
   }
 
   endAction(hero: Hero) {
-    hero.image.setTint(0x777777);    
+    this.input.setDraggable(hero, false);
     hero.disableInteractive();
+    hero.image.setTint(0x777777);
     this.heroesWhoMoved.push(hero);
     this.displayRange = false;
     this.children.remove(this.children.getByName("movement-" + hero.getInternalHero().name));
@@ -151,12 +153,21 @@ export default class MainScene extends Phaser.Scene {
       let pathStart: GameObjects.Image;
 
       let previousSoundFile = "";
+      let clickTimestamp = 0;
+      
       hero.off("pointerdown");
-      hero.on("pointerdown", () => {
+      hero.on("pointerdown", ({ event: { timeStamp } }) => {
+        if (timeStamp - clickTimestamp <= dblClickMargin) {
+          this.endAction(hero);
+          hero.off("pointerdown");
+          return;
+        }
+        clickTimestamp = timeStamp;
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         this.movementAllowedImages.setVisible(false);
         const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;
         img.setVisible(true);
+        console.log(img);
         pathStart = this.add.image(img.x, img.y, "rosary").setDisplaySize(img.width, img.height).setScale(1.35).setName("arrow");
         this.movementAllowedTween.pause();
         this.sound.play("enabled-unit");
@@ -232,12 +243,27 @@ export default class MainScene extends Phaser.Scene {
           }
           previousTileString = target.name;
           (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).x = target.x;
-              (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).y = target.y;
+          (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).y = target.y;
+          this.interactionIndicator.setVisible(false);
         } else if (this.attackCoords.includes(target.name)) {
           const [x, y] = target.name.split("-");
           if ((this.map[+y][+x]?.team ?? hero.team) !== hero.team) {
             const opponent = this.map[+y][+x];
             this.unitInfosBanner.setVisible(false);
+            this.interactionIndicator.x = opponent.image.getCenter().x + opponent.x;
+            this.interactionIndicator.y = opponent.image.getTopCenter().y - 30 + opponent.y;
+            this.interactionIndicator.setVisible(true);
+            if (this.interactionIndicatorTween) {
+              this.interactionIndicatorTween.stop();
+            }
+            this.interactionIndicatorTween = this.tweens.create({
+              y: this.interactionIndicator.y - 10,
+              loop: -1,
+              yoyo: true,
+              targets: this.interactionIndicator,
+              duration: 400,
+            });
+            this.interactionIndicatorTween.play();
             const simulatedBattle = battle.startCombat(hero.getInternalHero(), opponent.getInternalHero());
             this.combatForecast.setForecastData({
               attacker: {
@@ -269,6 +295,8 @@ export default class MainScene extends Phaser.Scene {
         this.movementArrows.setVisible(false);
         this.children.remove(this.children.getByName("arrow"));
         this.children.remove(this.children.getByName("end-arrow"));
+        
+        this.interactionIndicator.setVisible(false);
         if (this.walkCoords.includes(x2 + "-" + y2) && !this.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
           this.combatForecast.setVisible(false);
           this.unitInfosBanner.setVisible(true);
@@ -351,11 +379,10 @@ export default class MainScene extends Phaser.Scene {
               x: `-=${(attackerObject.x - defenderObject.x) / 2}`,
               y: `-=${(attackerObject.y - defenderObject.y) / 2}`,
               yoyo: true,
-              duration: 100,
+              duration: 150,
               onStart: () => {
                 this.sound.play("hit");
                 this.add.existing(damageText);
-                // this.combatForecast
                 this.tweens.add({
                   targets: [damageText],
                   y: defenderObject.image.getTopCenter().y + defenderObject.y,
@@ -374,13 +401,16 @@ export default class MainScene extends Phaser.Scene {
                   }
                 });
               },
-              delay: 500,
+              delay: 600,
             });
           }
           this.game.input.enabled = false;
           t.play();
         } else {
           const pixelCoords = gridToPixels(currentCoords.x, currentCoords.y);
+          (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).x = pixelCoords.x;
+          (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).y = pixelCoords.y;
+          // (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).setVisible(true);
           this.tweens.add({
             targets: hero,
             x: pixelCoords.x,
@@ -388,8 +418,6 @@ export default class MainScene extends Phaser.Scene {
             duration: 100
           });
           hero.getInternalHero().coordinates = {...currentCoords};
-          // hero.x = pixelCoords.x;
-          // hero.y = pixelCoords.y;
         }
       });
     }
@@ -405,7 +433,6 @@ export default class MainScene extends Phaser.Scene {
     for (let hero of this[otherTeam]) {
       hero.off("dragover");
       hero.off("dragend");
-      hero.setInteractive();
       this.children.remove(this.children.getByName("movement-" + hero.getInternalHero().name));
       hero.image.clearTint();
       this.input.setDraggable(hero, false);
@@ -437,7 +464,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.audio("disabled-unit", "assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "assets/audio/hit.mp3");
     this.load.audio("ko", "assets/audio/ko.mp3");
-    this.load.image("test", "assets/unit-bg-test.png");
+    this.load.image("background", "assets/unit-bg-test.png");
     this.load.audio("hover", "assets/audio/hover on tile.mp3");
     this.load.audio("confirm", "assets/audio/confirm.mp3");
     this.load.image("nameplate", "assets/nameplate.png");
@@ -454,6 +481,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("rosary", "assets/rosary-current.png");
     this.load.image("rosary-arrow", "assets/rosary-arrow.png");
     this.load.image("weapon-icon", "assets/weapon_icon.png");
+    this.load.image("interaction-bubble", "assets/interaction-bubble.png");
+    this.load.image("interaction-attack", "assets/interaction-attack.png");
     this.load.image("weapon-bg", "assets/weapon.png");
     this.load.image("unit-banner-bg", "assets/unit-banner-bg.png");
     this.load.image("assist-icon", "assets/assist-icon.png");
@@ -480,6 +509,7 @@ export default class MainScene extends Phaser.Scene {
     this.heroes.push(hero);
     this.map[config.y][config.x] = hero;
     this[team].push(hero);
+    hero.setDepth(1);
     return hero;
   }
 
@@ -500,10 +530,10 @@ export default class MainScene extends Phaser.Scene {
   create() {
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
-    this.add.image(0, 0, "test").setOrigin(0).setTint(0x423452);
+    this.add.image(0, 0, "background").setOrigin(0).setTint(0x000000);
     const bgm = this.sound.play("bgm", { volume: 0.1, loop: true });
     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
-    this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
+    this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setDepth(0);
     for (let y = 1; y < 9; y++) {
       for (let x = 1; x < 7; x++) {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
@@ -523,9 +553,9 @@ export default class MainScene extends Phaser.Scene {
           }
         });
         // uncomment if you need to check tile coordinates
-        this.add.text(r.getCenter().x, r.getCenter().y, name, {
-          fontSize: "18px"
-        });
+        // this.add.text(r.getCenter().x, r.getCenter().y, name, {
+        //   fontSize: "18px"
+        // });
       }
     }
     
@@ -548,9 +578,18 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
-    this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false));
-
     this.setTurn("team1");
+    this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(5));
+    this.interactionIndicatorTween = this.tweens.create({
+      y: "-=40",
+      loop: -1,
+      yoyo: true,
+      targets: this.interactionIndicator,
+      duration: 500
+    });
+    this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(1);
+    this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
+    this.add.existing(this.fpsText);
 }
 
   displayRanges(coords: Coords, walkingRange: number, weaponRange: number) {
@@ -650,6 +689,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number) {
+    this.fpsText.setText(this.game.loop.actualFps.toFixed(2));
     this.updateDelta += delta;
     if (this.updateDelta >= 16.67 * 60) { // 60 frames
       this.updateDelta = 0;

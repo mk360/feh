@@ -7,7 +7,7 @@ const DEFAULT_HEIGHT = 1200
 
 const config = {
   type: Phaser.WEBGL,
-  backgroundColor: '#000',
+  backgroundColor: 'rgba(255, 255, 255, 0)',
   fps: {
     forceSetTimeout: true,
     target: 15,
