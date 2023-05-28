@@ -180,13 +180,19 @@ export default class MainScene extends Phaser.Scene {
         this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
       });
       let previousTileString = "";
+      let tilePath: string[] = [];
+      // when dragging over a tile:
+      // if tile is inside movement tiles, autocomplete based on existing tile path
+      // if tile is inside attack tiles and there's an enemy inside: autocomplete based on existing tile path
+      // if tile is inside attack tiles but there are no enemies inside: display arrow path (autocomplete from existing), but reset hero's position on drag end
       const endArrow = new GameObjects.Image(this, 0, 0, "end-arrow").setName("end-arrow");
       this.movementArrows.add(endArrow);
       let hoveredTile = "";
-      hero.on("dragover", (_, target: Phaser.GameObjects.Rectangle) => {
+      hero.on("dragenter", (_, target: Phaser.GameObjects.Rectangle) => {
+        console.log(target);
         if (target.name !== hoveredTile) {
           hoveredTile = target.name
-        } else return;
+        }
         if (this.walkCoords.includes(target.name) && target.name !== previousTileString) {
           this.combatForecast.setVisible(false);
           this.unitInfosBanner.setVisible(true);
@@ -444,6 +450,7 @@ export default class MainScene extends Phaser.Scene {
         this.highlightedHero = hero;
         this.unitInfosBanner.setVisible(true).setHero(hero);
       });
+      hero.setInteractive(undefined, undefined, true);
     }
 
     for (let effect of effects) {
