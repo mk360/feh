@@ -85,6 +85,12 @@ export default class MainScene extends Phaser.Scene {
   }
 
   endAction(hero: Hero) {
+    hero.off("drag");
+    hero.off("dragover");
+    hero.off("dragenter");
+    hero.off("dragleave");
+    hero.off("dragend");
+    hero.off("pointerdown");
     this.input.setDraggable(hero, false);
     hero.disableInteractive();
     hero.image.setTint(0x777777);
@@ -157,10 +163,13 @@ export default class MainScene extends Phaser.Scene {
       let clickTimestamp = 0;
       
       hero.off("pointerdown");
+      hero.on("drag", (_, dragX: number, dragY: number) => {
+        hero.x = dragX;
+        hero.y = dragY
+      });
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
         if (timeStamp - clickTimestamp <= dblClickMargin) {
           this.endAction(hero);
-          hero.off("pointerdown");
           return;
         }
         clickTimestamp = timeStamp;
@@ -324,7 +333,8 @@ export default class MainScene extends Phaser.Scene {
           this.children.remove(endArrow);
         } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
           const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
-          const [finalLandingTile] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
+          const coordsArray = [`${hero.getInternalHero().coordinates.x}-${hero.getInternalHero().coordinates.y}`];
+          const [finalLandingTile] = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords) || coordsArray;
           const [xCoord, yCoord] = finalLandingTile.split("-");
           this.moveHero(hero, currentCoords, { x: +xCoord, y: +yCoord });
           currentCoords.x = +xCoord;
@@ -357,9 +367,11 @@ export default class MainScene extends Phaser.Scene {
                 }
               });
             } else {
-              this.combatForecast.setVisible(false);
-              this.endAction(hero);
-              this.game.input.enabled = true;
+              setTimeout(() => {
+                this.combatForecast.setVisible(false);
+                this.endAction(hero);
+                this.game.input.enabled = true;
+              }, 300);
             }
             const s = battle.getPostCombatEffects(hero.getInternalHero(), target.getInternalHero(), turns);
             for (let ef of s) {
@@ -387,6 +399,7 @@ export default class MainScene extends Phaser.Scene {
               duration: 150,
               onStart: () => {
                 this.sound.play("hit");
+                defenderObject.image.setTintFill(0xFFFFFF);
                 this.add.existing(damageText);
                 this.tweens.add({
                   targets: [damageText],
@@ -394,6 +407,7 @@ export default class MainScene extends Phaser.Scene {
                   yoyo: true,
                   duration: 100,
                   onComplete: () => {
+                    defenderObject.image.tintFill = false;
                     setTimeout(() => {
                       damageText.destroy();
                     }, 500);
@@ -441,6 +455,7 @@ export default class MainScene extends Phaser.Scene {
       this.children.remove(this.children.getByName("movement-" + hero.getInternalHero().name));
       hero.image.clearTint();
       this.input.setDraggable(hero, false);
+      hero.setInteractive();
       hero.off("dragstart");
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
@@ -456,6 +471,9 @@ export default class MainScene extends Phaser.Scene {
       if (effect.appliedEffect.stats) {
         target.getInternalHero().setMapMods(effect.appliedEffect.stats);
         target.statuses.push("buff");
+        if (this.turn === "team2") {
+          target.on("pointerdown", console.log);
+        }
       }
     }
   }
@@ -536,7 +554,9 @@ export default class MainScene extends Phaser.Scene {
   create() {
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
-    this.add.image(0, 0, "background").setOrigin(0).setTint(0x000000);
+    this.add.rectangle(0, 180, 750, 1000, 0xFFFFFF).setOrigin(0);
+    const banner = this.add.image(-90, 0, "background").setOrigin(0).setTint(0x0F343D);
+    banner.setDisplaySize(banner.displayWidth, 180);
     const bgm = this.sound.play("bgm", { volume: 0.1, loop: true });
     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
     this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setDepth(0);
@@ -577,12 +597,12 @@ export default class MainScene extends Phaser.Scene {
       }, "team2");
     }
 
-    this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
-      if (d instanceof Hero && d.team === this.turn) {
-        d.x = dragX;
-        d.y = dragY;
-      }
-    });
+    // this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
+    //   if (d instanceof Hero && d.team === this.turn) {
+    //     d.x = dragX;
+    //     d.y = dragY;
+    //   }
+    // });
 
     this.setTurn("team1");
     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(5));
@@ -595,7 +615,7 @@ export default class MainScene extends Phaser.Scene {
     });
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(1);
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
-    this.add.existing(this.fpsText);
+    // this.add.existing(this.fpsText);
 }
 
   displayRanges(coords: Coords, walkingRange: number, weaponRange: number) {
@@ -694,14 +714,10 @@ export default class MainScene extends Phaser.Scene {
     return true;
   }
 
-  update(time: number, delta: number) {
-    this.fpsText.setText(this.game.loop.actualFps.toFixed(2));
-    this.updateDelta += delta;
-    if (this.updateDelta >= 16.67 * 60) { // 60 frames
-      this.updateDelta = 0;
-      for (let hero of this.heroes) {
-        hero.toggleStatuses();
-      }
+  update() {
+    // this.fpsText.setText(this.game.loop.actualFps.toFixed(2));
+    for (let hero of this.heroes) {
+      hero.toggleStatuses();
     }
     for (let hero of this.heroes) {
       hero.update();

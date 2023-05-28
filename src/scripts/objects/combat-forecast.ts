@@ -184,37 +184,36 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.attackerRoundDamage.setText(attacker.damage.toString());
         this.attackerRoundDamage.setColor(attacker.effective ? TextColors.effective : TextColors.white);
         this.attackerRoundCount.setText(attacker.turns >= 2 ? "×" + attacker.turns.toString() : "").setX(this.attackerRoundDamage.getRightCenter().x);
-        let xOffset = this.firstSideBg.getCenter().x - 35;
+        let xOffset = this.firstSideBg.getCenter().x - 20;
         for (let stat in attackerStatMods) {
             if (attackerStatMods[stat]) {
-                const changedStat = renderText(this.scene, xOffset - 40, 140, capitalize(stat));
                 const statValue = attackerStatMods[stat];
-                this.attackerStatMods.add(changedStat);
-                const statChangeValue = renderText(this.scene, xOffset - 5, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
+                const statChangeValue = renderText(this.scene, xOffset, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
                     color: statValue < 0 ? TextColors.bane : TextColors.boon
-                });
-
+                }).setOrigin(1, 0);
+                const changedStat = renderText(this.scene, statChangeValue.getLeftCenter().x - 50, 140, capitalize(stat));
+                this.attackerStatMods.add(changedStat);
                 this.attackerStatMods.add(statChangeValue);
                 this.add(statChangeValue);
                 this.add(changedStat);
-                xOffset -= 80
+                xOffset = changedStat.getLeftCenter().x - 5;
             }
         }
 
-        let otherXOffset = this.firstSideBg.getCenter().x + 5;
+        let defenderXOffset = this.firstSideBg.getCenter().x + 20;
         for (let stat in defenderStatMods) {
             if (defenderStatMods[stat]) {
-                const changedStat = renderText(this.scene, otherXOffset, 140, capitalize(stat));
+                const changedStat = renderText(this.scene, defenderXOffset, 140, capitalize(stat));
                 const statValue = defenderStatMods[stat];
                 this.defenderStatMods.add(changedStat);
-                const statChangeValue = renderText(this.scene, otherXOffset + 60, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
+                const statChangeValue = renderText(this.scene, changedStat.getRightCenter().x + 20, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
                     color: statValue < 0 ? TextColors.bane : TextColors.boon
                 });
 
                 this.defenderStatMods.add(statChangeValue);
                 this.add(statChangeValue);
                 this.add(changedStat);
-                otherXOffset += 85
+                defenderXOffset = statChangeValue.getRightCenter().x + 5;
             }
         }
         this.firstHero.nameplate.weaponIcon.setTexture("weapons", attacker.hero.getInternalHero().getWeapon().color + "-" + attacker.hero.getInternalHero().getWeapon().type);
