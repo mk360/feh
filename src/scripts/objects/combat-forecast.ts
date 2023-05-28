@@ -167,11 +167,14 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.defenderRoundDamage = renderText(scene, this.attackerRoundDamage.getRightCenter().x + 240, this.attackerRoundDamage.getTopCenter().y, "-", {
             fontSize: "18px"
         });
-        this.defenderRoundCount = renderText(scene, this.defenderRoundDamage.getRightCenter().x, this.defenderRoundDamage.getTopCenter().y, "");
+        this.defenderRoundCount = renderText(scene, this.defenderRoundDamage.getRightCenter().x, this.defenderRoundDamage.getTopCenter().y, "", {
+            fontSize: "18px"
+        });
         const damageUnderline = new GameObjects.Image(scene, this.attackerRoundDamage.getBottomLeft().x + 10, this.attackerRoundDamage.getBottomLeft().y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5);
         this.add(damageUnderline);
         this.add(new GameObjects.Image(scene, damageUnderline.x + 240, damageUnderline.y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5));
         this.add(this.defenderRoundDamage);
+        this.add(this.defenderRoundCount);
         this.add(this.attackerRoundCount);
         this.add(this.attackerRoundDamage);
     }
@@ -312,7 +315,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.add(this.secondHero.predictedHP);
         this.add(this.secondHero.previousHP);
         this.defenderRoundDamage.setText(params.defender.damage && params.defender.turns ? params.defender.damage.toString() : "-");
-        this.defenderRoundCount.setText("×" + params.defender.turns).setX(this.defenderRoundDamage.getRightCenter().x + 5);
+        this.defenderRoundCount.setText(defender.turns >= 2 ? "×" + defender.turns.toString() : "").setX(this.defenderRoundDamage.getRightCenter().x + 2);
     }
 
     runKOTween(target: GameObjects.Image) {
