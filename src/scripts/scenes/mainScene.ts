@@ -142,6 +142,7 @@ export default class MainScene extends Phaser.Scene {
     const effects = battle.getTurnStartEffects(turn);
     for (let hero of this[turn]) {
       hero.statuses = [];
+      hero.setInteractive();
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
       this.input.setDraggable(hero, true);
@@ -167,7 +168,6 @@ export default class MainScene extends Phaser.Scene {
         this.movementAllowedImages.setVisible(false);
         const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;
         img.setVisible(true);
-        console.log(img);
         pathStart = this.add.image(img.x, img.y, "rosary").setDisplaySize(img.width, img.height).setScale(1.35).setName("arrow");
         this.movementAllowedTween.pause();
         this.sound.play("enabled-unit");
@@ -189,7 +189,6 @@ export default class MainScene extends Phaser.Scene {
       this.movementArrows.add(endArrow);
       let hoveredTile = "";
       hero.on("dragenter", (_, target: Phaser.GameObjects.Rectangle) => {
-        console.log(target);
         if (target.name !== hoveredTile) {
           hoveredTile = target.name
         }
@@ -450,7 +449,6 @@ export default class MainScene extends Phaser.Scene {
         this.highlightedHero = hero;
         this.unitInfosBanner.setVisible(true).setHero(hero);
       });
-      hero.setInteractive(undefined, undefined, true);
     }
 
     for (let effect of effects) {
