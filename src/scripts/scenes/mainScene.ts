@@ -485,6 +485,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("interaction-attack", "assets/interaction-attack.png");
     this.load.image("weapon-bg", "assets/weapon.png");
     this.load.image("unit-banner-bg", "assets/unit-banner-bg.png");
+    this.load.image("forecast-bg", "assets/forecast-bg.png");
     this.load.image("assist-icon", "assets/assist-icon.png");
     this.load.image("special-icon", "assets/special-icon.png");
     // todo: compress into audio sprite
