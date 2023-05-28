@@ -1001,7 +1001,7 @@ battle.addHero(Corrin, "team2", {
 
 battle.addHero(Ephraim, "team2", {
     x: 3,
-    y: 3
+    y: 7
 });
 
 battle.addHero(Lyn, "team2", {
