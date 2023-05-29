@@ -336,6 +336,21 @@ export default class MainScene extends Phaser.Scene {
           const coordsArray = [`${hero.getInternalHero().coordinates.x}-${hero.getInternalHero().coordinates.y}`];
           const overlap = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
           const [finalLandingTile] = overlap.length ? overlap : coordsArray;
+          const [x, y] = finalLandingTile.split("-");
+          if (this.map[+y][+x]) {
+            const pixelCoords = gridToPixels(currentCoords.x, currentCoords.y);
+          (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).x = pixelCoords.x;
+          (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).y = pixelCoords.y;
+          // (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).setVisible(true);
+          this.tweens.add({
+            targets: hero,
+            x: pixelCoords.x,
+            y: pixelCoords.y,
+            duration: 100
+          });
+          hero.getInternalHero().coordinates = {...currentCoords};
+            return;
+          }
           const [xCoord, yCoord] = finalLandingTile.split("-");
           this.moveHero(hero, currentCoords, { x: +xCoord, y: +yCoord });
           currentCoords.x = +xCoord;
