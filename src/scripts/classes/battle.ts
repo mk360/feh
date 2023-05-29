@@ -336,7 +336,7 @@ const Geirskogul = new FEH.Weapon({
 });
 
 Geirskogul.onEquip = (wielder) => {
-    // wielder.raiseStat("def", 3);
+    wielder.raiseStat("def", 3);
 }
 
 Geirskogul.onBeforeAllyCombat = ({ ally, wielder }) => {
