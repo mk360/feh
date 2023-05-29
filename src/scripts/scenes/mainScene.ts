@@ -108,22 +108,22 @@ export default class MainScene extends Phaser.Scene {
     // a déjà toutes nos cases
     let currentTile = from;
     let path = new Map<string, Coords>();
-    let maxDistance = this.getDistance(from, to);
+    let maxDistance = battle.getDistance(from, to);
     
     path.set(`${from.x}-${from.y}`, from);
     path.set(`${to.x}-${to.y}`, to);
     while (maxDistance) {
       const nearby = getNearby(currentTile).filter((tile) => {
-        return this.heroCanReachTile(hero, tile) && this.getDistance(tile, to) < maxDistance;
+        return this.heroCanReachTile(hero, tile) && battle.getDistance(tile, to) < maxDistance;
       });
       currentTile = nearby[0];
-      maxDistance = this.getDistance(to, nearby[0]);
+      maxDistance = battle.getDistance(to, nearby[0]);
       const { x, y } = currentTile;
       path.set(`${x}-${y}`, currentTile);
     }
 
     const x = Array.from(path.values()).sort((coordA, coordB) => {
-      return this.getDistance(coordA, from) - this.getDistance(coordB, from);
+      return battle.getDistance(coordA, from) - battle.getDistance(coordB, from);
     });
     return x;
   }
@@ -172,21 +172,22 @@ export default class MainScene extends Phaser.Scene {
           this.endAction(hero);
           return;
         }
+        const internalHero = hero.getInternalHero();
         clickTimestamp = timeStamp;
         const currentCoords = pixelsToGrid(hero.x, hero.y);
         this.movementAllowedImages.setVisible(false);
-        const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;
+        const img = this.children.getByName(`movement-${internalHero.name}`) as GameObjects.Image;
         img.setVisible(true);
         pathStart = this.add.image(img.x, img.y, "rosary").setDisplaySize(img.width, img.height).setScale(1.35).setName("arrow");
         this.movementAllowedTween.pause();
         this.sound.play("enabled-unit");
         const n = this.rng.integerInRange(1, 3);
         if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
-        const soundFile = hero.getInternalHero().name + " quotes";
-        this.sound.playAudioSprite(hero.getInternalHero().name + " quotes", n.toString(), { volume: 0.2 });
+        const soundFile = internalHero.name + " quotes";
+        this.sound.playAudioSprite(internalHero.name + " quotes", n.toString(), { volume: 0.2 });
         previousSoundFile = soundFile;
         this.unitInfosBanner.setVisible(true).setHero(hero);
-        this.displayRanges(currentCoords, hero.getMovementRange(), hero.getWeaponRange());
+        this.displayRanges(currentCoords, battle.getMovementRange(internalHero), battle.getWeaponRange(internalHero));
       });
       let previousTileString = "";
       let tilePath: string[] = [];
@@ -332,7 +333,7 @@ export default class MainScene extends Phaser.Scene {
           this.endAction(hero);
           this.children.remove(endArrow);
         } else if (this.attackCoords.includes(x2 + "-" + y2) && this.map[y2][x2] && this.map[y2][x2].team !== hero.team) {
-          const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
+          const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, battle.getWeaponRange(hero.getInternalHero()));
           const coordsArray = [`${hero.getInternalHero().coordinates.x}-${hero.getInternalHero().coordinates.y}`];
           const overlap = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
           const [finalLandingTile] = overlap.length ? overlap : coordsArray;
@@ -341,7 +342,6 @@ export default class MainScene extends Phaser.Scene {
             const pixelCoords = gridToPixels(currentCoords.x, currentCoords.y);
           (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).x = pixelCoords.x;
           (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).y = pixelCoords.y;
-          // (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).setVisible(true);
           this.tweens.add({
             targets: hero,
             x: pixelCoords.x,
@@ -475,7 +475,7 @@ export default class MainScene extends Phaser.Scene {
       hero.off("dragstart");
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
-        this.displayRanges(pixelsToGrid(hero.x, hero.y), hero.getMovementRange(), hero.getWeaponRange());
+        this.displayRanges(pixelsToGrid(hero.x, hero.y), battle.getMovementRange(hero.getInternalHero()), battle.getWeaponRange(hero.getInternalHero()));
         this.sound.play("enabled-unit");
         this.highlightedHero = hero;
         this.unitInfosBanner.setVisible(true).setHero(hero);
@@ -558,7 +558,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   getNearestToAttackTile(hero: Hero, tileCoords: Coords) {
-    const eligibleTiles = this.getTilesInShallowRange(tileCoords, hero.getWeaponRange());
+    const eligibleTiles = this.getTilesInShallowRange(tileCoords, battle.getWeaponRange(hero.getInternalHero()));
     if (!eligibleTiles.size) return null;
     return eligibleTiles;
   }
@@ -623,13 +623,6 @@ export default class MainScene extends Phaser.Scene {
 
     this.setTurn("team1");
     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(5));
-    this.interactionIndicatorTween = this.tweens.create({
-      y: "-=40",
-      loop: -1,
-      yoyo: true,
-      targets: this.interactionIndicator,
-      duration: 500
-    });
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(1);
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
 }
@@ -697,16 +690,12 @@ export default class MainScene extends Phaser.Scene {
   getTilesInShallowRange(tile: Coords, range: number) {
     const tilesInRange = this.getTilesInRange(tile, range);
     tilesInRange.forEach((recordedTile, tileKey) => {
-      if (this.getDistance(recordedTile, tile) !== range) {
+      if (battle.getDistance(recordedTile, tile) !== range) {
         tilesInRange.delete(tileKey);
       }
     });
 
     return tilesInRange;
-  }
-
-  getDistance(tile1: Coords, tile2: Coords) {
-    return Math.abs(tile1.x - tile2.x) + Math.abs(tile1.y - tile2.y);
   }
 
   heroCanReachTile(hero: Hero, tile: Coords) {
@@ -717,11 +706,11 @@ export default class MainScene extends Phaser.Scene {
     if (tileType === "void") return hero.getInternalHero().movementType === "flier";
     if (hero.getInternalHero().movementType === "flier") return true;
     const { x, y } = pixelsToGrid(hero.x, hero.y);
-    if (hero.getInternalHero().movementType === "cavalry" && tileType === "trench") return this.getDistance({ x, y }, tile) <= 1;
+    if (hero.getInternalHero().movementType === "cavalry" && tileType === "trench") return battle.getDistance({ x, y }, tile) <= 1;
     if (tileType === "tree") {
       switch (hero.getInternalHero().movementType) {
         case "cavalry": return false;
-        case "infantry": return this.getDistance({ x, y }, tile) <= 1;
+        case "infantry": return battle.getDistance({ x, y }, tile) <= 1;
         default: return true;
       }
     }
@@ -729,7 +718,7 @@ export default class MainScene extends Phaser.Scene {
     return true;
   }
 
-  update(time, delta) {
+  update(_, delta: number) {
     this.updateDelta += delta;
     if (this.updateDelta >= 16.67 * 60) {
       this.updateDelta = 0;

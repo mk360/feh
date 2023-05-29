@@ -68,24 +68,9 @@ class Hero extends GameObjects.Container {
         }
     }
 
-    getMovementRange() {
-        const { movementType } = this.getInternalHero();
-        if (movementType === "cavalry") return 3;
-        if (movementType === "armored") return 1;
-        return 2;
-    }
-
     getNextIndex(array: any[], curIndex: number) {
         if (curIndex === array.length - 1) return 0;
         return curIndex + 1;
-    }
-
-    getWeaponRange() {
-        if (["sword", "lance", "axe", "dragonstone"].includes(this.getInternalHero().getWeapon().type)) {
-            return 1;
-        }
-
-        return 2;
     }
 };
 

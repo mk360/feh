@@ -904,6 +904,24 @@ class Battle {
         }
     }
 
+    getMovementRange(hero: Hero) {
+        if (hero.statuses.includes("limitedMovement")) return 1;
+        const { movementType } = hero;
+        let movementRange = 2;
+        if (movementType === "cavalry") movementRange = 3;
+        if (movementType === "armored") movementRange = 1;
+        if (hero.statuses.includes("enhancedMovement")) movementRange++;
+        return movementRange;
+    }
+
+    getWeaponRange(hero: Hero) {
+        if (["sword", "lance", "axe", "dragonstone", "beast"].includes(hero.getWeapon().type)) {
+            return 1;
+        }
+
+        return 2;
+    }
+
     getDistance(tile1: Coords, tile2: Coords) {
         return Math.abs(tile1.x - tile2.x) + Math.abs(tile1.y - tile2.y);
     }
