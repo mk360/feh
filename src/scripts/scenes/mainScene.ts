@@ -1,4 +1,4 @@
-import { GameObjects, Geom, Sound, Structs, Tweens } from 'phaser';
+import { GameObjects, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import TileType from '../../types/tiles';
 import UnitInfosBanner from '../objects/unit-infos-banner';
@@ -496,6 +496,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("movement-allowed", "assets/movement-allowed.png");
     this.load.atlas("weapons", "assets/sheets/weapons.webp", "assets/sheets/weapons.json");
     this.load.atlas("skills", "assets/sheets/skills.webp", "assets/sheets/skills.json");
+    this.load.atlas("interactions", "assets/sheets/interactions.webp", "assets/sheets/interactions.json");
     this.load.audio("enabled-unit", "assets/audio/pointer-tap.mp3");
     this.load.audio("disabled-unit", "assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "assets/audio/hit.mp3");
@@ -517,8 +518,6 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("rosary", "assets/rosary-current.png");
     this.load.image("rosary-arrow", "assets/rosary-arrow.png");
     this.load.image("weapon-icon", "assets/weapon_icon.png");
-    this.load.image("interaction-bubble", "assets/interaction-bubble.png");
-    this.load.image("interaction-attack", "assets/interaction-attack.png");
     this.load.image("weapon-bg", "assets/weapon.png");
     this.load.image("unit-banner-bg", "assets/unit-banner-bg.png");
     this.load.image("forecast-bg", "assets/forecast-bg.png");
@@ -622,13 +621,6 @@ export default class MainScene extends Phaser.Scene {
       }, "team2");
     }
 
-    // this.input.on("drag", (_, d: Hero, dragX: number, dragY: number) => {
-    //   if (d instanceof Hero && d.team === this.turn) {
-    //     d.x = dragX;
-    //     d.y = dragY;
-    //   }
-    // });
-
     this.setTurn("team1");
     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(5));
     this.interactionIndicatorTween = this.tweens.create({
@@ -640,7 +632,6 @@ export default class MainScene extends Phaser.Scene {
     });
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(1);
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
-    // this.add.existing(this.fpsText);
 }
 
   displayRanges(coords: Coords, walkingRange: number, weaponRange: number) {
@@ -738,10 +729,13 @@ export default class MainScene extends Phaser.Scene {
     return true;
   }
 
-  update() {
-    // this.fpsText.setText(this.game.loop.actualFps.toFixed(2));
-    for (let hero of this.heroes) {
-      hero.toggleStatuses();
+  update(time, delta) {
+    this.updateDelta += delta;
+    if (this.updateDelta >= 16.67 * 60) {
+      this.updateDelta = 0;
+      for (let hero of this.heroes) {
+        hero.toggleStatuses();
+      }
     }
     for (let hero of this.heroes) {
       hero.update();
