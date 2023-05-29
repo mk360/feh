@@ -165,7 +165,7 @@ export default class MainScene extends Phaser.Scene {
       hero.off("pointerdown");
       hero.on("drag", (_, dragX: number, dragY: number) => {
         hero.x = dragX;
-        hero.y = dragY
+        hero.y = dragY;
       });
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
         if (timeStamp - clickTimestamp <= dblClickMargin) {
