@@ -1,4 +1,4 @@
-import { GameObjects, Geom, Structs, Tweens } from 'phaser';
+import { GameObjects, Geom, Sound, Structs, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import TileType from '../../types/tiles';
 import UnitInfosBanner from '../objects/unit-infos-banner';
@@ -564,13 +564,25 @@ export default class MainScene extends Phaser.Scene {
     return eligibleTiles;
   }
 
+  startBackgroundMusic(volume: number) {
+    const bgm = this.sound.add("bgm");
+    const loopPoint = bgm.addMarker({
+      name: "loop",
+      start: 4.25
+    });
+    bgm.play({ volume });
+    bgm.on("complete", () => {
+      bgm.play("loop", { volume });
+    });
+  };
+
   create() {
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.rectangle(0, 180, 750, 1000, 0xFFFFFF).setOrigin(0);
     const banner = this.add.image(-90, 0, "background").setOrigin(0).setTint(0x0F343D);
+    this.startBackgroundMusic(0.13);
     banner.setDisplaySize(banner.displayWidth, 180);
-    const bgm = this.sound.play("bgm", { volume: 0.1, loop: true });
     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
     this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setDepth(0);
     for (let y = 1; y < 9; y++) {
