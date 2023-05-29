@@ -335,7 +335,6 @@ export default class MainScene extends Phaser.Scene {
           const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, hero.getWeaponRange());
           const coordsArray = [`${hero.getInternalHero().coordinates.x}-${hero.getInternalHero().coordinates.y}`];
           const overlap = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
-          console.log({ overlap });
           const [finalLandingTile] = overlap.length ? overlap : coordsArray;
           const [xCoord, yCoord] = finalLandingTile.split("-");
           this.moveHero(hero, currentCoords, { x: +xCoord, y: +yCoord });
@@ -473,9 +472,6 @@ export default class MainScene extends Phaser.Scene {
       if (target && effect.appliedEffect.stats) {
         target.getInternalHero().setMapMods(effect.appliedEffect.stats);
         target.statuses.push("buff");
-        if (this.turn === "team2") {
-          target.on("pointerdown", console.log);
-        }
       }
     }
   }

@@ -17,6 +17,8 @@ const Ryoma = new FEH.Hero({
     //     def: 28,
     //     res: 20
     // },
+    boon: "atk",
+    bane: "spd",
     lv1Stats: {
         hp: 17,
         atk: 8,
@@ -50,6 +52,8 @@ const Lyn = new FEH.Hero({
         def: 5,
         res: 6
     },
+    bane: "res",
+    boon: "spd",
     growthRates: {
         hp: 45,
         atk: 60,
@@ -78,6 +82,8 @@ const Ike = new FEH.Hero({
         def: 9,
         res: 10
     },
+    boon: "hp",
+    bane: "spd",
     growthRates: {
         hp: 50,
         atk: 60,
@@ -113,6 +119,8 @@ const Corrin = new FEH.Hero({
         def: 60,
         res: 45
     },
+    boon: "spd",
+    bane: "hp",
     weaponColor: "blue",
     weaponType: "dragonstone",
     movementType: "infantry",
@@ -173,6 +181,8 @@ const Robin = new FEH.Hero({
         def: 50,
         res: 45
     },
+    boon: "res",
+    bane: "def",
     movementType: "flier"
 });
 
@@ -215,6 +225,8 @@ const Hector = new FEH.Hero({
     //     def: 38,
     //     res: 26
     // },
+    bane: "spd",
+    boon: "def",
     lv1Stats: {
         hp: 23,
         atk: 10,
@@ -324,7 +336,7 @@ const Geirskogul = new FEH.Weapon({
 });
 
 Geirskogul.onEquip = (wielder) => {
-    wielder.raiseStat("def", 3);
+    // wielder.raiseStat("def", 3);
 }
 
 Geirskogul.onBeforeAllyCombat = ({ ally, wielder }) => {

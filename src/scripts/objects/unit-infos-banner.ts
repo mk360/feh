@@ -160,14 +160,13 @@ class UnitInfosBanner extends GameObjects.Container {
             this.skillInfos.y = this.weaponBg.y + 40;
             this.skillInfos.x = 750;
         });
+        for (let statKey in this.statLabels) {
+            const castKey = statKey as keyof Stats;
+            this.statLabels[castKey].object.setColor("white");
+        }
         if (internalHero.boon) {
             this.statLabels[internalHero.boon].object.setColor(TextColors.boon);
             this.statLabels[internalHero.bane].object.setColor(TextColors.bane);
-        } else {
-            for (let statKey in this.statLabels) {
-                const castKey = statKey as keyof Stats;
-                this.statLabels[castKey].object.setColor("white");
-            }
         }
         this.heroPortrait.setTexture(internalHero.name, internalHero.stats.hp / internalHero.maxHP < 0.5 ? 'portrait-damage' : 'portrait');
         this.currentHP.destroy();
