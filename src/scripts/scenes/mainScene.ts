@@ -4,7 +4,7 @@ import UnitInfosBanner from '../objects/unit-infos-banner';
 import { renderText } from '../utils/text-renderer';
 import CombatForecast from '../objects/combat-forecast';
 import Coords from '../../interfaces/coords';
-import battle from '../classes/battle';
+import battle from '../battle';
 import HeroData from "feh-battles/dec/hero";
 import InteractionIndicator from '../objects/interaction-indicator';
 import Team from '../../types/team';
