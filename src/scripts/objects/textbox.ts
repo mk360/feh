@@ -10,6 +10,8 @@ class Textbox extends GameObjects.Container {
         this.add(this.contentContainer);
     }
 
+    // 
+
     setContent(contentLines: GameObjects.Text[][]) {
         let verticalPadding = 5;
         let lastElementY = 0;
