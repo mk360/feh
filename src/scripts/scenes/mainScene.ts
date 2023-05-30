@@ -666,6 +666,8 @@ export default class MainScene extends Phaser.Scene {
     this.fillTiles(this.attackCoords, 0xFF0000);
   }
 
+  //
+
   getTile(name: string) {
     return this.children.getByName(name) as Phaser.GameObjects.Rectangle;
   }
