@@ -7,6 +7,7 @@ import Stats from "../../interfaces/stats";
 import Team from "../../types/team";
 import MapData from "../../maps/lava.json";
 import { CombatOutcome } from "feh-battles/dec/combat";
+import TileType from "../../types/tiles";
 
 const Ryoma = new FEH.Hero({
     name: "Ryoma",
@@ -881,7 +882,11 @@ class Battle {
     // todo: refactor into a key-value pair?
     map: {
         [k: number]: (Hero | null)[];
-    }
+    };
+
+    terrain = MapData.terrain as {
+        [k: number]: TileType[];
+    };
 
     private effectRunner: MapEffectRunner;
 
@@ -892,6 +897,11 @@ class Battle {
         for (let i = 1; i < 9; i++) {
             this.map[i] = Array.from<Hero>({ length: 6 }).fill(null);
         }
+    }
+
+    getMovementTiles(hero: Hero) {
+        const movementRange = this.getMovementRange(hero);
+        const { coordinates } = hero;
     }
 
     resetEffects(team: Team) {
@@ -924,8 +934,20 @@ class Battle {
         return 2;
     }
 
+    getTilesInWalkingRange(hero: Hero, range: number, previousTiles?: Coords[]) {
+        let tiles = [hero.coordinates];
+        let surroundingTiles = getNearby(tiles[0]).filter((tile) => {
+            const heroCanReachTile = !this.map[tile.y][tile.x] && true;
+            return heroCanReachTile;
+        });
+    }
+
     getDistance(tile1: Coords, tile2: Coords) {
         return Math.abs(tile1.x - tile2.x) + Math.abs(tile1.y - tile2.y);
+    }
+
+    heroCanUseTile(tile: Coords, hero: Hero) {
+
     }
 
     moveHero(hero: Hero, destination: Coords) {
@@ -997,6 +1019,37 @@ class Battle {
             combatOutcome
         });
     }
+};
+
+function isValid(tile: Coords) {
+    return tile.x >= 1 && tile.x <= 6 && tile.y >= 1 && tile.y <= 8;
+}
+  
+function getNearby(coords: Coords) {
+    const { x, y } = coords;
+    const nearbyTiles = [coords];
+
+    nearbyTiles.push({
+        x: x + 1,
+        y
+    });
+
+    nearbyTiles.push({
+        x: x-1,
+        y
+    });
+
+    nearbyTiles.push({
+        x,
+        y: y + 1
+    });
+
+    nearbyTiles.push({
+        x,
+        y: y-1
+    });
+
+    return nearbyTiles.filter(isValid);
 };
 
 const battle = new Battle();
