@@ -3,6 +3,7 @@ import { renderSkillNameText, renderText } from "../utils/text-renderer";
 
 // todo: tear down, animate, decide on whether it should be generic or i should create specific skill detail containers
 // for weapons, stats, and skills
+
 class SkillDetails extends GameObjects.Container {
     private contentContainer: GameObjects.Rectangle;
     private skillDesc: GameObjects.Text;
