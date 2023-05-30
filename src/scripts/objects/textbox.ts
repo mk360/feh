@@ -1,7 +1,8 @@
 import { GameObjects, Scene } from "phaser";
 
-abstract class Textbox extends GameObjects.Container {
+class Textbox extends GameObjects.Container {
     private contentContainer: GameObjects.Rectangle;
+    private children: GameObjects.GameObject[];
 
     constructor(scene: Scene, x: number, y: number) {
         super(scene, x, y);
@@ -9,7 +10,29 @@ abstract class Textbox extends GameObjects.Container {
         this.add(this.contentContainer);
     }
 
-    abstract setContent(contentLines: GameObjects.Text[][]): Textbox;
+    setContent(contentLines: GameObjects.Text[][]) {
+        let verticalPadding = 5;
+        let lastElementY = 0;
+
+        for (let line of contentLines) {
+            for (let element of line) {
+                this.add(element);
+                this.children.push(element);
+                element.y += verticalPadding + this.contentContainer.getTopCenter().y;
+                lastElementY = element.y;
+            }
+        }
+
+        this.contentContainer.setDisplaySize(this.contentContainer.displayWidth, lastElementY + verticalPadding);
+        return this;
+    };
+
+    clearContent() {
+        while (this.children.length) {
+            this.remove(this.children.shift(), true);
+        }
+        return this;
+    }
 }
 
 export default Textbox;
