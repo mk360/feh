@@ -1,10 +1,11 @@
-import { renderCritHPText, renderRegularHPText, renderText } from "../utils/text-renderer";
+import { renderCritHPText, renderRegularHPText, renderSkillNameText, renderText } from "../utils/text-renderer";
 import Hero from "./hero";
 import TextColors from "../utils/text-colors";
 import HeroNameplate from "./hero-nameplate";
 import { GameObjects } from "phaser";
 import SkillDetails from "./skill-details";
 import Stats from "../../interfaces/stats";
+import Textbox from "./textbox";
 
 class UnitInfosBanner extends GameObjects.Container {
     private nameplate: HeroNameplate;
@@ -23,6 +24,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private weaponBg: GameObjects.Image;
     private assist: GameObjects.Text;
     private special: GameObjects.Text;
+    private textbox: Textbox;
     private skillInfos: SkillDetails;
     private statLabels: {
         [k in keyof Stats]: {
@@ -47,6 +49,8 @@ class UnitInfosBanner extends GameObjects.Container {
                 fontSize: "18px"
             }
         });
+
+        this.textbox = new Textbox(scene, 0, 0);
 
         this.nameplate = new HeroNameplate(scene, blockX - 150, 25, {
             name: "",
@@ -212,10 +216,20 @@ class UnitInfosBanner extends GameObjects.Container {
             this[skill].setTexture("skills", skillData.name);
             this[skill].setName(skillData.name);
             this[skill].setInteractive().on("pointerdown", () => {
+                const skillInfosLines = [];
+                this.textbox.clearContent();
+                skillInfosLines.push(renderSkillNameText({
+                    scene: this.scene,
+                    x: 0,
+                    y: 0,
+                    content: skillData.name
+                }));
+                this.textbox.setContent([skillInfosLines]);
+                this.add(this.textbox);
                 this.skillInfos.x = 750;
                 this.skillInfos.y = this[skill].y;
                 this.skillInfos.setSkillDescription(skillData.name, skillData.description);
-                this.skillInfos.setVisible(!this.skillInfos.visible);
+                this.skillInfos.setVisible(false);
             });
         }
     }

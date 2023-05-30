@@ -2,7 +2,7 @@ import { GameObjects, Scene } from "phaser";
 
 class Textbox extends GameObjects.Container {
     private contentContainer: GameObjects.Rectangle;
-    private children: GameObjects.GameObject[];
+    private children: GameObjects.GameObject[] = [];
 
     constructor(scene: Scene, x: number, y: number) {
         super(scene, x, y);
@@ -19,6 +19,7 @@ class Textbox extends GameObjects.Container {
                 this.add(element);
                 this.children.push(element);
                 element.y += verticalPadding + this.contentContainer.getTopCenter().y;
+                element.x = 80;
                 lastElementY = element.y;
             }
         }
