@@ -610,36 +610,15 @@ export default class MainScene extends Phaser.Scene {
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
 }
 
-  displayRanges(coords: Coords, walkingRange: number, weaponRange: number) {
-    this.displayRange = true;
-    const walkTiles = this.getTilesInRange(coords, walkingRange);
-    // for (let [key, tile] of walkTiles.entries()) {
-    //   if (!this.heroCanReachTile(battle.map[coords.y][coords.x], tile)) {
-    //     walkTiles.delete(key);
-    //   }
-    // }
-    const weaponTiles = this.getTilesInRange(coords, weaponRange, walkTiles, true);
-    const attackRange = getDiff(walkTiles, weaponTiles);
-
-    const newWalkTiles = Array.from(walkTiles.keys());
-    const newAttackTiles = Array.from(attackRange.keys());
-
-    for (let t of this.walkCoords) {
-      if (!newWalkTiles.includes(t)) {
-        this.getTile(t).setFillStyle(0);
-      }
-    }
-
-    for (let t of this.attackCoords) {
-      if (!newAttackTiles.includes(t)) {
-        this.getTile(t).setFillStyle(0);
-      }
-    }
-
-    this.walkCoords = newWalkTiles;
-    this.attackCoords = newAttackTiles;
-    this.fillTiles(this.walkCoords, 0x0000FF);
-    this.fillTiles(this.attackCoords, 0xFF0000);
+  displayRanges(hero: HeroData) {
+    this.clearTiles(this.walkCoords.concat(this.attackCoords));
+    const walkTiles = battle.getMovementTiles(hero);
+    const weaponTiles = battle.getAttackTiles(hero, walkTiles);
+    const stringWalkTiles = walkTiles.map(stringifyTile);
+    this.walkCoords = stringWalkTiles;
+    this.attackCoords = weaponTiles;
+    this.fillTiles(stringWalkTiles, 0x0000FF);
+    this.fillTiles(weaponTiles, 0xFF0000);
   }
 
   //

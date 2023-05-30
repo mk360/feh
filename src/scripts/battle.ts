@@ -51,18 +51,25 @@ class Battle {
         return movementRange;
     }
 
+    tileHasEnemy(hero: Hero, tile: Coords) {
+        const tileData = this.map[tile.y][tile.x];
+        if (!tileData) return false;
+        return (tileData.id in this.team1 && hero.id in this.team2) || (tileData.id in this.team2 && hero.id in this.team1);
+    };
+
     getMovementTiles(hero: Hero, range?: number, previousTiles?: Coords[]) {
-        if (range === 0) return [];
+        let existingRange = range ?? this.getMovementRange(hero) + 1;
+        if (existingRange === 0) return [];
         let tiles = previousTiles || [hero.coordinates];
         let result: Coords[] = [];
         let validTiles = tiles.map((tile) => {
             return getNearby(tile).filter((filteredTile) => {
-                const heroCanReachTile = !this.map[filteredTile.y][filteredTile.x] && this.heroCanUseTile(filteredTile, hero);
-                const tileCanBeCrossed = range - this.getTileCost(hero, tile) >= 0;
+                const heroCanReachTile = !this.tileHasEnemy(hero, filteredTile) && this.heroCanUseTile(filteredTile, hero);
+                const tileCanBeCrossed = existingRange - this.getTileCost(hero, filteredTile) > 0;
                 return heroCanReachTile && tileCanBeCrossed;
             });
         }).flat();
-        validTiles = validTiles.concat(this.getMovementTiles(hero, range - 1, validTiles));
+        validTiles = validTiles.concat(this.getMovementTiles(hero, existingRange - 1, validTiles));
         result = result.concat(validTiles);
         return Array.from(new Set(result.map((t) => t.x + "-" + t.y))).map((t) => ({
             x: +t[0],
@@ -71,7 +78,15 @@ class Battle {
     }
 
     getAttackTiles(hero: Hero, movementTiles: Coords[]) {
+        let weaponRange = hero.getWeapon().range;
+        const movementTileStrings = movementTiles.map(stringifyTile);
+        let extraTiles: Coords[] = movementTiles;
+        while (weaponRange) {
+            extraTiles = extraTiles.map(getNearby).flat();
+            weaponRange--;
+        }
 
+        return Array.from(new Set(extraTiles.map(stringifyTile).filter((t) => !movementTileStrings.includes(t))));
     }
 
     getTileCost(hero: Hero, tile: Coords) {
