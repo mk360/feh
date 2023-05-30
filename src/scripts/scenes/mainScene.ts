@@ -194,7 +194,7 @@ export default class MainScene extends Phaser.Scene {
         this.sound.playAudioSprite(internalHero.name + " quotes", n.toString(), { volume: 0.2 });
         previousSoundFile = soundFile;
         this.unitInfosBanner.setVisible(true).setHero(hero);
-        this.displayRanges(currentCoords, battle.getMovementRange(internalHero), battle.getWeaponRange(internalHero));
+        this.displayRanges(currentCoords, battle.getMovementRange(internalHero), internalHero.getWeapon().range);
       });
       let previousTileString = "";
       let tilePath: string[] = [];
@@ -482,7 +482,7 @@ export default class MainScene extends Phaser.Scene {
       hero.off("dragstart");
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
-        this.displayRanges(pixelsToGrid(hero.x, hero.y), battle.getMovementRange(hero.getInternalHero()), battle.getWeaponRange(hero.getInternalHero()));
+        this.displayRanges(pixelsToGrid(hero.x, hero.y), battle.getMovementRange(hero.getInternalHero()), hero.getInternalHero().getWeapon().range);
         this.sound.play("enabled-unit");
         this.highlightedHero = hero;
         this.unitInfosBanner.setVisible(true).setHero(hero);
@@ -564,7 +564,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   getNearestToAttackTile(hero: Hero, tileCoords: Coords) {
-    const eligibleTiles = this.getTilesInShallowRange(tileCoords, battle.getWeaponRange(hero.getInternalHero()));
+    const eligibleTiles = this.getTilesInShallowRange(tileCoords, hero.getInternalHero().getWeapon().range);
     if (!eligibleTiles.size) return null;
     return eligibleTiles;
   }
@@ -668,17 +668,6 @@ export default class MainScene extends Phaser.Scene {
     }
 
     return tileset;
-  }
-
-  getTilesInShallowRange(tile: Coords, range: number) {
-    const tilesInRange = this.getTilesInRange(tile, range);
-    tilesInRange.forEach((recordedTile, tileKey) => {
-      if (battle.getDistance(recordedTile, tile) !== range) {
-        tilesInRange.delete(tileKey);
-      }
-    });
-
-    return tilesInRange;
   }
 
   heroCanReachTile(hero: Hero, tile: Coords) {
