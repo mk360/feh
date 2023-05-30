@@ -4,6 +4,8 @@ import Coords from "../../interfaces/coords";
 import MapEffectRunner from "feh-battles/dec/map-effect";
 import { Effect } from "feh-battles/dec/base_skill";
 import Stats from "../../interfaces/stats";
+import Team from "../../types/team";
+import MapData from "../../maps/lava.json";
 import { CombatOutcome } from "feh-battles/dec/combat";
 
 const Ryoma = new FEH.Hero({
@@ -892,7 +894,7 @@ class Battle {
         }
     }
 
-    resetEffects(team: "team1" | "team2") {
+    resetEffects(team: Team) {
         for (let { hero } of this[team]) {
             hero.mapMods = {
                 atk: 0,
@@ -933,18 +935,18 @@ class Battle {
         this.map[destination.y][destination.x] = hero;
     }
 
-    killHero(hero: Hero) {
+    killHero(hero: Hero, coordinates: Coords, team: Team) {
         for (let ally of hero.allies) {
             ally.allies = ally.allies.filter(({ id }) => id !== hero.id);
         }
         for (let enemy of hero.enemies) {
             enemy.enemies = enemy.enemies.filter(({ id }) => id !== hero.id);
         }
-        this.team1 = this.team1.filter(({ hero: teamMember }) => teamMember.id !== hero.id);
-        this.team2 = this.team2.filter(({ hero: teamMember }) => teamMember.id !== hero.id);
+        this.map[coordinates.y][coordinates.x] = null;
+        this[team] = this[team].filter(({ hero: teamMember }) => teamMember.id !== hero.id);
     }
 
-    addHero(hero: Hero, team: "team1" | "team2", startingCoordinates: { x: number; y: number }) {
+    addHero(hero: Hero, team: Team, startingCoordinates: { x: number; y: number }) {
         hero.coordinates = startingCoordinates;
 
         this[team].push({
@@ -984,7 +986,7 @@ class Battle {
         this.effectRunner = new FEH.MapEffectRunner(this.team1.map(({ hero }) => hero), this.team2.map(({ hero }) => hero));
     }
 
-    getTurnStartEffects(team: "team1" | "team2") {
+    getTurnStartEffects(team: Team) {
         return this.effectRunner.runTurnStartEffects(team);
     }
 
@@ -999,25 +1001,11 @@ class Battle {
 
 const battle = new Battle();
 
-battle.addHero(Hector, "team1", {
-    x: 4,
-    y: 1
-});
 
-battle.addHero(Lucina, "team1", {
-    y: 1,
-    x: 2
-});
-
-battle.addHero(Ryoma, "team1", {
-    x: 3,
-    y: 1
-});
-
-battle.addHero(Robin, "team1", {
-    x: 5,
-    y: 1
-});
+battle.addHero(Lucina, "team1", MapData.startingSlots.team1[0]);
+battle.addHero(Ryoma, "team1", MapData.startingSlots.team1[1]);
+battle.addHero(Hector, "team1", MapData.startingSlots.team1[2]);
+battle.addHero(Robin, "team1", MapData.startingSlots.team1[3]);
 
 battle.addHero(Ike, "team2", {
     y: 7,

@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from "phaser";
 import { renderText } from "../utils/text-renderer";
 import HeroData from "feh-battles/dec/hero";
+import Team from "../../types/team";
 
 const fullWidth = 60;
 
@@ -10,13 +11,13 @@ class Hero extends GameObjects.Container {
     weaponType: GameObjects.Image;
     image: GameObjects.Image;
     hpText: GameObjects.Text;
-    team: "team1" | "team2";
+    team: Team;
     statuses: string[];
     statusesImage: GameObjects.Image;
     statusIndex = 0;
 
     // todo: simplify constructor
-    constructor(scene: Scene, x: number, y: number, data: HeroData, team: "team1" | "team2") {
+    constructor(scene: Scene, x: number, y: number, data: HeroData, team: Team) {
         super(scene, x, y);
         this.setData("hero", data);
         this.statuses = [];
