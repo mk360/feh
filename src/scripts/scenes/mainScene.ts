@@ -8,6 +8,7 @@ import battle from '../battle';
 import HeroData from "feh-battles/dec/hero";
 import InteractionIndicator from '../objects/interaction-indicator';
 import Team from '../../types/team';
+import stringifyTile from '../utils/stringify-tile';
 
 const squareSize = 125;
 const squaresOffset = 63;
@@ -33,7 +34,6 @@ export default class MainScene extends Phaser.Scene {
   unitInfosBanner: UnitInfosBanner;
   walkCoords: string[] = [];
   attackCoords: string[] = [];
-  displayRange = false;
   heroes: Hero[] = [];
   highlightedHero: Hero;
   team1: Hero[] = [];
@@ -64,12 +64,13 @@ export default class MainScene extends Phaser.Scene {
 
   clearTiles(tiles: string[]) {
     for (let tileName of tiles) {
-      this.getTile(tileName).setFillStyle(0x0);
+      this.getTile(tileName).setFillStyle(0x0).off("pointerdown").on("pointerdown", () => {
+        this.clearTiles([...this.walkCoords, ...this.attackCoords]);
+        this.walkCoords = [];
+        this.attackCoords = [];
+        this.displayIdleHeroes();
+      });
     }
-  }
-
-  getMovement(hero: Hero) {
-    const movementTiles = battle.getMovementTiles(hero.getInternalHero());
   }
 
   endAction(hero: Hero) {
@@ -83,7 +84,6 @@ export default class MainScene extends Phaser.Scene {
     hero.disableInteractive();
     hero.image.setTint(0x777777);
     this.heroesWhoMoved.push(hero);
-    this.displayRange = false;
     this.children.remove(this.children.getByName("movement-" + hero.getInternalHero().name));
     this.highlightedHero = null;
   }
@@ -125,9 +125,8 @@ export default class MainScene extends Phaser.Scene {
   killHero(hero: Hero) {
     this[hero.team] = this[hero.team].filter(({ name }) => name !== hero.name);
     this.heroes = this.heroes.filter(({ name }) => name !== hero.name);
-    const { x, y } = pixelsToGrid(hero.x, hero.y);
     this.children.remove(hero);
-    battle.killHero(hero.getInternalHero(), { x, y }, hero.team);
+    battle.killHero(hero.getInternalHero(), hero.team);
     hero.destroy();
     hero = null;
   }
@@ -137,7 +136,7 @@ export default class MainScene extends Phaser.Scene {
       for (let x = 1; x < 7; x++) {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
         const name = x + "-" + y;
-        const tile = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0000FF).setAlpha(0.2).setName(name);
+        const tile = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.2).setName(name);
         // uncomment if you need to check tile coordinates
         // this.add.text(tile.getCenter().x, tile.getCenter().y, name, {
         //   fontSize: "18px"
@@ -175,6 +174,7 @@ export default class MainScene extends Phaser.Scene {
         hero.y = dragY;
       });
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
+        this.clearTiles([...this.walkCoords, ...this.attackCoords]);
         if (timeStamp - clickTimestamp <= dblClickMargin) {
           this.endAction(hero);
           return;
@@ -194,7 +194,7 @@ export default class MainScene extends Phaser.Scene {
         this.sound.playAudioSprite(internalHero.name + " quotes", n.toString(), { volume: 0.2 });
         previousSoundFile = soundFile;
         this.unitInfosBanner.setVisible(true).setHero(hero);
-        this.displayRanges(currentCoords, battle.getMovementRange(internalHero), internalHero.getWeapon().range);
+        this.displayRanges(hero.getInternalHero());
       });
       let previousTileString = "";
       let tilePath: string[] = [];
@@ -213,56 +213,56 @@ export default class MainScene extends Phaser.Scene {
           this.combatForecast.setVisible(false);
           this.unitInfosBanner.setVisible(true);
           this.sound.play("hover");
-          const targetTileXY = target.name.split('-').map(Number);
-          const arrowPath = this.buildArrowPath({ ...currentCoords }, {
-            x: targetTileXY[0],
-            y: targetTileXY[1]
-          }, hero);
+          // const targetTileXY = target.name.split('-').map(Number);
+          // const arrowPath = this.buildArrowPath({ ...currentCoords }, {
+          //   x: targetTileXY[0],
+          //   y: targetTileXY[1]
+          // }, hero);
           pathStart.setTexture("rosary");
-          hero.getInternalHero().coordinates = arrowPath[arrowPath.length - 1];
+          // hero.getInternalHero().coordinates = arrowPath[arrowPath.length - 1];
 
           this.movementArrows.clear(true);
-          for (let i = 0; i < arrowPath.length; i++) {
-            const previousTile = arrowPath[i - 1];
-            const tile = arrowPath[i];
-            if (i) {
-              this.add.existing(endArrow);
-            }
-            if (previousTile && arrowPath[i - 2]) {
-              const previousTileDirections = getTilesDirection(arrowPath[i - 2], tile);
-              const gameTile = this.getTile(previousTile.x + "-" + previousTile.y);
-              var texture = !previousTileDirections.x ? "vertical" : !previousTileDirections.y ? "horizontal" : `path-${previousTileDirections.y}-${previousTileDirections.x}`;
-              const img = new Phaser.GameObjects.Image(this, gameTile.x, gameTile.y, texture);
-              this.add.existing(img);
-              this.movementArrows.add(img);
-            }
-            if (i === 1) {
-              const direction = getTilesDirection(previousTile, tile);
-              const verticalAngle = direction.y === "up" ? 180 : direction.y === "down" ? 0 : null;
-              const horizontalAngle = direction.x === "left" ? 90 : direction.x === "right" ? -90 : null;
-              const angle = verticalAngle ?? horizontalAngle;
-              pathStart.setTexture("rosary-arrow");
-              pathStart.setRotation(angle * Math.PI / 180);
-            }
-            if (arrowPath.length === 1) {
-              this.children.remove(this.children.getByName("end-arrow"));
-            } else if (i === arrowPath.length - 1 && i) {
-              const x = arrowPath[arrowPath.length - 1];
-              const tile = this.getTile(x.x + "-" + x.y);
-              endArrow.x = tile.x;
-              endArrow.y = tile.y;
-              const direction = getTilesDirection(previousTile, x);
-              const horizontalAngle = direction.x === "left" ? 180 : direction.x === "right" ? 0 : null;
-              const verticalAngle = direction.y === "up" ? -90 : direction.y === "down" ? 90 : null;
-              const angle = horizontalAngle ?? verticalAngle;
-              endArrow.setRotation(angle * Math.PI / 180);
-            }
-            // for each tile
-            // if it has a tile before it, compare directions
-            // if it has a tile after it, compare directions
-            // assemble directions from both comparisons
-            // and render path
-          }
+          // for (let i = 0; i < arrowPath.length; i++) {
+          //   const previousTile = arrowPath[i - 1];
+          //   const tile = arrowPath[i];
+          //   if (i) {
+          //     this.add.existing(endArrow);
+          //   }
+          //   if (previousTile && arrowPath[i - 2]) {
+          //     const previousTileDirections = getTilesDirection(arrowPath[i - 2], tile);
+          //     const gameTile = this.getTile(previousTile.x + "-" + previousTile.y);
+          //     var texture = !previousTileDirections.x ? "vertical" : !previousTileDirections.y ? "horizontal" : `path-${previousTileDirections.y}-${previousTileDirections.x}`;
+          //     const img = new Phaser.GameObjects.Image(this, gameTile.x, gameTile.y, texture);
+          //     this.add.existing(img);
+          //     this.movementArrows.add(img);
+          //   }
+          //   if (i === 1) {
+          //     const direction = getTilesDirection(previousTile, tile);
+          //     const verticalAngle = direction.y === "up" ? 180 : direction.y === "down" ? 0 : null;
+          //     const horizontalAngle = direction.x === "left" ? 90 : direction.x === "right" ? -90 : null;
+          //     const angle = verticalAngle ?? horizontalAngle;
+          //     pathStart.setTexture("rosary-arrow");
+          //     pathStart.setRotation(angle * Math.PI / 180);
+          //   }
+          //   if (arrowPath.length === 1) {
+          //     this.children.remove(this.children.getByName("end-arrow"));
+          //   } else if (i === arrowPath.length - 1 && i) {
+          //     const x = arrowPath[arrowPath.length - 1];
+          //     const tile = this.getTile(x.x + "-" + x.y);
+          //     endArrow.x = tile.x;
+          //     endArrow.y = tile.y;
+          //     const direction = getTilesDirection(previousTile, x);
+          //     const horizontalAngle = direction.x === "left" ? 180 : direction.x === "right" ? 0 : null;
+          //     const verticalAngle = direction.y === "up" ? -90 : direction.y === "down" ? 90 : null;
+          //     const angle = horizontalAngle ?? verticalAngle;
+          //     endArrow.setRotation(angle * Math.PI / 180);
+          //   }
+          //   // for each tile
+          //   // if it has a tile before it, compare directions
+          //   // if it has a tile after it, compare directions
+          //   // assemble directions from both comparisons
+          //   // and render path
+          // }
           previousTileString = target.name;
           (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).x = target.x;
           (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).y = target.y;
@@ -482,7 +482,7 @@ export default class MainScene extends Phaser.Scene {
       hero.off("dragstart");
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
-        this.displayRanges(pixelsToGrid(hero.x, hero.y), battle.getMovementRange(hero.getInternalHero()), hero.getInternalHero().getWeapon().range);
+        this.displayRanges(hero.getInternalHero());
         this.sound.play("enabled-unit");
         this.highlightedHero = hero;
         this.unitInfosBanner.setVisible(true).setHero(hero);
@@ -492,7 +492,7 @@ export default class MainScene extends Phaser.Scene {
     for (let effect of effects) {
       const target = this.children.getByName(effect.targetHeroId) as Hero;
       if (target && effect.appliedEffect.stats) {
-        target.getInternalHero().setMapMods(effect.appliedEffect.stats);
+        target.getInternalHero().setMapBoosts(effect.appliedEffect.stats);
         target.statuses.push("buff");
       }
     }
@@ -545,28 +545,21 @@ export default class MainScene extends Phaser.Scene {
   }
 
   // todo: simplify signature
-  addHero(config: { hero: HeroData } & Coords, team: Team) {
-    const { x, y } = gridToPixels(config.x, config.y);
-    const hero = new Hero(this, x, y, config.hero, team).setInteractive();
-    this.add.existing(hero);
-    this.heroes.push(hero);
-    this[team].push(hero);
-    hero.setDepth(1);
-    return hero;
+  addHero(heroData: HeroData, team: Team) {
+    const { x, y } = gridToPixels(heroData.coordinates.x, heroData.coordinates.y);
+    const heroObject = new Hero(this, x, y, heroData, team).setInteractive();
+    this.add.existing(heroObject);
+    this.heroes.push(heroObject);
+    this[team].push(heroObject);
+    heroObject.setDepth(1);
+    return heroObject;
   }
 
-  moveHero(hero: Hero, from: Coords, destination: Coords) {
-    battle.map[from.y][from.x] = null;
-    // battle.map[destination.y][destination.x] = hero;
+  moveHero(hero: Hero, destination: Coords) {
+    battle.moveHero(hero.getInternalHero(), destination);
     const { x, y } = gridToPixels(destination.x, destination.y);
     hero.x = x;
     hero.y = y;
-  }
-
-  getNearestToAttackTile(hero: Hero, tileCoords: Coords) {
-    const eligibleTiles = this.getTilesInShallowRange(tileCoords, hero.getInternalHero().getWeapon().range);
-    if (!eligibleTiles.size) return null;
-    return eligibleTiles;
   }
 
   startBackgroundMusic(volume: number) {
@@ -592,16 +585,14 @@ export default class MainScene extends Phaser.Scene {
     this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setDepth(0);
     this.createTiles();
     
-    for (let { hero, x, y } of battle.team1) {
-      this.addHero({ x, y, hero }, "team1");
+    for (let heroId in battle.team1) {
+      const hero = battle.team1[heroId]
+      this.addHero(hero, "team1");
     }
 
-    for (let { hero, x, y } of battle.team2) {
-      this.addHero({
-        hero,
-        x,
-        y,
-      }, "team2");
+    for (let heroId in battle.team2) {
+      const hero = battle.team2[heroId]
+      this.addHero(hero, "team2");
     }
 
     this.setTurn("team1");
@@ -621,54 +612,8 @@ export default class MainScene extends Phaser.Scene {
     this.fillTiles(weaponTiles, 0xFF0000);
   }
 
-  //
-
   getTile(name: string) {
     return this.children.getByName(name) as Phaser.GameObjects.Rectangle;
-  }
-
-  // todo: try to split function into distinct ones for walking and attacking
-  getTilesInRange(tile: Coords, range: number, existingTiles?: Map<string, Coords>, checkForAttacks?: boolean) {
-    let tiles = existingTiles ? Array.from(existingTiles.values()) : [tile];
-    const tileset = existingTiles ? new Map(existingTiles || undefined) : new Map<string, Coords>();
-    const hero = battle.map[tile.y][tile.x];
-
-    // for (let i = 0; i < range; i++) {
-    //   tiles = tiles.map(getNearby).flat();
-    //   if (!checkForAttacks) {
-    //     tiles = tiles.filter((testedTile) => {
-    //       return this.heroCanReachTile(hero, testedTile);
-    //     });
-    //   }
-    // }
-
-    for (let tile of tiles) {
-      if (!tileset.has(`${tile.x}-${tile.y}`)) {
-        tileset.set(`${tile.x}-${tile.y}`, tile);
-      }
-    }
-
-    return tileset;
-  }
-
-  heroCanReachTile(hero: Hero, tile: Coords) {
-    const occupying = battle.map[tile.y][tile.x];
-    // if (Boolean(occupying) && occupying.team !== hero.team) return false;
-    // const tileType = this.terrain[tile.y - 1][tile.x - 1];
-    // if (tileType === "wall") return false;
-    // if (tileType === "void") return hero.getInternalHero().movementType === "flier";
-    // if (hero.getInternalHero().movementType === "flier") return true;
-    // const { x, y } = pixelsToGrid(hero.x, hero.y);
-    // if (hero.getInternalHero().movementType === "cavalry" && tileType === "trench") return battle.getDistance({ x, y }, tile) <= 1;
-    // if (tileType === "tree") {
-    //   switch (hero.getInternalHero().movementType) {
-    //     case "cavalry": return false;
-    //     case "infantry": return battle.getDistance({ x, y }, tile) <= 1;
-    //     default: return true;
-    //   }
-    // }
-
-    return true;
   }
 
   update(_, delta: number) {

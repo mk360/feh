@@ -464,10 +464,10 @@ AtkSpdBond4.onBeforeCombat = ({ wielder }) => {
                 atk: 7,
                 spd: 7,
             };
-            for (let stat in wielder.mapMods) {
-                if (wielder.mapMods[stat] < 0) {
-                    statsBuffs[stat] += -wielder.mapMods[stat];
-                    wielder.mapMods[stat] = 0;
+            for (let stat in wielder.mapBoosts) {
+                if (wielder.mapBoosts[stat] < 0) {
+                    statsBuffs[stat] += -wielder.mapBoosts[stat];
+                    wielder.mapBoosts[stat] = 0;
                 }
             }
             wielder.setBattleMods(statsBuffs);
