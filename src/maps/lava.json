@@ -5,6 +5,13 @@
     },
     "bgm": "leif's army in search of victory.ogg",
     "terrain": {
-        "1": ["wall", "floor", "floor", "floor", "floor"]
+        "1": ["wall", "floor", "floor", "floor", "floor", "floor"],
+        "2": ["wall", "floor", "floor", "floor", "void", "floor"],
+        "3": ["floor", "floor", "floor", "floor", "floor", "floor"],
+        "4": ["floor", "floor", "floor", "floor", "floor", "floor"],
+        "5": ["floor", "wall", "floor", "tree", "floor", "tree"],
+        "6": ["floor", "tree", "floor", "floor", "floor", "wall"],
+        "7": ["floor", "floor", "floor", "floor", "floor", "floor"],
+        "8": ["tree", "void", "void", "void", "void", "tree"]
     }
 }
