@@ -1,7 +1,107 @@
 {
-    "startingSlots": {
-        "team1": [{ "x": 2, "y": 1 }, { "x": 3, "y": 1 }, { "x": 4, "y": 1 }, { "x": 5, "y": 1 }],
-        "team2": [{ "x": 3, "y": 7 }, { "x": 4, "y": 7 }, { "x": 5, "y": 7 }, { "x": 6, "y": 7 }]
+  "startingSlots": {
+    "team1": [
+      {
+        "x": 2,
+        "y": 1
+      },
+      {
+        "x": 3,
+        "y": 1
+      },
+      {
+        "x": 4,
+        "y": 1
+      },
+      {
+        "x": 5,
+        "y": 1
+      }
+    ],
+    "team2": [
+      {
+        "x": 3,
+        "y": 7
+      },
+      {
+        "x": 4,
+        "y": 7
+      },
+      {
+        "x": 5,
+        "y": 7
+      },
+      {
+        "x": 6,
+        "y": 7
+      }
+    ]
+  },
+  "bgm": "leif's army in search of victory.ogg",
+  "terrain": {
+    "1": {
+      "1": "wall",
+      "2": "floor",
+      "3": "floor",
+      "4": "floor",
+      "5": "floor",
+      "6": "floor"
     },
-    "bgm": "leif's army in search of victory.ogg"
+    "2": {
+      "1": "wall",
+      "2": "tree",
+      "3": "floor",
+      "4": "floor",
+      "5": "wall",
+      "6": "void"
+    },
+    "3": {
+      "1": "floor",
+      "2": "floor",
+      "3": "floor",
+      "4": "floor",
+      "5": "floor",
+      "6": "floor"
+    },
+    "4": {
+      "1": "floor",
+      "2": "floor",
+      "3": "floor",
+      "4": "floor",
+      "5": "floor",
+      "6": "floor"
+    },
+    "5": {
+      "1": "floor",
+      "2": "floor",
+      "3": "floor",
+      "4": "tree",
+      "5": "floor",
+      "6": "tree"
+    },
+    "6": {
+      "1": "floor",
+      "2": "tree",
+      "3": "floor",
+      "4": "floor",
+      "5": "floor",
+      "6": "wall"
+    },
+    "7": {
+      "1": "floor",
+      "2": "floor",
+      "3": "floor",
+      "4": "floor",
+      "5": "floor",
+      "6": "floor"
+    },
+    "8": {
+      "1": "tree",
+      "2": "void",
+      "3": "void",
+      "4": "void",
+      "5": "void",
+      "6": "tree"
+    }
+  }
 }

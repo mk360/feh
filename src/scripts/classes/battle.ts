@@ -7,6 +7,7 @@ import Stats from "../../interfaces/stats";
 import Team from "../../types/team";
 import MapData from "../../maps/lava.json";
 import { CombatOutcome } from "feh-battles/dec/combat";
+import TileType from "../../types/tiles";
 
 const Ryoma = new FEH.Hero({
     name: "Ryoma",
@@ -881,7 +882,9 @@ class Battle {
     // todo: refactor into a key-value pair?
     map: {
         [k: number]: (Hero | null)[];
-    }
+    };
+
+    terrain = MapData.terrain;
 
     private effectRunner: MapEffectRunner;
 
@@ -916,16 +919,54 @@ class Battle {
         return movementRange;
     }
 
-    getWeaponRange(hero: Hero) {
-        if (["sword", "lance", "axe", "dragonstone", "beast"].includes(hero.getWeapon().type)) {
-            return 1;
-        }
+    getTilesInWalkingRange(hero: Hero, range?: number, previousTiles?: Coords[]) {
+        if (range === 0) return [];
+        let tiles = previousTiles || [hero.coordinates];
+        let result: Coords[] = [];
+        let validTiles = tiles.map((tile) => {
+            return getNearby(tile).filter((filteredTile) => {
+                const heroCanReachTile = !this.map[filteredTile.y][filteredTile.x] && this.heroCanUseTile(filteredTile, hero);
+                const tileCanBeCrossed = range - this.getTileCost(hero, tile) >= 0;
+                return heroCanReachTile && tileCanBeCrossed;
+            });
+        }).flat();
+        validTiles = validTiles.concat(this.getTilesInWalkingRange(hero, range - 1, validTiles));
+        result = result.concat(validTiles);
+        return Array.from(new Set(result.map((t) => t.x + "-" + t.y))).map((t) => ({
+            x: +t[0],
+            y: +t[2]
+        }));
+    }
 
-        return 2;
+    getAttackTiles(hero: Hero, movementTiles: Coords[]) {
+
+    }
+
+    getTileCost(hero: Hero, tile: Coords) {
+        const tileType = this.terrain[tile.y][tile.x];
+        switch (tileType) {
+            case "tree": return hero.getMovementType() === "infantry" ? 2 : 1;
+            case "trench": return hero.getMovementType() === "cavalry" ? 3 : 1;
+            default: return 1;
+        }
+    }
+
+    getTilesInShallowRange(movementTiles: Coords[]) {
+        
     }
 
     getDistance(tile1: Coords, tile2: Coords) {
         return Math.abs(tile1.x - tile2.x) + Math.abs(tile1.y - tile2.y);
+    }
+
+    heroCanUseTile(tile: Coords, hero: Hero) {
+        const tileType = this.terrain[tile.y][tile.x];
+        switch (tileType) {
+            case "void": return hero.getMovementType() === "flier";
+            case "wall": return false;
+            case "tree": return hero.getMovementType() !== "cavalry";
+            default: return true;
+        }
     }
 
     moveHero(hero: Hero, destination: Coords) {
@@ -953,11 +994,11 @@ class Battle {
             hero,
             ...startingCoordinates,
         });
+        this.map[startingCoordinates.y][startingCoordinates.x] = hero;
     }
 
     startCombat(attacker: Hero, defender: Hero) {
-        const c = new FEH.Combat({ attacker, defender }).createCombat();
-        return c;
+        return new FEH.Combat({ attacker, defender }).createCombat();
     }
 
     setAlliesAndEnemies() {
@@ -999,6 +1040,37 @@ class Battle {
     }
 };
 
+function isValid(tile: Coords) {
+    return tile.x >= 1 && tile.x <= 6 && tile.y >= 1 && tile.y <= 8;
+}
+  
+function getNearby(coords: Coords) {
+    const { x, y } = coords;
+    const nearbyTiles = [coords];
+
+    nearbyTiles.push({
+        x: x + 1,
+        y
+    });
+
+    nearbyTiles.push({
+        x: x-1,
+        y
+    });
+
+    nearbyTiles.push({
+        x,
+        y: y + 1
+    });
+
+    nearbyTiles.push({
+        x,
+        y: y-1
+    });
+
+    return nearbyTiles.filter(isValid);
+};
+
 const battle = new Battle();
 
 
@@ -1006,6 +1078,8 @@ battle.addHero(Lucina, "team1", MapData.startingSlots.team1[0]);
 battle.addHero(Ryoma, "team1", MapData.startingSlots.team1[1]);
 battle.addHero(Hector, "team1", MapData.startingSlots.team1[2]);
 battle.addHero(Robin, "team1", MapData.startingSlots.team1[3]);
+
+console.log(battle.getTilesInWalkingRange(Lucina, 2));
 
 battle.addHero(Ike, "team2", {
     y: 7,
