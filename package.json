@@ -37,11 +37,13 @@
   },
   "license": "MIT",
   "dependencies": {
-    "feh-battles": "git://github.com/mk360/feh-battles.git",
+    "feh-battles": "file:../feh-battles",
     "phaser": "^3.55.2"
   },
   "devDependencies": {
+    "@types/audiosprite": "^0.7.0",
     "@yandeu/prettier-config": "^0.0.3",
+    "audiosprite": "^0.7.2",
     "copy-webpack-plugin": "^10.1.0",
     "gh-pages": "^5.0.0",
     "html-webpack-plugin": "^5.5.0",

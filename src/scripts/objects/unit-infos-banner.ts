@@ -1,9 +1,8 @@
-import { renderCritHPText, renderRegularHPText, renderSkillNameText, renderText } from "../utils/text-renderer";
+import { renderCritHPText, renderRegularHPText, renderLabelText, renderText } from "../utils/text-renderer";
 import Hero from "./hero";
 import TextColors from "../utils/text-colors";
 import HeroNameplate from "./hero-nameplate";
 import { GameObjects } from "phaser";
-import SkillDetails from "./skill-details";
 import Stats from "../../interfaces/stats";
 import Textbox from "./textbox";
 
@@ -20,12 +19,12 @@ class UnitInfosBanner extends GameObjects.Container {
     private B: GameObjects.Image;
     private C: GameObjects.Image;
     private S: GameObjects.Image;
+    private textboxTarget: string;
     private heroPortrait: GameObjects.Image;
     private weaponBg: GameObjects.Image;
     private assist: GameObjects.Text;
     private special: GameObjects.Text;
     private textbox: Textbox;
-    private skillInfos: SkillDetails;
     private statLabels: {
         [k in keyof Stats]: {
             object: GameObjects.Text;
@@ -50,15 +49,13 @@ class UnitInfosBanner extends GameObjects.Container {
             }
         });
 
-        this.textbox = new Textbox(scene, 0, 0);
+        this.textbox = new Textbox(scene, 0, 0).setVisible(false);
 
         this.nameplate = new HeroNameplate(scene, blockX - 150, 25, {
             name: "",
             weaponType: "",
             weaponColor: "",
         });
-
-        const lvText = renderText(scene, 590, 15, "40", { fontSize: "20px"});
 
         this.atk = renderText(scene, blockX - 30, 95, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
         this.spd = renderText(scene, blockX + 80, 95, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers);
@@ -97,34 +94,33 @@ class UnitInfosBanner extends GameObjects.Container {
             const castKey = statKey as keyof Stats;
             this.add(this.statLabels[castKey].object);
             this.statLabels[castKey].object.setInteractive().on("pointerdown", () => {
+                const vis = this.textboxTarget !== castKey && !(this.textboxTarget === castKey && this.textbox.visible);
+                this.textboxTarget = castKey;
+                if (vis) this.displayTextbox();
+                else this.hideTextbox();
                 const desc = this.statLabels[castKey].description;
-                this.skillInfos.setSkillDescription("", desc);
-                this.skillInfos.x = this.statLabels[castKey].object.x + 400;
-                this.skillInfos.y = this.statLabels[castKey].object.y + 25;
-                this.skillInfos.setVisible(!this.skillInfos.visible);
             });
         }
-
-        this.add(renderText(scene, lvText.getLeftCenter().x, 0, "Lv.", { fontSize: "14px"}));
+        const lvText = renderText(scene, 580, 15, "40", { fontSize: "20px"});
+        this.add(renderText(scene, lvText.getLeftCenter().x + 5, lvText.getTopCenter().y - 15, "LV.", { fontSize: "14px"}));
         this.add(lvText);
-        this.S = new GameObjects.Image(scene, 715, lvText.getBottomCenter().y, "").setScale(0.5).setOrigin(0, 1);
-        const S_Letter = new GameObjects.Image(scene, this.S.getBottomRight().x, this.S.getBottomRight().y, "S").setOrigin(1).setScale(0.5);
+        this.A = new GameObjects.Image(scene, 620, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5);
+        this.B = new GameObjects.Image(scene, this.A.getRightCenter().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5);
+        const A_Letter = new GameObjects.Image(scene, this.A.getBottomRight().x + 3, this.A.getBottomRight().y + 10, "A").setOrigin(0, 1).setScale(0.5);
+        const B_Letter = new GameObjects.Image(scene, this.B.getBottomRight().x + 3, this.B.getBottomRight().y + 10, "B").setOrigin(0, 1).setScale(0.5);
+        this.C = new GameObjects.Image(scene, this.B.getBottomRight().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5);
+        const C_Letter = new GameObjects.Image(scene, this.C.getBottomRight().x + 3, this.C.getBottomRight().y + 10, "C").setOrigin(0, 1).setScale(0.5);
+        this.S = new GameObjects.Image(scene, this.C.getRightCenter().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5);
+        const S_Letter = new GameObjects.Image(scene, this.S.getBottomRight().x + 3, this.S.getBottomRight().y + 10, "S").setOrigin(0, 1).setScale(0.5);
         this.add(this.S);
         this.add(S_Letter);
-        this.C = new GameObjects.Image(scene, 690, lvText.getBottomCenter().y, "").setScale(0.5).setOrigin(0, 1);
-        const C_Letter = new GameObjects.Image(scene, this.C.getBottomRight().x, this.C.getBottomRight().y, "C").setOrigin(1).setScale(0.5);
         this.add(this.C);
         this.add(C_Letter);
-        this.B = new GameObjects.Image(scene, 665, lvText.getBottomCenter().y, "").setScale(0.5).setOrigin(0, 1);
-        const B_Letter = new GameObjects.Image(scene, this.B.getBottomRight().x, this.B.getBottomRight().y, "B").setOrigin(1).setScale(0.5);
         this.add(this.B);
         this.add(B_Letter);
-        this.A = new GameObjects.Image(scene, 640, lvText.getBottomCenter().y, "").setScale(0.5).setOrigin(0, 1);
-        const A_Letter = new GameObjects.Image(scene, this.A.getBottomRight().x, this.A.getBottomRight().y, "A").setOrigin(1).setScale(0.5);
         this.add(this.A);
         this.add(A_Letter);
-        this.skillInfos = new SkillDetails(scene, this.S.getCenter().x + 10, this.S.getBottomRight().y).setDepth(7).setVisible(false);
-        this.weaponBg = new GameObjects.Image(this.scene, 490, 45, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25).setInteractive();
+        this.weaponBg = new GameObjects.Image(this.scene, 490, 50, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25).setInteractive();
         const assistBg = new GameObjects.Image(this.scene, 490, 85, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25);
         const specialBg = new GameObjects.Image(this.scene, 490, 125, "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25);
         const assistIcon = new GameObjects.Image(this.scene, 490, 105, "assist-icon").setScale(0.45).setOrigin(0.25, 0.5);
@@ -151,18 +147,62 @@ class UnitInfosBanner extends GameObjects.Container {
 
         this.add(this.currentHP);
         this.add(this.maxHP);
-        this.add(this.skillInfos);
+        this.add(this.textbox);
+    }
+
+    displayTextbox() {
+        this.textbox.setVisible(true).setScale(0);
+        this.scene.sound.playAudioSprite("sfx", "tap");
+        this.scene.tweens.create({
+            targets: [this.textbox],
+            scale: 1,
+            duration: 50
+        }).play();
+    }
+
+    hideTextbox() {
+        this.scene.sound.playAudioSprite("sfx", "tap");
+        this.scene.tweens.create({
+            targets: [this.textbox],
+            scale: 0,
+            duration: 50,
+            onComplete: () => {
+                this.textbox.setVisible(false);
+            }
+        }).play();
     }
 
     setHero(hero: Hero) {
-        this.skillInfos.setVisible(false);
         const internalHero = hero.getInternalHero();
         const weapon = internalHero.getWeapon();
         this.weaponBg.off("pointerdown").on("pointerdown", () => {
-            this.skillInfos.setVisible(!this.skillInfos.visible);
-            this.skillInfos.setSkillDescription(weapon.name, weapon.description);
-            this.skillInfos.y = this.weaponBg.y + 40;
-            this.skillInfos.x = 750;
+            this.textbox.clearContent();
+            const firstLine = [
+                renderLabelText({
+                    scene: this.scene,
+                    content: "Mt",
+                    x: 0,
+                    y: 0
+                }),
+                renderText(this.scene, 30, 0, weapon.might).setFontSize(18),
+                renderLabelText({
+                    scene: this.scene,
+                    content: "Rng",
+                    x: 70,
+                    y: 0
+                }),
+                renderText(this.scene, 120, 0, weapon.range).setFontSize(18)
+            ];
+
+            const secondLine = [renderText(this.scene, 0, 30, weapon.description).setWordWrapWidth(440).setFontSize(18)];
+            this.textbox.setContent([firstLine, secondLine]).setDepth(10);
+            this.textbox.x = this.weaponBg.getRightCenter().x;
+            this.textbox.y = this.weaponBg.getBottomCenter().y + 5;
+            const vis = this.textboxTarget !== "weapon" || !(this.textboxTarget === "weapon" && this.textbox.visible);
+            this.textboxTarget = "weapon";
+            if (vis) {
+                this.displayTextbox();
+            } else this.hideTextbox();
         });
         for (let statKey in this.statLabels) {
             const castKey = statKey as keyof Stats;
@@ -185,6 +225,7 @@ class UnitInfosBanner extends GameObjects.Container {
             content: internalHero.stats.hp,
         });
         this.add(this.currentHP);
+
         if (this.nameplate.heroName.text !== internalHero.name) {
             this.heroPortrait.x = -300;
             this.scene.tweens.add({
@@ -213,23 +254,25 @@ class UnitInfosBanner extends GameObjects.Container {
         for (let skill of ["A", "B", "C", "S"] as const) {
             this[skill].off("pointerdown");
             const skillData = internalHero.skills[skill];
-            this[skill].setTexture("skills", skillData.name);
+            this[skill].setTexture("skills", skillData.name).setDisplaySize(33, 33);
             this[skill].setName(skillData.name);
             this[skill].setInteractive().on("pointerdown", () => {
+                const vis = this.textboxTarget !== skill || !(this.textboxTarget === skill && this.textbox.visible);
+                this.textboxTarget = skill;
                 const skillInfosLines = [];
                 this.textbox.clearContent();
-                skillInfosLines.push(renderSkillNameText({
+                skillInfosLines.push(renderLabelText({
                     scene: this.scene,
                     x: 0,
                     y: 0,
                     content: skillData.name
                 }));
+                this.textbox.x = this.S.getRightCenter().x;
+                this.textbox.y = this.S.getBottomCenter().y + 5;
+                skillInfosLines.push(renderText(this.scene, 0, 40, skillData.description).setWordWrapWidth(390));
                 this.textbox.setContent([skillInfosLines]);
-                this.add(this.textbox);
-                this.skillInfos.x = 750;
-                this.skillInfos.y = this[skill].y;
-                this.skillInfos.setSkillDescription(skillData.name, skillData.description);
-                this.skillInfos.setVisible(false);
+                if (vis) this.displayTextbox();
+                else this.hideTextbox();
             });
         }
     }

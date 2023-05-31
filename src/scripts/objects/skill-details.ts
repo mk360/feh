@@ -1,5 +1,5 @@
 import { GameObjects, Scene } from "phaser";
-import { renderSkillNameText, renderText } from "../utils/text-renderer";
+import { renderLabelText, renderText } from "../utils/text-renderer";
 
 // todo: tear down, animate, decide on whether it should be generic or i should create specific skill detail containers
 // for weapons, stats, and skills
@@ -22,7 +22,7 @@ class SkillDetails extends GameObjects.Container {
         if (this.skillName) {
             this.remove(this.skillName);
         }
-        this.skillName = renderSkillNameText({
+        this.skillName = renderLabelText({
             scene: this.scene,
             x: this.contentContainer.getLeftCenter().x + 10,
             y: this.contentContainer.getTopCenter().y + 10,

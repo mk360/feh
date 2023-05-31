@@ -26,7 +26,7 @@ Mulagir.onBeforeCombat = ({ enemy, wielder }) => {
 Mulagir.setDescription("Effective against flying foes. Grants Spd+3. Neutralizes magic foe's bonuses (from skills like Fortify, Rally, etc.) during combat.");
 
 export const Ragnell = new FEH.Weapon();
-Ragnell.setType("sword").setColor("red").setMight(19).setName("Ragnell");
+Ragnell.setType("sword").setColor("red").setMight(16).setName("Ragnell");
 
 Ragnell.setDescription("Unit can counterattack regardless of range.");
 

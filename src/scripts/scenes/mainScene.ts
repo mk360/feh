@@ -176,6 +176,7 @@ export default class MainScene extends Phaser.Scene {
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
         this.clearTiles([...this.walkCoords, ...this.attackCoords]);
         if (timeStamp - clickTimestamp <= dblClickMargin) {
+          this.sound.play("confirm");
           this.endAction(hero);
           return;
         }
@@ -187,7 +188,7 @@ export default class MainScene extends Phaser.Scene {
         img.setVisible(true);
         pathStart = this.add.image(img.x, img.y, "rosary").setDisplaySize(img.width, img.height).setScale(1.35).setName("arrow");
         this.movementAllowedTween.pause();
-        this.sound.play("enabled-unit");
+        this.sound.playAudioSprite("sfx", "tap");
         const n = this.rng.integerInRange(1, 3);
         if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
         const soundFile = internalHero.name + " quotes";
@@ -206,13 +207,14 @@ export default class MainScene extends Phaser.Scene {
       this.movementArrows.add(endArrow);
       let hoveredTile = "";
       hero.on("dragenter", (_, target: Phaser.GameObjects.Rectangle) => {
+        this.sound.playAudioSprite("sfx", "hover");
         if (target.name !== hoveredTile) {
           hoveredTile = target.name
         }
         if (this.walkCoords.includes(target.name) && target.name !== previousTileString) {
           this.combatForecast.setVisible(false);
           this.unitInfosBanner.setVisible(true);
-          this.sound.play("hover");
+          this.sound.playAudioSprite("sfx", "hover");
           // const targetTileXY = target.name.split('-').map(Number);
           // const arrowPath = this.buildArrowPath({ ...currentCoords }, {
           //   x: targetTileXY[0],
@@ -483,7 +485,7 @@ export default class MainScene extends Phaser.Scene {
       hero.off("pointerdown");
       hero.on("pointerdown", () => {
         this.displayRanges(hero.getInternalHero());
-        this.sound.play("enabled-unit");
+        this.sound.playAudioSprite("sfx", "tap");
         this.highlightedHero = hero;
         this.unitInfosBanner.setVisible(true).setHero(hero);
       });
@@ -504,12 +506,10 @@ export default class MainScene extends Phaser.Scene {
     this.load.atlas("weapons", "assets/sheets/weapons.webp", "assets/sheets/weapons.json");
     this.load.atlas("skills", "assets/sheets/skills.webp", "assets/sheets/skills.json");
     this.load.atlas("interactions", "assets/sheets/interactions.webp", "assets/sheets/interactions.json");
-    this.load.audio("enabled-unit", "assets/audio/pointer-tap.mp3");
-    this.load.audio("disabled-unit", "assets/audio/feh disabled unit.mp3");
     this.load.audio("hit", "assets/audio/hit.mp3");
     this.load.audio("ko", "assets/audio/ko.mp3");
     this.load.image("background", "assets/unit-bg-test.png");
-    this.load.audio("hover", "assets/audio/hover on tile.mp3");
+    this.load.audioSprite("sfx", "assets/audio/sfx.json", "assets/audio/sfx.ogg");
     this.load.audio("confirm", "assets/audio/confirm.mp3");
     this.load.image("nameplate", "assets/nameplate.png");
     this.load.image("end-arrow", "assets/end-arrow-fixed.png");

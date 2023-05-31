@@ -6,7 +6,7 @@ const TextColors = {
     healthyHP: "#F2C42A",
     effective: "#87F640",
     criticalHP: "#CA384D",
-    skillName: "#F5D04C"
+    label: "#F5D04C"
 };
 
 export default TextColors;
