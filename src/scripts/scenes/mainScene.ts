@@ -508,6 +508,7 @@ export default class MainScene extends Phaser.Scene {
     this.load.atlas("interactions", "assets/sheets/interactions.webp", "assets/sheets/interactions.json");
     this.load.audio("hit", "assets/audio/hit.mp3");
     this.load.audio("ko", "assets/audio/ko.mp3");
+    this.load.atlas("skills-ui", "assets/sheets/skills-ui.webp", "assets/sheets/skills-ui.json");
     this.load.image("background", "assets/unit-bg-test.png");
     this.load.audioSprite("sfx", "assets/audio/sfx.json", "assets/audio/sfx.ogg");
     this.load.audio("confirm", "assets/audio/confirm.mp3");
@@ -525,11 +526,8 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("rosary", "assets/rosary-current.png");
     this.load.image("rosary-arrow", "assets/rosary-arrow.png");
     this.load.image("weapon-icon", "assets/weapon_icon.png");
-    this.load.image("weapon-bg", "assets/weapon.png");
     this.load.image("unit-banner-bg", "assets/unit-banner-bg.png");
     this.load.image("forecast-bg", "assets/forecast-bg.png");
-    this.load.image("assist-icon", "assets/assist-icon.png");
-    this.load.image("special-icon", "assets/special-icon.png");
     // todo: compress into audio sprite
     this.load.audio("bgm", "assets/audio/bgm/leif's army in search of victory.ogg");
     for (let hero of ["Corrin", "Hector", "Ike", "Lucina", "Lyn", "Robin", "Ryoma", "Ephraim"]) {
