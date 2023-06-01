@@ -3,6 +3,14 @@ import FEH from "feh-battles";
 import Hero from "feh-battles/dec/hero";
 import Stats from "../../interfaces/stats";
 
+export const Astra = new FEH.Special({
+    name: "Astra",
+    description: "Increases damage by 150%",
+    cooldown: 5
+});
+
+console.log(Astra.description);
+
 export const Mulagir = new FEH.Weapon();
 Mulagir.setName("Mulagir")
     .setMight(14)

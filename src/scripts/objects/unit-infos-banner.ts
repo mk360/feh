@@ -29,11 +29,13 @@ class UnitInfosBanner extends GameObjects.Container {
     private heroPortrait: GameObjects.Image;
     private weaponBg: GameObjects.Image;
     private specialBg: GameObjects.Image;
+    private special: GameObjects.Text;
     private textbox: Textbox;
     private stats: {
         [k in keyof Stats]: RenderedStat;
     };
     private assistBg: GameObjects.Image;
+    private assist: GameObjects.Text;
     
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
@@ -71,8 +73,15 @@ class UnitInfosBanner extends GameObjects.Container {
         this.weaponName = renderText(this.scene, this.weaponBg.getLeftCenter().x + 30, this.weaponBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
             fontSize: "19px"
         });
+        this.assist = renderText(this.scene, this.assistBg.getLeftCenter().x + 30, this.assistBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
+            fontSize: "19px"
+        });
+        this.special = renderText(this.scene, this.specialBg.getLeftCenter().x + 30, this.specialBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
+            fontSize: "19px"
+        });
         this.add(this.weaponName);
-
+        this.add(this.special);
+        this.add(this.assist);
         this.add(this.maxHP);
         this.add(this.textbox);
         this.createPassives(lvText);
@@ -97,24 +106,24 @@ class UnitInfosBanner extends GameObjects.Container {
 
         this.stats = {
             atk: {
-                label: renderText(this.scene, blockX - 120, 95, "Atk", { fontSize: "18px" }),
+                label: renderText(this.scene, blockX - 120, 100, "Atk", { fontSize: "18px" }),
                 description: "The higher a unit's Atk, the more damage it will inflict on foes.",
-                value: renderText(this.scene, blockX - 30, 95, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
+                value: renderText(this.scene, blockX - 30, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
             },
             spd: {
-                label: renderText(this.scene, blockX - 10, 95, "Spd", { fontSize: "18px" }),
+                label: renderText(this.scene, blockX - 10, 100, "Spd", { fontSize: "18px" }),
                 description: "A unit will attack twice if its Spd is at least 5 more than its foe.",
-                value: renderText(this.scene, blockX + 80, 95, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
+                value: renderText(this.scene, blockX + 80, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
             },
             res: {
                 label: renderText(this.scene, blockX - 10, 135, "Res", { fontSize: "18px" }),
                 description: "The higher a unit's Resistance is, the less damage it takes from magical attacks (spells, staves, breath effects, etc.).",
-                value: renderText(this.scene, blockX + 80, 125, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
+                value: renderText(this.scene, blockX + 80, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
             },
             def: {
                 label: renderText(this.scene, blockX - 120, 135, "Def", { fontSize: "18px" }),
                 description: "The higher a unit's Defense is, the less damage it takes from physical attacks (swords, axes, lances, etc.).",
-                value: renderText(this.scene, blockX - 30, 125, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
+                value: renderText(this.scene, blockX - 30, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
             },
             hp: {
                 label: renderText(this.scene, blockX - 120, 54, "HP", { fontSize: "20px" }),
@@ -135,7 +144,7 @@ class UnitInfosBanner extends GameObjects.Container {
             const items = this.stats[statKey] as RenderedStat;
             this.add([items.label, items.value]);
         }
-        this.add(new GameObjects.Image(this.scene, blockX - 130, 120, "stat-line").setScale(0.2, 0.5).setOrigin(0));
+        this.add(new GameObjects.Image(this.scene, blockX - 130, 125, "stat-line").setScale(0.2, 0.5).setOrigin(0));
         this.add(new GameObjects.Image(this.scene, blockX - 130, 160, "stat-line").setScale(0.2, 0.5).setOrigin(0));
     }
 
@@ -206,6 +215,9 @@ class UnitInfosBanner extends GameObjects.Container {
 
     setHero(hero: Hero) {
         const internalHero = hero.getInternalHero();
+        console.log(internalHero);
+        this.special.setText(internalHero.skills.special?.name || "-");
+        this.assist.setText("-");
         const weapon = internalHero.getWeapon();
         this.weaponBg.off("pointerdown").on("pointerdown", () => {
             this.textbox.clearContent();
@@ -261,18 +273,6 @@ class UnitInfosBanner extends GameObjects.Container {
             this.stats[internalHero.bane].label.setColor(TextColors.bane);
         }
         this.heroPortrait.setTexture(internalHero.name, internalHero.stats.hp / internalHero.maxHP < 0.5 ? 'portrait-damage' : 'portrait');
-        // this.currentHP.destroy();
-        const hpRenderFct = internalHero.stats.hp < 10 ? renderCritHPText : renderRegularHPText;
-        // this.currentHP = hpRenderFct({
-        //     scene: this.scene,
-        //     x: this.currentHP.x,
-        //     y: this.currentHP.y,
-        //     style: {
-        //         fontSize: "26px",
-        //     },
-        //     content: internalHero.stats.hp,
-        // });
-        // this.add(this.currentHP);
 
         if (this.nameplate.heroName.text !== internalHero.name) {
             this.heroPortrait.x = -300;

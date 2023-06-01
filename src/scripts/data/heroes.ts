@@ -282,6 +282,7 @@ Ryoma.equipSkill(Skills.KestrelStance2);
 Ryoma.equipSkill(Skills.AtkSpdRein3);
 Ryoma.equipSkill(Skills.Bushido2);
 Ryoma.equipSkill(Skills.SpdSmoke3);
+Ryoma.equipSkill(Skills.Astra);
 
 Ike.setWeapon(Skills.Ragnell);
 Ike.equipSkill(Skills.JointDriveRes);
