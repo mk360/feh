@@ -28,29 +28,33 @@ interface RenderedHero {
     nameplate: HeroNameplate;
     previousHP: GameObjects.Text;
     predictedHP: GameObjects.Text;
+    statMods: GameObjects.Group;
+    roundCount: GameObjects.Text;
+    damage: GameObjects.Text;
 };
 
 class CombatForecast extends Phaser.GameObjects.Container {
     private portraitDisplayTween: Tweens.Tween;
-    private attackerStatMods: GameObjects.Group;
-    private defenderStatMods: GameObjects.Group;
-    private attackerRoundCount: GameObjects.Text;
-    private attackerRoundDamage: GameObjects.Text;
-    private defenderRoundCount: GameObjects.Text;
     private defenderRoundDamage: GameObjects.Text;
     private firstSideBg: GameObjects.Rectangle;
 
     private firstHero: RenderedHero = {
         previousHP: null,
+        statMods: null,
         predictedHP: null,
         nameplate: null,
         portrait: null,
+        roundCount: null,
+        damage: null,
     };
     private secondHero: RenderedHero = {
         previousHP: null,
+        statMods: null,
         predictedHP: null,
         nameplate: null,
         portrait: null,
+        roundCount: null,
+        damage: null,
     };
     private koTween: Tweens.Tween;
 
