@@ -1,10 +1,12 @@
-import { renderCritHPText, renderRegularHPText, renderLabelText, renderText } from "../utils/text-renderer";
+import { renderCritHPText, renderRegularHPText, renderLabelText, renderText, renderBoonText, renderBaneText } from "../utils/text-renderer";
 import Hero from "./hero";
 import TextColors from "../utils/text-colors";
 import HeroNameplate from "./hero-nameplate";
 import { GameObjects } from "phaser";
 import Stats from "../../interfaces/stats";
 import Textbox from "./textbox";
+import PassiveSkill from "feh-battles/dec/passive_skill";
+import HeroData from "feh-battles/dec/hero";
 
 interface RenderedStat {
     label: GameObjects.Text;
@@ -97,10 +99,6 @@ class UnitInfosBanner extends GameObjects.Container {
         }).play();
     }
 
-    private buildStatDescription(hero: Hero) {
-
-    }
-
     private createStats() {
         const blockX = 310;
 
@@ -181,27 +179,139 @@ class UnitInfosBanner extends GameObjects.Container {
             this[skill].setTexture("skills", skillData.name).setDisplaySize(33, 33);
             this[skill].setName(skillData.name);
             this[skill].setInteractive().on("pointerdown", () => {
-                const vis = this.textboxTarget !== skill || !(this.textboxTarget === skill && this.textbox.visible);
                 this.textboxTarget = skill;
-                const skillInfosLines = [];
                 this.textbox.clearContent();
-                skillInfosLines.push(renderLabelText({
-                    scene: this.scene,
-                    x: 0,
-                    y: 0,
-                    content: skillData.name
-                }));
+                const skillInfosLines = this.createPassiveTextbox(skillData);
                 this.textbox.x = this.S.getRightCenter().x;
                 this.textbox.y = this.S.getBottomCenter().y + 5;
-                skillInfosLines.push(renderText(this.scene, 0, 40, skillData.description).setWordWrapWidth(390));
                 this.textbox.setContent([skillInfosLines]);
-                if (vis) this.displayTextbox();
-                else this.hideTextbox();
+                this.controlTextboxDisplay(this.textboxTarget !== skill || !this.textbox.visible);
             });
         }
     }
 
-    private hideTextbox() {
+    private createStatTextbox({
+        stat,
+        baseValue,
+        penalty,
+        buff,
+        boon,
+        bane
+    }: {
+        stat: keyof Stats,
+        baseValue: number,
+        penalty?: number,
+        buff?: number,
+        boon?: keyof Stats,
+        bane?: keyof Stats
+    }) {
+        const { description } = this.stats[stat];
+        const lines: GameObjects.Text[][] = [];
+        const valuesLines: GameObjects.Text[] = [];
+        const baseValueLabel = renderLabelText({
+            scene: this.scene,
+            x: 0,
+            y: 0,
+            content: "Base Value"
+        });
+        const baseValueText = renderText(this.scene, baseValueLabel.getRightCenter().x + 10, 0, baseValue, { 
+            fontSize: "18px"
+        });
+        valuesLines.push(baseValueLabel);
+        valuesLines.push(baseValueText);
+        if (buff > 0) {
+            const buffLabel = renderLabelText({
+                scene: this.scene,
+                x: baseValueText.getRightCenter().x + 10,
+                y: 0,
+                content: "Buff"
+            });
+            const buffValue = renderBoonText({
+                scene: this.scene,
+                x: buffLabel.getRightCenter().x + 10,
+                y: 0,
+                content: "+" + buff,
+                style: { fontSize: "18px" }
+            });
+            valuesLines.push(buffLabel);
+            valuesLines.push(buffValue);
+        }
+
+        if (penalty < 0) {
+            const penaltyLabel = renderLabelText({
+                scene: this.scene,
+                x: valuesLines[valuesLines.length - 1].getRightCenter().x + 10,
+                y: 0,
+                content: "Penalty"
+            });
+            const penaltyValue = renderBaneText({
+                scene: this.scene,
+                x: penaltyLabel.getRightCenter().x + 10,
+                y: 0,
+                content: penalty,
+                style: { fontSize: "18px" }
+            });
+            valuesLines.push(penaltyLabel);
+            valuesLines.push(penaltyValue);
+        }
+
+        lines.push(valuesLines);
+
+        const modifiersLine: GameObjects.Text[] = [];
+        if (bane === stat) {
+            const flawText = renderBaneText({
+                scene: this.scene,
+                x: 0,
+                y: 30,
+                content: "Flaw",
+                style: {
+                    fontSize: "18px"
+                }
+            });
+            modifiersLine.push(flawText);
+        }
+        if (boon === stat) {
+            const assetText = renderBoonText({
+                scene: this.scene,
+                x: 0,
+                y: 30,
+                content: "Asset",
+                style: {
+                    fontSize: "18px"
+                }
+            });
+            modifiersLine.push(assetText);
+        }
+        if (modifiersLine.length) lines.push(modifiersLine);
+
+        const descLine: GameObjects.Text[] = [];
+        const descriptionText = renderText(this.scene, 0, lines[lines.length - 1][0].y + 30, description, {
+            fontSize: "18px",
+        }).setWordWrapWidth(396);
+        descLine.push(descriptionText);
+        lines.push(descLine);
+        return lines;
+    }
+
+    private controlTextboxDisplay(condition: boolean) {
+        if (condition) this.displayTextbox();
+        else this.hideTextbox();
+    }
+
+    private createPassiveTextbox(skillData: PassiveSkill) {
+        const skillInfosLines = [];
+        skillInfosLines.push(renderLabelText({
+            scene: this.scene,
+            x: 0,
+            y: 0,
+            content: skillData.name
+        }));
+        skillInfosLines.push(renderText(this.scene, 0, 40, skillData.description).setWordWrapWidth(390));
+
+        return skillInfosLines;
+    }
+
+    hideTextbox() {
         this.scene.sound.playAudioSprite("sfx", "tap");
         this.scene.tweens.create({
             targets: [this.textbox],
@@ -213,42 +323,77 @@ class UnitInfosBanner extends GameObjects.Container {
         }).play();
     }
 
+    private weaponTextbox({ might, range, description }: { might: number, range: number, description: string }) {
+        const firstLine = [
+            renderLabelText({
+                scene: this.scene,
+                content: "Mt",
+                x: 0,
+                y: 0
+            }),
+            renderText(this.scene, 30, 0, might).setFontSize(18),
+            renderLabelText({
+                scene: this.scene,
+                content: "Rng",
+                x: 70,
+                y: 0
+            }),
+            renderText(this.scene, 120, 0, range).setFontSize(18)
+        ];
+
+        const secondLine = [renderText(this.scene, 0, 30, description).setWordWrapWidth(440).setFontSize(18)];
+
+        return [firstLine, secondLine];
+    }
+
+    statDetailsCallback({ 
+        statKey,
+        hero
+    }: {
+        statKey: keyof Stats,
+        hero: HeroData
+    }) {
+        return () => {
+            this.textbox.clearContent();
+            const content = this.createStatTextbox({
+                stat: statKey,
+                baseValue: hero.stats[statKey],
+                boon: hero.boon,
+                bane: hero.bane,
+                penalty: hero.mapPenalties[statKey],
+                buff: hero.mapBoosts[statKey]
+            });
+            this.textbox.x = this.stats[statKey].label.getRightCenter().x + 400;
+            this.textbox.y = this.stats[statKey].label.getBottomLeft().y + 10;
+            this.textbox.setContent(content)
+            this.controlTextboxDisplay(true);
+        }
+    }
+
     setHero(hero: Hero) {
         const internalHero = hero.getInternalHero();
-        console.log(internalHero);
         this.special.setText(internalHero.skills.special?.name || "-");
         this.assist.setText("-");
         const weapon = internalHero.getWeapon();
         this.weaponBg.off("pointerdown").on("pointerdown", () => {
             this.textbox.clearContent();
-            const firstLine = [
-                renderLabelText({
-                    scene: this.scene,
-                    content: "Mt",
-                    x: 0,
-                    y: 0
-                }),
-                renderText(this.scene, 30, 0, weapon.might).setFontSize(18),
-                renderLabelText({
-                    scene: this.scene,
-                    content: "Rng",
-                    x: 70,
-                    y: 0
-                }),
-                renderText(this.scene, 120, 0, weapon.range).setFontSize(18)
-            ];
-
-            const secondLine = [renderText(this.scene, 0, 30, weapon.description).setWordWrapWidth(440).setFontSize(18)];
-            this.textbox.setContent([firstLine, secondLine]).setDepth(10);
+            this.textbox.setContent(this.weaponTextbox(weapon));
             this.textbox.x = this.weaponBg.getRightCenter().x;
             this.textbox.y = this.weaponBg.getBottomCenter().y + 5;
-            const vis = this.textboxTarget !== "weapon" || !(this.textboxTarget === "weapon" && this.textbox.visible);
             this.textboxTarget = "weapon";
-            if (vis) {
-                this.displayTextbox();
-            } else this.hideTextbox();
+            this.controlTextboxDisplay(this.textboxTarget !== "weapon" || !(this.textboxTarget === "weapon" && this.textbox.visible));
         });
+
         for (let statKey in this.stats) {
+            const castKey = statKey as keyof Stats;
+            const { label, value } = this.stats[castKey];
+            label.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero }));
+
+            value.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero }));
+
+            value.setText(internalHero.getMapStats()[statKey]);
+            const statChange = internalHero.mapBoosts[statKey] + internalHero.mapPenalties[statKey];
+            value.setColor(statChange > 0 ? TextColors.boon : statChange < 0 ? TextColors.bane : "white");
             if (statKey === "hp") {
                 const hpRenderFct = internalHero.stats.hp < 10 ? renderCritHPText : renderRegularHPText;
                 this.remove(this.stats.hp.value);
@@ -262,13 +407,10 @@ class UnitInfosBanner extends GameObjects.Container {
                     content: internalHero.stats.hp,
                 });
                 this.add(this.stats.hp.value);
-                continue;
             }
-            const castKey = statKey as keyof Stats;
-            this.stats[castKey].label.setColor("white");
-            this.stats[castKey].value.setText(internalHero.stats[statKey]);
         }
-        if (internalHero.boon) {
+
+        if (internalHero.boon && internalHero.bane) {
             this.stats[internalHero.boon].label.setColor(TextColors.boon);
             this.stats[internalHero.bane].label.setColor(TextColors.bane);
         }
@@ -289,12 +431,6 @@ class UnitInfosBanner extends GameObjects.Container {
             weaponColor: weapon.color,
         });
         this.maxHP.setText(`/ ${internalHero.maxHP}`);
-        const mapStats = internalHero.getMapStats();
-        const baseStats = internalHero.stats;
-        // for (let stat of ["atk", "def", "res", "spd"] as const) {
-        //     this[stat].setText(mapStats[stat].toString());
-        //     this[stat].setColor(baseStats[stat] < mapStats[stat] ? TextColors.boon : baseStats[stat] > mapStats[stat] ? TextColors.bane : TextColors.numbers);
-        // }
 
         this.updatePassives(hero);
 

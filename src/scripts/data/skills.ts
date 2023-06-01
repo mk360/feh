@@ -9,8 +9,6 @@ export const Astra = new FEH.Special({
     cooldown: 5
 });
 
-console.log(Astra.description);
-
 export const Mulagir = new FEH.Weapon();
 Mulagir.setName("Mulagir")
     .setMight(14)

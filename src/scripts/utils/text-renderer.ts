@@ -32,6 +32,12 @@ export function renderBoonText(config: TextRenderingConfig) {
     return text;
 }
 
+export function renderBaneText(config: TextRenderingConfig) {
+    const { text } = renderTextWith2DContext(config);
+    text.setColor(TextColors.bane);
+    return text;
+}
+
 export function renderLabelText(config: TextRenderingConfig) {
     const { text } = renderTextWith2DContext(config);
     text.setColor(TextColors.label);
