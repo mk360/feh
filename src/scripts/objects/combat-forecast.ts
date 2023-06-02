@@ -58,35 +58,18 @@ class CombatForecast extends Phaser.GameObjects.Container {
     };
     private koTween: Tweens.Tween;
 
-    constructor(scene: Phaser.Scene) {
-        super(scene, 0, 0);
-        this.attackerStatMods = this.defenderStatMods = new GameObjects.Group(scene);
-        this.firstSideBg = new GameObjects.Rectangle(scene, 0, 0, 750, 400, 0x002438).setOrigin(0);
-        this.add(this.firstSideBg);
-        this.add(new GameObjects.Rectangle(scene, 750, 0, 750, 400, 0x9A2D18).setAlpha(0.7));
-        this.add(new GameObjects.Image(scene, 0, 0, "forecast-bg").setOrigin(0, 0));
-        this.firstHero.portrait = new HeroPortrait(scene, "");
-        this.add(this.firstHero.portrait);
-        this.secondHero.portrait = new HeroPortrait(scene, "").setFlipX(true).setX(1200).setOrigin(1, 0);
-        this.firstHero.nameplate = new HeroNameplate(scene, 100, 20, { name: "", weaponType: "", weaponColor: "" });
-        this.add(this.firstHero.nameplate);
-        const hpLineHeight = 70;
+    private createFirstHero() {
         const hpTextHeight = 45;
-
-        this.secondHero.nameplate = new HeroNameplate(scene, 377, 20, {
-            name: "", weaponType: "", weaponColor: "",
+        const hpLineHeight = 70;
+        this.firstHero.statMods = new GameObjects.Group(this.scene);
+        this.firstHero.portrait = new HeroPortrait(this.scene, "");
+        this.firstHero.nameplate = new HeroNameplate(this.scene, 100, 20, {
+            name: "",
+            weaponColor: "",
+            weaponType: ""
         });
-        const hpBg = new GameObjects.Image(scene, 250, hpLineHeight, "unit-bg").setScale(0.50, 0.75);
-        const hpBg2 = new GameObjects.Image(scene, 510, hpLineHeight, "unit-bg").setScale(0.50, 0.75);
-        
-        this.add(this.secondHero.nameplate);
-        this.add(this.secondHero.portrait);
-        this.add([hpBg, hpBg2]);
-        this.add(renderText(scene, this.firstSideBg.getCenter().x, hpLineHeight, "HP", {
-            fontSize: "22px",
-        }).setOrigin(0.5));
         this.firstHero.previousHP = renderRegularHPText({
-            scene,
+            scene: this.scene,
             x: 210,
             y: hpTextHeight,
             style: {
@@ -95,7 +78,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
             content: ""
         }).setOrigin(1, 0);
         this.firstHero.predictedHP = renderRegularHPText({
-            scene,
+            scene: this.scene,
             x: 310,
             y: hpTextHeight,
             style: {
@@ -103,8 +86,25 @@ class CombatForecast extends Phaser.GameObjects.Container {
             },
             content: ""
         }).setOrigin(1, 0);
+        const hpBg = new GameObjects.Image(this.scene, 250, hpLineHeight, "unit-bg").setScale(0.50, 0.75);
+        this.firstHero.damage = renderText(this.scene, 230, 100, "", {
+            fontSize: "18px"
+        });
+        this.firstHero.roundCount = renderText(this.scene, this.firstHero.damage.getRightCenter().x + 1, this.firstHero.damage.getTopCenter().y, "×2", {
+            fontSize: "18px"
+        })
+    }
+
+    private createSecondHero() {
+        const hpTextHeight = 45;
+        const hpLineHeight = 70;
+        this.secondHero.statMods = new GameObjects.Group(this.scene);
+        this.firstHero.portrait = new HeroPortrait(this.scene, "").setFlipX(true).setX(1200).setOrigin(1, 0);
+        this.secondHero.nameplate = new HeroNameplate(this.scene, 377, 20, {
+            name: "", weaponType: "", weaponColor: "",
+        });
         this.secondHero.previousHP = renderRegularHPText({
-            scene,
+            scene: this.scene,
             content: "",
             style: {
                 fontSize: "36px",
@@ -112,6 +112,39 @@ class CombatForecast extends Phaser.GameObjects.Container {
             x: 490,
             y: hpTextHeight,
         }).setOrigin(1, 0);
+        this.secondHero.predictedHP = renderCritHPText({
+            scene: this.scene,
+            content: 0,
+            x: 550,
+            y: hpTextHeight,
+            style: {
+                fontSize: "36px"
+            }
+        });
+        this.secondHero.damage = renderText(this.scene, this.firstHero.damage.getRightCenter().x + 240, this.firstHero.damage.getTopCenter().y, "-", {
+            fontSize: "18px"
+        });
+        this.secondHero.roundCount = renderText(this.scene, this.secondHero.damage.getRightCenter().x, this.secondHero.damage.getTopCenter().y, "", {
+            fontSize: "18px"
+        });
+        const hpBg2 = new GameObjects.Image(this.scene, 510, hpLineHeight, "unit-bg").setScale(0.50, 0.75);
+    }
+
+    constructor(scene: Phaser.Scene) {
+        super(scene, 0, 0);
+        const hpLineHeight = 70;
+        const hpTextHeight = 45;
+        this.createFirstHero();
+        this.createSecondHero();
+        this.add(new GameObjects.Image(scene, 0, 0, "forecast-bg").setOrigin(0, 0));
+        this.add(this.firstHero.nameplate);
+        
+        this.add(this.secondHero.nameplate);
+        this.add(this.secondHero.portrait);
+        this.add([hpBg, hpBg2]);
+        this.add(renderText(scene, this.firstSideBg.getCenter().x, hpLineHeight, "HP", {
+            fontSize: "22px",
+        }).setOrigin(0.5));
         const arrow = renderRegularHPText({
             scene,
             x: 500,
@@ -130,15 +163,6 @@ class CombatForecast extends Phaser.GameObjects.Container {
                 fontSize: "36px"
             }
         });
-        this.secondHero.predictedHP = renderCritHPText({
-            scene,
-            content: 0,
-            x: 550,
-            y: hpTextHeight,
-            style: {
-                fontSize: "36px"
-            }
-        });
         this.add(this.secondHero.previousHP);
         this.add(this.secondHero.predictedHP);
         this.add(arrow);
@@ -152,25 +176,11 @@ class CombatForecast extends Phaser.GameObjects.Container {
             targets: this.secondHero.portrait,
         });
 
-        this.attackerRoundDamage = renderText(scene, 230, 100, "", {
-            fontSize: "18px"
-        });
-        this.attackerRoundCount = renderText(scene, this.attackerRoundDamage.getRightCenter().x + 1, this.attackerRoundDamage.getTopCenter().y, "×2", {
-            fontSize: "18px"
-        })
-        this.defenderRoundDamage = renderText(scene, this.attackerRoundDamage.getRightCenter().x + 240, this.attackerRoundDamage.getTopCenter().y, "-", {
-            fontSize: "18px"
-        });
-        this.defenderRoundCount = renderText(scene, this.defenderRoundDamage.getRightCenter().x, this.defenderRoundDamage.getTopCenter().y, "", {
-            fontSize: "18px"
-        });
-        const damageUnderline = new GameObjects.Image(scene, this.attackerRoundDamage.getBottomLeft().x + 10, this.attackerRoundDamage.getBottomLeft().y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5);
+        const damageUnderline = new GameObjects.Image(scene, this.firstHero.damage.getBottomLeft().x + 10, this.firstHero.damage.getBottomLeft().y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5);
         this.add(damageUnderline);
         this.add(new GameObjects.Image(scene, damageUnderline.x + 240, damageUnderline.y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5));
-        this.add(this.defenderRoundDamage);
-        this.add(this.defenderRoundCount);
-        this.add(this.attackerRoundCount);
-        this.add(this.attackerRoundDamage);
+        this.add(this.secondHero.roundCount);
+        this.add(this.firstHero.damage);
     }
 
     setForecastData(params: ForecastData) {
