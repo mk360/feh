@@ -8,6 +8,7 @@ import Textbox from "./textbox";
 import PassiveSkill from "feh-battles/dec/passive_skill";
 import HeroData from "feh-battles/dec/hero";
 import TextboxContent from "../../types/textbox-content";
+import renderHP from "../utils/render-hp";
 
 interface RenderedStat {
     label: GameObjects.Text;
@@ -147,7 +148,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private createMainSkills() {
         this.weaponBg = new GameObjects.Image(this.scene, 490, 50, "skills-ui", "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25).setInteractive();
         this.assistBg = new GameObjects.Image(this.scene, 490, 90, "skills-ui", "assist-bg").setOrigin(0, 0).setScale(0.23, 0.25).setInteractive();
-        this.specialBg = new GameObjects.Image(this.scene, 490, 130, "skills-ui", "special-bg").setOrigin(0).setDisplaySize(this.assistBg.displayWidth, this.assistBg.displayHeight);
+        this.specialBg = new GameObjects.Image(this.scene, 490, 130, "skills-ui", "special-bg").setOrigin(0).setDisplaySize(this.assistBg.displayWidth, this.assistBg.displayHeight).setInteractive();
         const assistIcon = new GameObjects.Image(this.scene, this.assistBg.getLeftCenter().x, this.assistBg.getLeftCenter().y, "skills-ui", "assist-icon").setScale(0.45).setOrigin(0.25, 0.5);
         const specialIcon = new GameObjects.Image(this.scene, this.specialBg.getLeftCenter().x, this.specialBg.getLeftCenter().y, "skills-ui", "special-icon").setScale(0.45).setOrigin(0.25, 0.5);
         this.add(this.weaponBg);
@@ -344,6 +345,29 @@ class UnitInfosBanner extends GameObjects.Container {
         return [firstLine, secondLine];
     }
 
+    private createAssistTextbox({
+        description,
+        range,
+    }: { description: string, range: number }) {
+        const rangeLabel = renderLabelText({
+            scene: this.scene,
+            x: 0,
+            y: 0,
+            content: "Rng"
+        });
+
+        const rangeText = renderText(this.scene, 30, 0, range, {
+            fontSize: "18px"
+        });
+
+        const descText = renderText(this.scene, 0, 30, description, {
+            fontSize: "18px"
+        });
+
+        this.textbox.clearContent();
+        this.textbox.setContent([[rangeLabel, rangeText], [descText]]);
+    }
+
     private statDetailsCallback({ 
         statKey,
         hero
@@ -369,17 +393,24 @@ class UnitInfosBanner extends GameObjects.Container {
         }
     }
 
-    private createSpecialTextbox({ description, cooldown, baseCooldown }) {
+    private createSpecialTextbox({ description, defaultCooldown, baseCooldown }) {
         const textLines: TextboxContent[][] = [];
         const firstLine: TextboxContent[] = [];
-        const specialIcon = new GameObjects.Image(this.scene, 0, 0, "skills-ui", "special");
-        const cooldownText = renderText(this.scene, 30, 0, cooldown, {
+        const secondLine: TextboxContent[] = [];
+        const specialIcon = new GameObjects.Image(this.scene, 0, 0, "skills-ui", "special-icon").setOrigin(0).setScale(0.5);
+        const cooldownText = renderText(this.scene, 30, 5, defaultCooldown, {
             fontSize: "18px"
         });
-        cooldownText.setColor(cooldown < baseCooldown ? TextColors.boon : cooldown > baseCooldown ? TextColors.bane : "white");
+        cooldownText.setColor(baseCooldown > defaultCooldown ? TextColors.boon : baseCooldown < defaultCooldown ? TextColors.bane : "white");
+        cooldownText.setColor(defaultCooldown < baseCooldown ? TextColors.boon : defaultCooldown > baseCooldown ? TextColors.bane : "white");
         firstLine.push(specialIcon);
         firstLine.push(cooldownText);
+
+        secondLine.push(renderText(this.scene, 0, 30, description, {
+            fontSize: "18px"
+        }));
         textLines.push(firstLine);
+        textLines.push(secondLine);
         this.textbox.clearContent().setContent(textLines);
     };
 
@@ -390,12 +421,22 @@ class UnitInfosBanner extends GameObjects.Container {
             this.special.setText(internalHero.skills.special.name || "-");
             this.specialBg.on("pointerdown", () => {
                 const content = this.createSpecialTextbox(internalHero.skills.special);
+                this.textbox.x = this.specialBg.getLeftCenter().x;
+                this.textbox.y = this.specialBg.getBottomCenter().y + 10;
+                this.textbox.setVisible(true);
             });
         } else {
             this.special.setText("-");
         }
             
-        this.assist.setText("-");
+        if (internalHero.skills.assist) {
+            this.assist.setText(internalHero.skills.assist.name || "-");
+            this.assistBg.on("pointerdown", () => {
+                const content = this.createAssistTextbox(internalHero.skills.assist);
+            });
+        } else {
+            this.assist.setText("-");
+        }
         const weapon = internalHero.getWeapon();
         this.weaponBg.off("pointerdown").on("pointerdown", () => {
             this.textbox.clearContent();
@@ -414,24 +455,21 @@ class UnitInfosBanner extends GameObjects.Container {
         for (let statKey in this.stats) {
             const castKey = statKey as keyof Stats;
             const { label, value } = this.stats[castKey];
-            label.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero }));
+            label.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero })).setColor("white");
 
-            value.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero }));
-
-            value.setText(internalHero.getMapStats()[statKey]);
+            value.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero })).setText(internalHero.getMapStats()[statKey]);
             const statChange = internalHero.mapBoosts[statKey] + internalHero.mapPenalties[statKey];
             value.setColor(statChange > 0 ? TextColors.boon : statChange < 0 ? TextColors.bane : "white");
             if (statKey === "hp") {
-                const hpRenderFct = internalHero.stats.hp < 10 ? renderCritHPText : renderRegularHPText;
                 this.remove(this.stats.hp.value);
-                this.stats.hp.value = hpRenderFct({
+                this.stats.hp.value = renderHP({
                     scene: this.scene,
                     x: this.stats.hp.value.x,
                     y: this.stats.hp.value.y,
                     style: {
                         fontSize: "26px",
                     },
-                    content: internalHero.stats.hp,
+                    value: internalHero.stats.hp,
                 });
                 this.add(this.stats.hp.value);
             }

@@ -285,25 +285,27 @@ class CombatForecast extends Phaser.GameObjects.Container {
             }
         }).setOrigin(1, 0);
 
-        let portraitToHighlight: GameObjects.Image;
+        let koPortrait: GameObjects.Image;
 
         if (attacker.endHP === 0) {
-            portraitToHighlight = this.firstHero.portrait;
+            koPortrait = this.firstHero.portrait;
         }
 
         if (defender.endHP === 0) {
-            portraitToHighlight = this.secondHero.portrait;
+            koPortrait = this.secondHero.portrait;
         }
 
-        this.koTween = this.scene.tweens.create({
-            duration: 1000,
-            loop: -1,
-            targets: portraitToHighlight,
-            yoyo: true,
-            alpha: 0.5,
-        });
-        
-        this.koTween.play();
+        if (koPortrait) {
+            this.koTween = this.scene.tweens.create({
+                duration: 1000,
+                loop: -1,
+                targets: koPortrait,
+                yoyo: true,
+                alpha: 0.5,
+            });
+            
+            this.koTween.play();
+        }
 
         this.firstHero.predictedHP = renderHP({
             scene: this.scene,
