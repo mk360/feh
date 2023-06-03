@@ -113,6 +113,16 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
         
         this.firstHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damage.getBottomLeft().x + 10, this.firstHero.damage.getBottomLeft().y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5);
+
+        this.add(this.firstHero.portrait);
+        this.add(this.firstHero.hpBackground);
+        this.add(this.firstHero.previousHP);
+        this.add(this.firstHero.predictedHP);
+        this.add(this.firstHero.damageLine);
+        this.add(this.firstHero.damage);
+        this.add(this.firstHero.roundCount);
+        this.add(this.firstHero.arrow);
+        this.add(this.firstHero.nameplate);
     }
 
     private createSecondHero() {
@@ -158,43 +168,40 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
         this.secondHero.hpBackground = new GameObjects.Image(this.scene, 510, hpLineHeight, "unit-bg").setScale(0.50, 0.75);
         this.secondHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damageLine.x + 240, this.firstHero.damageLine.y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5)
+
+        this.add(this.secondHero.portrait);
+        this.add(this.secondHero.hpBackground);
+        this.add(this.secondHero.previousHP);
+        this.add(this.secondHero.predictedHP);
+        this.add(this.secondHero.damageLine);
+        this.add(this.secondHero.roundCount);
+        this.add(this.secondHero.damage);
+        this.add(this.secondHero.roundCount);
+        this.add(this.secondHero.arrow);
+        this.add(this.secondHero.nameplate);
     }
 
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
         const hpLineHeight = 70;
-        const hpTextHeight = 45;
-        this.createFirstHero();
-        this.createSecondHero();
         this.forecastBackground = new GameObjects.Image(scene, 0, 0, "forecast-bg").setOrigin(0, 0);
         this.add(this.forecastBackground);
-        this.add(this.firstHero.nameplate);
+        this.createFirstHero();
+        this.createSecondHero();
         
-        this.add(this.secondHero.nameplate);
-        this.add(this.secondHero.portrait);
-        this.add(this.firstHero.portrait);
-        this.add([this.firstHero.hpBackground, this.secondHero.hpBackground]);
         this.add(renderText(scene, this.forecastBackground.getCenter().x, hpLineHeight, "HP", {
             fontSize: "22px",
         }).setOrigin(0.5));
         this.add(this.secondHero.previousHP);
         this.add(this.secondHero.predictedHP);
-        this.add(this.firstHero.previousHP);
-        this.add(this.firstHero.predictedHP);
-
+        
         this.portraitDisplayTween = scene.tweens.create({
             duration: 300,
             x: 850,
             targets: this.secondHero.portrait,
         });
-
-        this.add(this.firstHero.damageLine);
-        this.add(this.secondHero.damageLine);
-        this.add(this.secondHero.roundCount);
-        this.add(this.firstHero.damage);
-        this.add(this.firstHero.roundCount);
+        
         this.add(this.secondHero.damage);
-        this.add(this.firstHero.arrow);
         this.add(this.secondHero.arrow);
     }
 
@@ -203,15 +210,12 @@ class CombatForecast extends Phaser.GameObjects.Container {
             (this.koTween.targets[0] as GameObjects.Image)?.setAlpha(1);
             this.koTween.stop();
         }
-        this.remove(this.firstHero.statMods.getChildren(), true);
-        this.remove(this.secondHero.statMods.getChildren(), true);
-        this.firstHero.statMods.clear();
-        this.secondHero.statMods.clear();
+        this.firstHero.statMods.clear(true, true);
+        this.secondHero.statMods.clear(true, true);
         const { attacker, defender } = params;
         const attackerStatMods = attacker.statChanges;
         const defenderStatMods = defender.statChanges;
-        this.firstHero.damage.setText(attacker.damage.toString());
-        this.firstHero.damage.setColor(attacker.effective ? TextColors.effective : TextColors.white);
+        this.firstHero.damage.setText(attacker.damage.toString()).setColor(attacker.effective ? TextColors.effective : TextColors.white);
         this.firstHero.roundCount.setText(attacker.turns >= 2 ? "×" + attacker.turns.toString() : "").setX(this.firstHero.damage.getRightCenter().x);
         let xOffset = this.forecastBackground.x - 20;
         for (let stat in attackerStatMods) {
@@ -245,8 +249,13 @@ class CombatForecast extends Phaser.GameObjects.Container {
                 defenderXOffset = statChangeValue.getRightCenter().x + 5;
             }
         }
-        this.firstHero.nameplate.weaponIcon.setTexture("weapons", attacker.hero.getInternalHero().getWeapon().color + "-" + attacker.hero.getInternalHero().getWeapon().type);
-        this.firstHero.nameplate.heroName.setText(attacker.hero.getInternalHero().name);
+        const firstInternalHero = attacker.hero.getInternalHero();
+        const secondInternalHero = defender.hero.getInternalHero();
+        this.firstHero.nameplate.updateNameplate({
+            name: firstInternalHero.name,
+            weaponColor: firstInternalHero.getWeapon().color,
+            weaponType: firstInternalHero.getWeapon().type,
+        });
         this.secondHero.nameplate.weaponIcon.setTexture("weapons", defender.hero.getInternalHero().getWeapon().color + "-" + defender.hero.getInternalHero().getWeapon().type);
         this.secondHero.nameplate.heroName.setText(defender.hero.getInternalHero().name);
 
@@ -254,8 +263,15 @@ class CombatForecast extends Phaser.GameObjects.Container {
         const secondDamaged = defender.hero.getInternalHero().stats.hp / defender.hero.getInternalHero().maxHP < 0.5 ? "-damage" : "";
         this.firstHero.portrait.setTexture(attacker.hero.getInternalHero().name, 'portrait' + firstDamaged);
         this.secondHero.portrait.setTexture(defender.hero.getInternalHero().name, 'portrait' + secondDamaged);
-        this.secondHero.portrait.x = 1100;
-        this.portraitDisplayTween.play();
+        if (this.portraitDisplayTween) this.portraitDisplayTween.stop();
+        this.portraitDisplayTween = this.scene.tweens.create({
+            duration: 200,
+            x: 850,
+            onStart: () => {
+                this.secondHero.portrait.x = 1100;
+            },
+            targets: this.secondHero.portrait,
+        }).play();
 
         this.firstHero.previousHP.destroy();
         this.firstHero.predictedHP.destroy();

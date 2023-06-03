@@ -7,6 +7,7 @@ import Stats from "../../interfaces/stats";
 import Textbox from "./textbox";
 import PassiveSkill from "feh-battles/dec/passive_skill";
 import HeroData from "feh-battles/dec/hero";
+import TextboxContent from "../../types/textbox-content";
 
 interface RenderedStat {
     label: GameObjects.Text;
@@ -16,13 +17,8 @@ interface RenderedStat {
 
 class UnitInfosBanner extends GameObjects.Container {
     private nameplate: HeroNameplate;
-    private currentHP: GameObjects.Text;
     private maxHP: GameObjects.Text;
-    private atk: GameObjects.Text;
-    private def: GameObjects.Text;
-    private res: GameObjects.Text;
     private weaponName: GameObjects.Text;
-    private spd: GameObjects.Text;
     private A: GameObjects.Image;
     private B: GameObjects.Image;
     private C: GameObjects.Image;
@@ -38,6 +34,7 @@ class UnitInfosBanner extends GameObjects.Container {
     };
     private assistBg: GameObjects.Image;
     private assist: GameObjects.Text;
+    private hpBackground: GameObjects.Image;
     
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
@@ -45,7 +42,8 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(new GameObjects.Image(scene, 0, 0, "unit-banner-bg").setOrigin(0, 0));
         this.heroPortrait = new GameObjects.Image(scene, -100, 0, "").setOrigin(0);
         this.add(this.heroPortrait);
-        this.add(new GameObjects.Image(scene, blockX - 140, 70, "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5));
+        this.hpBackground = new GameObjects.Image(scene, blockX - 140, 70, "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5);
+        this.add(this.hpBackground.setInteractive());
         this.maxHP = renderRegularHPText({
             scene: this.scene,
             x: blockX,
@@ -346,7 +344,7 @@ class UnitInfosBanner extends GameObjects.Container {
         return [firstLine, secondLine];
     }
 
-    statDetailsCallback({ 
+    private statDetailsCallback({ 
         statKey,
         hero
     }: {
@@ -366,13 +364,37 @@ class UnitInfosBanner extends GameObjects.Container {
             this.textbox.x = this.stats[statKey].label.getRightCenter().x + 400;
             this.textbox.y = this.stats[statKey].label.getBottomLeft().y + 10;
             this.textbox.setContent(content)
-            this.controlTextboxDisplay(true);
+            this.controlTextboxDisplay(this.textboxTarget !== statKey || !(this.textboxTarget === statKey && this.textbox.visible));
+            this.textboxTarget = statKey;
         }
     }
 
+    private createSpecialTextbox({ description, cooldown, baseCooldown }) {
+        const textLines: TextboxContent[][] = [];
+        const firstLine: TextboxContent[] = [];
+        const specialIcon = new GameObjects.Image(this.scene, 0, 0, "skills-ui", "special");
+        const cooldownText = renderText(this.scene, 30, 0, cooldown, {
+            fontSize: "18px"
+        });
+        cooldownText.setColor(cooldown < baseCooldown ? TextColors.boon : cooldown > baseCooldown ? TextColors.bane : "white");
+        firstLine.push(specialIcon);
+        firstLine.push(cooldownText);
+        textLines.push(firstLine);
+        this.textbox.clearContent().setContent(textLines);
+    };
+
     setHero(hero: Hero) {
         const internalHero = hero.getInternalHero();
-        this.special.setText(internalHero.skills.special?.name || "-");
+        this.specialBg.off("pointerdown");
+        if (internalHero.skills.special) {
+            this.special.setText(internalHero.skills.special.name || "-");
+            this.specialBg.on("pointerdown", () => {
+                const content = this.createSpecialTextbox(internalHero.skills.special);
+            });
+        } else {
+            this.special.setText("-");
+        }
+            
         this.assist.setText("-");
         const weapon = internalHero.getWeapon();
         this.weaponBg.off("pointerdown").on("pointerdown", () => {
@@ -380,9 +402,14 @@ class UnitInfosBanner extends GameObjects.Container {
             this.textbox.setContent(this.weaponTextbox(weapon));
             this.textbox.x = this.weaponBg.getRightCenter().x;
             this.textbox.y = this.weaponBg.getBottomCenter().y + 5;
-            this.textboxTarget = "weapon";
             this.controlTextboxDisplay(this.textboxTarget !== "weapon" || !(this.textboxTarget === "weapon" && this.textbox.visible));
+            this.textboxTarget = "weapon";
         });
+        
+        this.hpBackground.off("pointerdown").on("pointerdown", this.statDetailsCallback({
+            statKey: "hp",
+            hero: internalHero,
+        }))
 
         for (let statKey in this.stats) {
             const castKey = statKey as keyof Stats;
@@ -435,6 +462,8 @@ class UnitInfosBanner extends GameObjects.Container {
         this.updatePassives(hero);
 
         this.weaponName.setText(weapon.name);
+    
+        return this;
     }
 };
 

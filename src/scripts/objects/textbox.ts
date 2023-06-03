@@ -1,4 +1,5 @@
 import { GameObjects, Scene } from "phaser";
+import TextboxContent from "../../types/textbox-content";
 
 class Textbox extends GameObjects.Container {
     private contentContainer: GameObjects.Rectangle;
@@ -10,7 +11,7 @@ class Textbox extends GameObjects.Container {
         this.add(this.contentContainer);
     }
 
-    setContent(contentLines: GameObjects.Text[][]) {
+    setContent(contentLines: TextboxContent[][]) {
         let padding = 10;
         let lowestHeight = 0;
 

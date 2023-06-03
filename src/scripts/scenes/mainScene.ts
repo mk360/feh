@@ -194,7 +194,7 @@ export default class MainScene extends Phaser.Scene {
         const soundFile = internalHero.name + " quotes";
         this.sound.playAudioSprite(internalHero.name + " quotes", n.toString(), { volume: 0.2 });
         previousSoundFile = soundFile;
-        this.unitInfosBanner.setVisible(true).setHero(hero);
+        this.unitInfosBanner.setHero(hero).setVisible(true);
         this.displayRanges(hero.getInternalHero());
       });
       let previousTileString = "";
@@ -597,26 +597,6 @@ export default class MainScene extends Phaser.Scene {
     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(5));
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(1);
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
-    this.combatForecast.setForecastData({
-      attacker: {
-        hero: this.heroes[3],
-        damage: 35,
-        turns: 2,
-        startHP: 20,
-        effective: true,
-        endHP: 16,
-        statChanges: {}
-      },
-      defender: {
-        hero: this.heroes[3],
-        damage: 35,
-        turns: 2,
-        startHP: 20,
-        effective: true,
-        endHP: 16,
-        statChanges: {}
-      },
-    }).setVisible(true);
 }
 
   displayRanges(hero: HeroData) {
