@@ -134,7 +134,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
         this.secondHero.arrow = renderRegularHPText({
             scene: this.scene,
-            x: this.secondHero.previousHP.getRightCenter().x + 20,
+            x: this.secondHero.previousHP.getRightCenter().x + 70,
             y: hpTextHeight,
             content: "→",
             style: {
@@ -192,6 +192,8 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.add(this.secondHero.damageLine);
         this.add(this.secondHero.roundCount);
         this.add(this.firstHero.damage);
+        this.add(this.firstHero.roundCount);
+        this.add(this.secondHero.damage);
         this.add(this.firstHero.arrow);
         this.add(this.secondHero.arrow);
     }
