@@ -597,6 +597,27 @@ export default class MainScene extends Phaser.Scene {
     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(5));
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(1);
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
+
+    this.combatForecast.setForecastData({
+      attacker: {
+        damage: 35,
+        turns: 2,
+        effective: true,
+        startHP: 25,
+        endHP: 0,
+        statChanges: {},
+        hero: this.heroes[3]
+      },
+      defender: {
+        damage: 45,
+        turns: 1,
+        effective: true,
+        startHP: 55,
+        endHP: 0,
+        statChanges: {},
+        hero: this.heroes[6]
+      }
+    }).setVisible(true);
 }
 
   displayRanges(hero: HeroData) {

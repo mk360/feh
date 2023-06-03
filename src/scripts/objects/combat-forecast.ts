@@ -79,7 +79,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
         this.firstHero.previousHP = renderRegularHPText({
             scene: this.scene,
-            x: 210,
+            x: 170,
             y: hpTextHeight,
             style: {
                 fontSize: "36px"
@@ -88,7 +88,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
         this.firstHero.arrow = renderRegularHPText({
             scene: this.scene,
-            x: this.firstHero.previousHP.getRightCenter().x + 20,
+            x: this.firstHero.previousHP.getRightCenter().x + 70,
             y: hpTextHeight,
             content: "→",
             style: {
@@ -139,7 +139,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
             style: {
                 fontSize: "36px",
             },
-            x: 420,
+            x: 430,
             y: hpTextHeight,
         });
         this.secondHero.arrow = renderRegularHPText({
@@ -160,14 +160,14 @@ class CombatForecast extends Phaser.GameObjects.Container {
                 fontSize: "36px"
             }
         });
-        this.secondHero.damage = renderText(this.scene, this.firstHero.damage.getRightCenter().x + 240, this.firstHero.damage.getTopCenter().y, "-", {
+        this.secondHero.damage = renderText(this.scene, this.secondHero.arrow.getCenter().x - 20, this.firstHero.damage.getTopCenter().y, "-", {
             fontSize: "18px"
         });
         this.secondHero.roundCount = renderText(this.scene, this.secondHero.damage.getRightCenter().x, this.secondHero.damage.getTopCenter().y, "", {
             fontSize: "18px"
         });
         this.secondHero.hpBackground = new GameObjects.Image(this.scene, 510, hpLineHeight, "unit-bg").setScale(0.50, 0.75);
-        this.secondHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damageLine.x + 240, this.firstHero.damageLine.y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5)
+        this.secondHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damageLine.x + 260, this.firstHero.damageLine.y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5)
 
         this.add(this.secondHero.portrait);
         this.add(this.secondHero.hpBackground);
@@ -192,77 +192,101 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.add(renderText(scene, this.forecastBackground.getCenter().x, hpLineHeight, "HP", {
             fontSize: "22px",
         }).setOrigin(0.5));
-        this.add(this.secondHero.previousHP);
-        this.add(this.secondHero.predictedHP);
         
         this.portraitDisplayTween = scene.tweens.create({
             duration: 300,
             x: 850,
             targets: this.secondHero.portrait,
         });
-        
-        this.add(this.secondHero.damage);
-        this.add(this.secondHero.arrow);
     }
 
-    setForecastData(params: ForecastData) {
-        if (this.koTween) {
-            (this.koTween.targets[0] as GameObjects.Image)?.setAlpha(1);
-            this.koTween.stop();
+    private updateSide({ side, hero: params, statChangesX, xShift: xChangeBetweenStats }: {
+        side: RenderedSide;
+        hero: ForecastHeroData;
+        statChangesX: number;
+        xShift: number;
+    }) {
+        side.statMods.clear(true);
+        const { statChanges, hero } = params;
+        side.damage.setText(params.damage.toString()).setColor(params.effective ? TextColors.effective : TextColors.white);
+        
+        if (params.turns >= 2) {
+            side.roundCount.setText("×" + params.turns);
+            side.damage.x -= 10; 
+            side.roundCount.setX(side.damage.getRightCenter().x);
         }
-        this.firstHero.statMods.clear(true, true);
-        this.secondHero.statMods.clear(true, true);
-        const { attacker, defender } = params;
-        const attackerStatMods = attacker.statChanges;
-        const defenderStatMods = defender.statChanges;
-        this.firstHero.damage.setText(attacker.damage.toString()).setColor(attacker.effective ? TextColors.effective : TextColors.white);
-        this.firstHero.roundCount.setText(attacker.turns >= 2 ? "×" + attacker.turns.toString() : "").setX(this.firstHero.damage.getRightCenter().x);
-        let xOffset = this.forecastBackground.x - 20;
-        for (let stat in attackerStatMods) {
-            if (attackerStatMods[stat]) {
-                const statValue = attackerStatMods[stat];
+
+        let xOffset = statChangesX;
+
+        for (let stat in statChanges) {
+            if (statChanges[stat]) {
+                const statValue = statChanges[stat];
                 const statChangeValue = renderText(this.scene, xOffset, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
                     color: statValue < 0 ? TextColors.bane : TextColors.boon
                 }).setOrigin(1, 0);
                 const changedStat = renderText(this.scene, statChangeValue.getLeftCenter().x - 50, 140, capitalize(stat));
-                this.firstHero.statMods.add(changedStat);
-                this.firstHero.statMods.add(statChangeValue);
-                this.add(statChangeValue);
-                this.add(changedStat);
-                xOffset = changedStat.getLeftCenter().x - 5;
+                side.statMods.add(changedStat).add(statChangeValue);
+                this.add(side.statMods.getChildren());
+                xOffset = changedStat.getLeftCenter().x + xChangeBetweenStats;
             }
         }
 
-        let defenderXOffset = this.forecastBackground.getCenter().x + 20;
-        for (let stat in defenderStatMods) {
-            if (defenderStatMods[stat]) {
-                const changedStat = renderText(this.scene, defenderXOffset, 140, capitalize(stat));
-                const statValue = defenderStatMods[stat];
-                this.secondHero.statMods.add(changedStat);
-                const statChangeValue = renderText(this.scene, changedStat.getRightCenter().x + 20, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
-                    color: statValue < 0 ? TextColors.bane : TextColors.boon
-                });
-
-                this.secondHero.statMods.add(statChangeValue);
-                this.add(statChangeValue);
-                this.add(changedStat);
-                defenderXOffset = statChangeValue.getRightCenter().x + 5;
-            }
-        }
-        const firstInternalHero = attacker.hero.getInternalHero();
-        const secondInternalHero = defender.hero.getInternalHero();
-        this.firstHero.nameplate.updateNameplate({
-            name: firstInternalHero.name,
-            weaponColor: firstInternalHero.getWeapon().color,
-            weaponType: firstInternalHero.getWeapon().type,
+        const internalHero = hero.getInternalHero();
+        side.nameplate.updateNameplate({
+            name: internalHero.name,
+            weaponColor: internalHero.getWeapon().color,
+            weaponType: internalHero.getWeapon().type,
         });
-        this.secondHero.nameplate.weaponIcon.setTexture("weapons", defender.hero.getInternalHero().getWeapon().color + "-" + defender.hero.getInternalHero().getWeapon().type);
-        this.secondHero.nameplate.heroName.setText(defender.hero.getInternalHero().name);
 
-        const firstDamaged = attacker.hero.getInternalHero().stats.hp / attacker.hero.getInternalHero().maxHP < 0.5 ? "-damage" : "";
-        const secondDamaged = defender.hero.getInternalHero().stats.hp / defender.hero.getInternalHero().maxHP < 0.5 ? "-damage" : "";
-        this.firstHero.portrait.setTexture(attacker.hero.getInternalHero().name, 'portrait' + firstDamaged);
-        this.secondHero.portrait.setTexture(defender.hero.getInternalHero().name, 'portrait' + secondDamaged);
+        const texture = `portrait${internalHero.stats.hp / internalHero.maxHP < 0.5 ? "-damage" : ""}`;
+
+        side.portrait.setTexture(internalHero.name, texture);
+
+        side.previousHP.destroy();
+        side.predictedHP.destroy();
+        side.previousHP = renderHP({
+            scene: this.scene,
+            x: side.previousHP.x,
+            y: side.previousHP.y,
+            value: params.startHP,
+            style: {
+                fontSize: "36px"
+            }
+        });
+
+        side.predictedHP = renderHP({
+            scene: this.scene,
+            x: side.predictedHP.x,
+            y: side.predictedHP.y,
+            value: params.endHP,
+            style: {
+                fontSize: "36px"
+            }
+        });
+
+        this.add(side.predictedHP).add(side.previousHP);
+
+        return this;
+    }
+
+    setForecastData(params: ForecastData) {
+        this.updateSide({
+            side: this.firstHero,
+            statChangesX: this.forecastBackground.getCenter().x - 20,
+            xShift: -5,
+            hero: params.attacker
+        }).updateSide({
+            side: this.secondHero,
+            statChangesX: this.forecastBackground.getCenter().x + 20,
+            xShift: 5,
+            hero: params.defender
+        });
+
+        if (this.koTween) {
+            (this.koTween.targets[0] as GameObjects.Image)?.setAlpha(1);
+            this.koTween.stop();
+        }
+
         if (this.portraitDisplayTween) this.portraitDisplayTween.stop();
         this.portraitDisplayTween = this.scene.tweens.create({
             duration: 200,
@@ -273,85 +297,18 @@ class CombatForecast extends Phaser.GameObjects.Container {
             targets: this.secondHero.portrait,
         }).play();
 
-        this.firstHero.previousHP.destroy();
-        this.firstHero.predictedHP.destroy();
-        this.firstHero.previousHP = renderHP({
-            scene: this.scene,
-            x: this.firstHero.previousHP.x,
-            y: this.firstHero.previousHP.y,
-            value: attacker.startHP,
-            style: {
-                fontSize: "36px"
-            }
-        }).setOrigin(1, 0);
-
         let koPortrait: GameObjects.Image;
 
-        if (attacker.endHP === 0) {
+        if (params.attacker.endHP === 0) {
             koPortrait = this.firstHero.portrait;
         }
 
-        if (defender.endHP === 0) {
+        if (params.defender.endHP === 0) {
             koPortrait = this.secondHero.portrait;
         }
 
-        if (koPortrait) {
-            this.koTween = this.scene.tweens.create({
-                duration: 1000,
-                loop: -1,
-                targets: koPortrait,
-                yoyo: true,
-                alpha: 0.5,
-            });
-            
-            this.koTween.play();
-        }
-
-        this.firstHero.predictedHP = renderHP({
-            scene: this.scene,
-            x: this.firstHero.predictedHP.x,
-            y: this.firstHero.predictedHP.y,
-            value: attacker.endHP,
-            style: {
-                fontSize: "36px"
-            }
-        }).setOrigin(1, 0);
-
-
-        this.add(this.firstHero.predictedHP);
-        this.add(this.firstHero.previousHP);
-
-        this.secondHero.previousHP.destroy();
-        this.secondHero.predictedHP.destroy();
-
-        this.secondHero.previousHP = renderHP({
-            scene: this.scene,
-            x: this.secondHero.previousHP.x,
-            y: this.secondHero.previousHP.y,
-            value: defender.startHP,
-            style: {
-                fontSize: "36px"
-            }
-        });
-
-        this.secondHero.predictedHP = renderHP({
-            scene: this.scene,
-            x: this.secondHero.predictedHP.x,
-            y: this.secondHero.predictedHP.y,
-            value: defender.endHP,
-            style: {
-                fontSize: "36px"
-            }
-        });
-
-        this.firstHero.damage.setColor(params.defender.effective ? TextColors.effective : "white");
-
-        this.add(this.secondHero.predictedHP);
-        this.add(this.secondHero.previousHP);
-        this.secondHero.damage.setText(params.defender.damage && params.defender.turns ? params.defender.damage.toString() : "-");
-        this.secondHero.damage.setColor(params.defender.effective ? TextColors.effective : "white");
-        this.secondHero.roundCount.setText(defender.turns >= 2 ? "×" + defender.turns.toString() : "").setX(this.secondHero.damage.getRightCenter().x + 2);
-
+        this.runKOTween(koPortrait);
+        
         return this;
     }
 
@@ -366,7 +323,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
             targets: [target],
             yoyo: true,
             alpha: 0.6,
-        });
+        }).play();
     }
 
     updatePortraits(attackerHPRatio: number, defenderHPRatio: number) {
