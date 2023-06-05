@@ -38,7 +38,7 @@
   "license": "MIT",
   "dependencies": {
     "feh-battles": "file:../feh-battles",
-    "phaser": "^3.55.2"
+    "phaser": "^3.60.0"
   },
   "devDependencies": {
     "@types/audiosprite": "^0.7.0",

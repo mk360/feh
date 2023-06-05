@@ -1,4 +1,4 @@
-import { GameObjects, Tweens } from 'phaser';
+import { GameObjects, Structs, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import { renderText } from '../utils/text-renderer';
@@ -88,33 +88,7 @@ export default class MainScene extends Phaser.Scene {
     this.highlightedHero = null;
   }
 
-  buildArrowPath(from: Coords, to: Coords, hero: Hero) {
-    // todo: optimiser en mémoisant les résultats
-    // todo: optimiser en prenant en compte le fait qu'on
-    // a déjà la case de départ et d'arrivée
-    // todo: optimiser en prenant en compte le fait qu'on
-    // a déjà toutes nos cases
-    let currentTile = from;
-    let path = new Map<string, Coords>();
-    let maxDistance = battle.getDistance(from, to);
-    
-    path.set(`${from.x}-${from.y}`, from);
-    path.set(`${to.x}-${to.y}`, to);
-    // while (maxDistance) {
-    //   const nearby = getNearby(currentTile).filter((tile) => {
-    //     return this.heroCanReachTile(hero, tile) && battle.getDistance(tile, to) < maxDistance;
-    //   });
-    //   currentTile = nearby[0];
-    //   maxDistance = battle.getDistance(to, nearby[0]);
-    //   const { x, y } = currentTile;
-    //   path.set(`${x}-${y}`, currentTile);
-    // }
-
-    const x = Array.from(path.values()).sort((coordA, coordB) => {
-      return battle.getDistance(coordA, from) - battle.getDistance(coordB, from);
-    });
-    return x;
-  }
+  // quand on survole une case, l'ajouter aux cases à traverser
 
   displayIdleHeroes() {
     this.movementAllowedImages.setVisible(true);
@@ -136,11 +110,12 @@ export default class MainScene extends Phaser.Scene {
       for (let x = 1; x < 7; x++) {
         const { x: screenX, y: screenY } = gridToPixels(x, y);
         const name = x + "-" + y;
-        const tile = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.2).setName(name);
+        const tile = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.2).setName(name).setInteractive(undefined, undefined, true);
         // uncomment if you need to check tile coordinates
-        // this.add.text(tile.getCenter().x, tile.getCenter().y, name, {
-        //   fontSize: "18px"
-        // });
+        this.add.text(tile.getCenter().x, tile.getCenter().y, name, {
+          fontSize: "18px"
+        });
+        
       }
     }
   }
@@ -163,7 +138,6 @@ export default class MainScene extends Phaser.Scene {
       const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);    
       img.setDisplaySize(matchingTile.width, matchingTile.height);
       this.movementAllowedImages.add(img);
-      let pathStart: GameObjects.Image;
 
       let previousSoundFile = "";
       let clickTimestamp = 0;
@@ -172,6 +146,27 @@ export default class MainScene extends Phaser.Scene {
       hero.on("drag", (_, dragX: number, dragY: number) => {
         hero.x = dragX;
         hero.y = dragY;
+      });
+      let a: string[] = [];
+      const s = hero.getInternalHero();
+      hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
+        if (this.walkCoords.includes(target.name)) {
+          const path = battle.buildWalkingPath(s.coordinates, target.name, s, a.map((k) => {
+            let [y, z] = k.split("-").map(Number);
+            return {
+              x: y,
+              y: z
+            }
+          }));
+          console.log({ path });
+          if (a.includes(target.name) &&`${s.coordinates.x}-${s.coordinates.y}` !== target.name) {
+            a.splice(a.indexOf(target.name), 1);
+          } else if (a.length <= battle.getMovementRange(s) && !a.includes(target.name)) a.push(target.name);
+          const { x, y } = target;
+          const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;
+          img.x = x;
+          img.y = y;
+        }
       });
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
         this.clearTiles([...this.walkCoords, ...this.attackCoords]);
@@ -182,11 +177,9 @@ export default class MainScene extends Phaser.Scene {
         }
         const internalHero = hero.getInternalHero();
         clickTimestamp = timeStamp;
-        const currentCoords = pixelsToGrid(hero.x, hero.y);
         this.movementAllowedImages.setVisible(false);
         const img = this.children.getByName(`movement-${internalHero.name}`) as GameObjects.Image;
         img.setVisible(true);
-        pathStart = this.add.image(img.x, img.y, "rosary").setDisplaySize(img.width, img.height).setScale(1.35).setName("arrow");
         this.movementAllowedTween.pause();
         this.sound.playAudioSprite("sfx", "tap");
         const n = this.rng.integerInRange(1, 3);
@@ -196,273 +189,6 @@ export default class MainScene extends Phaser.Scene {
         previousSoundFile = soundFile;
         this.unitInfosBanner.setHero(hero).setVisible(true);
         this.displayRanges(hero.getInternalHero());
-      });
-      let previousTileString = "";
-      let tilePath: string[] = [];
-      // when dragging over a tile:
-      // if tile is inside movement tiles, autocomplete based on existing tile path
-      // if tile is inside attack tiles and there's an enemy inside: autocomplete based on existing tile path
-      // if tile is inside attack tiles but there are no enemies inside: display arrow path (autocomplete from existing), but reset hero's position on drag end
-      const endArrow = new GameObjects.Image(this, 0, 0, "end-arrow").setName("end-arrow");
-      this.movementArrows.add(endArrow);
-      let hoveredTile = "";
-      hero.on("dragenter", (_, target: Phaser.GameObjects.Rectangle) => {
-        this.sound.playAudioSprite("sfx", "hover");
-        if (target.name !== hoveredTile) {
-          hoveredTile = target.name
-        }
-        if (this.walkCoords.includes(target.name) && target.name !== previousTileString) {
-          this.combatForecast.setVisible(false);
-          this.unitInfosBanner.setVisible(true);
-          this.sound.playAudioSprite("sfx", "hover");
-          // const targetTileXY = target.name.split('-').map(Number);
-          // const arrowPath = this.buildArrowPath({ ...currentCoords }, {
-          //   x: targetTileXY[0],
-          //   y: targetTileXY[1]
-          // }, hero);
-          pathStart.setTexture("rosary");
-          // hero.getInternalHero().coordinates = arrowPath[arrowPath.length - 1];
-
-          this.movementArrows.clear(true);
-          // for (let i = 0; i < arrowPath.length; i++) {
-          //   const previousTile = arrowPath[i - 1];
-          //   const tile = arrowPath[i];
-          //   if (i) {
-          //     this.add.existing(endArrow);
-          //   }
-          //   if (previousTile && arrowPath[i - 2]) {
-          //     const previousTileDirections = getTilesDirection(arrowPath[i - 2], tile);
-          //     const gameTile = this.getTile(previousTile.x + "-" + previousTile.y);
-          //     var texture = !previousTileDirections.x ? "vertical" : !previousTileDirections.y ? "horizontal" : `path-${previousTileDirections.y}-${previousTileDirections.x}`;
-          //     const img = new Phaser.GameObjects.Image(this, gameTile.x, gameTile.y, texture);
-          //     this.add.existing(img);
-          //     this.movementArrows.add(img);
-          //   }
-          //   if (i === 1) {
-          //     const direction = getTilesDirection(previousTile, tile);
-          //     const verticalAngle = direction.y === "up" ? 180 : direction.y === "down" ? 0 : null;
-          //     const horizontalAngle = direction.x === "left" ? 90 : direction.x === "right" ? -90 : null;
-          //     const angle = verticalAngle ?? horizontalAngle;
-          //     pathStart.setTexture("rosary-arrow");
-          //     pathStart.setRotation(angle * Math.PI / 180);
-          //   }
-          //   if (arrowPath.length === 1) {
-          //     this.children.remove(this.children.getByName("end-arrow"));
-          //   } else if (i === arrowPath.length - 1 && i) {
-          //     const x = arrowPath[arrowPath.length - 1];
-          //     const tile = this.getTile(x.x + "-" + x.y);
-          //     endArrow.x = tile.x;
-          //     endArrow.y = tile.y;
-          //     const direction = getTilesDirection(previousTile, x);
-          //     const horizontalAngle = direction.x === "left" ? 180 : direction.x === "right" ? 0 : null;
-          //     const verticalAngle = direction.y === "up" ? -90 : direction.y === "down" ? 90 : null;
-          //     const angle = horizontalAngle ?? verticalAngle;
-          //     endArrow.setRotation(angle * Math.PI / 180);
-          //   }
-          //   // for each tile
-          //   // if it has a tile before it, compare directions
-          //   // if it has a tile after it, compare directions
-          //   // assemble directions from both comparisons
-          //   // and render path
-          // }
-          previousTileString = target.name;
-          (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).x = target.x;
-          (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).y = target.y;
-          this.interactionIndicator.setVisible(false);
-        } else if (this.attackCoords.includes(target.name)) {
-          const [x, y] = target.name.split("-");
-          // if ((battle.map[+y][+x]?.team ?? hero.team) !== hero.team) {
-          //   const opponent = battle.map[+y][+x];
-          //   this.unitInfosBanner.setVisible(false);
-          //   this.interactionIndicator.x = opponent.image.getCenter().x + opponent.x;
-          //   this.interactionIndicator.y = opponent.image.getTopCenter().y - 30 + opponent.y;
-          //   this.interactionIndicator.setVisible(true);
-          //   if (this.interactionIndicatorTween) {
-          //     this.interactionIndicatorTween.stop();
-          //   }
-          //   this.interactionIndicatorTween = this.tweens.create({
-          //     y: this.interactionIndicator.y - 10,
-          //     loop: -1,
-          //     yoyo: true,
-          //     targets: this.interactionIndicator,
-          //     duration: 400,
-          //   });
-          //   this.interactionIndicatorTween.play();
-          //   const simulatedBattle = battle.startCombat(hero.getInternalHero(), opponent.getInternalHero());
-          //   // this.combatForecast.setForecastData({
-          //   //   attacker: {
-          //   //     hero,
-          //   //     startHP: hero.getInternalHero().stats.hp,
-          //   //     endHP: simulatedBattle.atkRemainingHP,
-          //   //     statChanges: simulatedBattle.atkChanges,
-          //   //     turns: simulatedBattle.atkTurns,
-          //   //     effective: simulatedBattle.atkEffective,
-          //   //     damage: simulatedBattle.atkDamage,
-          //   //   },
-          //   //   defender: {
-          //   //     hero: opponent,
-          //   //     startHP: opponent.getInternalHero().stats.hp,
-          //   //     endHP: simulatedBattle.defRemainingHP,
-          //   //     statChanges: simulatedBattle.defChanges,
-          //   //     effective: simulatedBattle.defEffective,
-          //   //     turns: simulatedBattle.defTurns,
-          //   //     damage: simulatedBattle.defDamage,
-          //   //   },
-          //   // });
-          //   this.combatForecast.setVisible(true);
-          // }
-        }
-      });
-      hero.off("dragend");
-      hero.on("dragend", ({ upX, upY }: { upX: number; upY: number }) => {
-        const { x: x2, y: y2 } = pixelsToGrid(upX, upY);
-        this.movementArrows.setVisible(false);
-        this.children.remove(this.children.getByName("arrow"));
-        this.children.remove(this.children.getByName("end-arrow"));
-        
-        this.interactionIndicator.setVisible(false);
-        // if (this.walkCoords.includes(x2 + "-" + y2) && !battle.map[y2][x2] && (currentCoords.x !== x2 || currentCoords.y !== y2)) {
-        //   this.combatForecast.setVisible(false);
-        //   this.unitInfosBanner.setVisible(true);
-        //   this.clearTiles([...this.walkCoords, ...this.attackCoords]);
-        //   battle.map[currentCoords.y][currentCoords.x] = null;
-        //   currentCoords.x = x2;
-        //   currentCoords.y = y2;
-        //   // battle.map[currentCoords.y][currentCoords.x] = hero;
-        //   const pixelsCoords = gridToPixels(x2, y2);
-        //   hero.x = pixelsCoords.x;
-        //   hero.y = pixelsCoords.y;
-        //   battle.moveHero(hero.getInternalHero(), { x: x2, y: y2 });
-        //   this.movementArrows.setVisible(false);
-        //   this.movementArrows.clear(true);
-        //   this.movementAllowedImages.setVisible(true);
-        //   this.movementAllowedTween.resume();
-        //   (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).setVisible(false);
-        //   this.sound.play("confirm", { volume: 0.4 });
-        //   this.endAction(hero);
-        //   this.children.remove(endArrow);
-        // } else if (this.attackCoords.includes(x2 + "-" + y2) && battle.map[y2][x2] && battle.map[y2][x2].team !== hero.team) {
-        //   const possibleLandingTiles = this.getTilesInShallowRange({ x: x2, y: y2 }, battle.getWeaponRange(hero.getInternalHero()));
-        //   const coordsArray = [`${hero.getInternalHero().coordinates.x}-${hero.getInternalHero().coordinates.y}`];
-        //   const overlap = getOverlap(Array.from(possibleLandingTiles.keys()), this.walkCoords);
-        //   const [finalLandingTile] = overlap.length ? overlap : coordsArray;
-        //   const [x, y] = finalLandingTile.split("-");
-        //   if (battle.map[+y][+x]) {
-        //     const pixelCoords = gridToPixels(currentCoords.x, currentCoords.y);
-        //   (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).x = pixelCoords.x;
-        //   (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).y = pixelCoords.y;
-        //   this.tweens.add({
-        //     targets: hero,
-        //     x: pixelCoords.x,
-        //     y: pixelCoords.y,
-        //     duration: 100
-        //   });
-        //   hero.getInternalHero().coordinates = {...currentCoords};
-        //     return;
-        //   }
-        //   const [xCoord, yCoord] = finalLandingTile.split("-");
-        //   this.moveHero(hero, currentCoords, { x: +xCoord, y: +yCoord });
-        //   currentCoords.x = +xCoord;
-        //   this.movementAllowedImages.setVisible(false);
-        //   currentCoords.y = +yCoord;
-        //   const target = battle.map[y2][x2];
-        //   // const turns = battle.startCombat(hero.getInternalHero(), target.getInternalHero());
-        //   const t = this.tweens.timeline();
-        //   t.on("complete", () => {
-        //     this.clearTiles([...this.walkCoords, ...this.attackCoords]);
-        //     // const deadUnit = [hero, target].find(h => h.getInternalHero().stats.hp === 0);
-        //     // if (deadUnit) {
-        //     //   this.tweens.add({
-        //     //     targets: deadUnit,
-        //     //     alpha: 0,
-        //     //     delay: 700,
-        //     //     onStart: () => {
-        //     //       this.sound.play("ko", { volume: 0.4 });
-        //     //     },
-        //     //     onComplete: () => {
-        //     //       this.game.input.enabled = true;
-        //     //       if (hero.getInternalHero().stats.hp) {
-        //     //         this.endAction(hero);
-        //     //       }
-        //     //       // this.children.remove(this.children.getByName("movement-" + deadUnit.getInternalHero().name));
-        //     //       // this.killHero(deadUnit);
-        //     //       this.movementAllowedImages.setVisible(true);
-        //     //       this.movementAllowedTween.resume();
-        //     //       this.combatForecast.setVisible(false);
-        //     //     }
-        //     //   });
-        //     // } else {
-        //     //   setTimeout(() => {
-        //     //     this.combatForecast.setVisible(false);
-        //     //     this.endAction(hero);
-        //     //     this.game.input.enabled = true;
-        //     //   }, 300);
-        //     // }
-        //     // const s = battle.getPostCombatEffects(hero.getInternalHero(), target.getInternalHero(), turns);
-        //     // for (let ef of s) {
-        //     //   const h = this.children.getByName(ef.targetHeroId) as Hero;
-        //     //   h.statuses.push("debuff");
-        //     //   h.getInternalHero().setMapMods(ef.appliedEffect.stats);
-        //     // }
-        //   });
-        //   // for (let i = 0; i < turns.outcome.length; i++) {
-        //   //   const turn = turns.outcome[i];
-        //   //   const defenderObject = this.children.getByName(turn.defender.id) as Hero;
-        //   //   const attackerObject = this.children.getByName(turn.attacker.id) as Hero;
-        //   //   const defCenter = defenderObject.image.getCenter();
-        //   //   const damageText = renderText(this, defenderObject.x + defCenter.x, defenderObject.y + defCenter.y, turn.damage.toString(), {
-        //   //     stroke: "#FFFFFF",
-        //   //     strokeThickness: 5,
-        //   //     color: "red",
-        //   //     fontSize: turn.advantage === "advantage" || turn.effective ? "32px" : turn.advantage === "disadvantage" ? "25px" : "30px"
-        //   //   }).setOrigin(0.4).setDepth(3);
-        //   //   t.add({
-        //   //     targets: attackerObject,
-        //   //     x: `-=${(attackerObject.x - defenderObject.x) / 2}`,
-        //   //     y: `-=${(attackerObject.y - defenderObject.y) / 2}`,
-        //   //     yoyo: true,
-        //   //     duration: 150,
-        //   //     onStart: () => {
-        //   //       this.sound.play("hit");
-        //   //       defenderObject.image.setTintFill(0xFFFFFF);
-        //   //       this.add.existing(damageText);
-        //   //       this.tweens.add({
-        //   //         targets: [damageText],
-        //   //         y: defenderObject.image.getTopCenter().y + defenderObject.y,
-        //   //         yoyo: true,
-        //   //         duration: 100,
-        //   //         onComplete: () => {
-        //   //           defenderObject.image.tintFill = false;
-        //   //           setTimeout(() => {
-        //   //             damageText.destroy();
-        //   //           }, 500);
-        //   //         },
-        //   //         onStart: () => {
-        //   //           // defenderObject.getInternalHero().stats.hp = turn.remainingHP;
-        //   //           // const attackerRatio = hero.getInternalHero().stats.hp / attackerObject.getInternalHero().maxHP;
-        //   //           // const defenderHPRatio = target.getInternalHero().stats.hp / defenderObject.getInternalHero().maxHP;
-        //   //           // this.combatForecast.updatePortraits(attackerRatio, defenderHPRatio);
-        //   //         }
-        //   //       });
-        //   //     },
-        //   //     delay: 600,
-        //   //   });
-        //   // }
-        //   this.game.input.enabled = false;
-        //   t.play();
-        // } else {
-        //   const pixelCoords = gridToPixels(currentCoords.x, currentCoords.y);
-        //   (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).x = pixelCoords.x;
-        //   (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).y = pixelCoords.y;
-        //   // (this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image).setVisible(true);
-        //   this.tweens.add({
-        //     targets: hero,
-        //     x: pixelCoords.x,
-        //     y: pixelCoords.y,
-        //     duration: 100
-        //   });
-        //   hero.getInternalHero().coordinates = {...currentCoords};
-        // }
       });
     }
 
@@ -482,8 +208,7 @@ export default class MainScene extends Phaser.Scene {
       this.input.setDraggable(hero, false);
       hero.setInteractive();
       hero.off("dragstart");
-      hero.off("pointerdown");
-      hero.on("pointerdown", () => {
+      hero.off("pointerdown").on("pointerdown", () => {
         this.displayRanges(hero.getInternalHero());
         this.sound.playAudioSprite("sfx", "tap");
         this.highlightedHero = hero;
@@ -608,6 +333,10 @@ export default class MainScene extends Phaser.Scene {
     this.attackCoords = weaponTiles;
     this.fillTiles(stringWalkTiles, 0x0000FF);
     this.fillTiles(weaponTiles, 0xFF0000);
+    return {
+      walkTiles: walkTiles.map(({ x, y }) => x + "-" + y),
+      weaponTiles,
+    };
   }
 
   getTile(name: string) {

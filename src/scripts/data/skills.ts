@@ -9,6 +9,12 @@ export const Astra = new FEH.Special({
     cooldown: 5
 });
 
+export const Shove = new FEH.Assist({
+    name: "Shove",
+    description: "Pushes target ally one space away.",
+    range: 1
+});
+
 export const Mulagir = new FEH.Weapon();
 Mulagir.setName("Mulagir")
     .setMight(14)

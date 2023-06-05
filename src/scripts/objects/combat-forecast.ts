@@ -193,7 +193,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
             fontSize: "22px",
         }).setOrigin(0.5));
         
-        this.portraitDisplayTween = scene.tweens.create({
+        this.portraitDisplayTween = scene.tweens.add({
             duration: 300,
             x: 850,
             targets: this.secondHero.portrait,
@@ -288,7 +288,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         }
 
         if (this.portraitDisplayTween) this.portraitDisplayTween.stop();
-        this.portraitDisplayTween = this.scene.tweens.create({
+        this.portraitDisplayTween = this.scene.tweens.add({
             duration: 200,
             x: 850,
             onStart: () => {
@@ -317,7 +317,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
             this.koTween.destroy();
         }
 
-        this.koTween = this.scene.tweens.create({
+        this.koTween = this.scene.tweens.add({
             duration: 500,
             loop: -1,
             targets: [target],
@@ -328,7 +328,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
 
     updatePortraits(attackerHPRatio: number, defenderHPRatio: number) {
         if (attackerHPRatio < 0.5 && !this.firstHero.portrait.frame.name.includes("damage")) {
-            this.scene.tweens.create({
+            this.scene.tweens.add({
                 targets: [this.firstHero.portrait],
                 alpha: 0,
                 duration: 100,
@@ -340,7 +340,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         }
 
         if (defenderHPRatio < 0.5 && !this.secondHero.portrait.frame.name.includes("damage")) {
-            this.scene.tweens.create({
+            this.scene.tweens.add({
                 targets: [this.secondHero.portrait],
                 alpha: 0,
                 duration: 100,
