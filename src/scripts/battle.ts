@@ -7,6 +7,8 @@ import MapData from "../maps/lava.json";
 import { CombatOutcome } from "feh-battles/dec/combat";
 import * as Heroes from "./data/heroes";
 import stringifyTile from "./utils/stringify-tile";
+import Pathfinder from "./classes/path-finder";
+import TileType from "../types/tiles";
 
 
 class Battle {
@@ -16,14 +18,16 @@ class Battle {
     team2: {
         [heroId: string]: Hero;
     };
-    // todo: refactor into a key-value pair?
     map: {
         [k: number]: (Hero | null)[];
     };
 
-    terrain = MapData.terrain;
+    private terrain = MapData.terrain as {
+        [k: number]: { [k: number]: TileType }
+    };
 
     private effectRunner: MapEffectRunner;
+    private pathfinder = new Pathfinder();
 
     constructor() {
         this.team1 = {};
@@ -32,6 +36,15 @@ class Battle {
         for (let i = 1; i < 9; i++) {
             this.map[i] = Array.from<Hero>({ length: 6 }).fill(null);
         }
+    }
+
+    crossTile(hero: Hero, tile: string) {
+        const movementRange = this.pathfinder.getMovementRange(hero);
+        return this.pathfinder.crossTile(tile, movementRange, hero);
+    }
+
+    leaveTile(tile: string) {
+        this.pathfinder.leaveTile(tile);
     }
 
     resetEffects(team: Team) {
@@ -53,14 +66,12 @@ class Battle {
         }
     }
 
-    getMovementRange(hero: Hero) {
-        if (hero.statuses.includes("limitedMovement")) return 1;
-        const { movementType } = hero;
-        let movementRange = 2;
-        if (movementType === "cavalry") movementRange = 3;
-        if (movementType === "armored") movementRange = 1;
-        if (hero.statuses.includes("enhancedMovement")) movementRange++;
-        return movementRange;
+    resetPathfinder() {
+        this.pathfinder.reset();
+    }
+
+    private getMovementRange(hero: Hero) {
+        return this.pathfinder.getMovementRange(hero);
     }
 
     tileHasEnemy(hero: Hero, tile: Coords) {
@@ -101,27 +112,13 @@ class Battle {
         return Array.from(new Set(extraTiles.map(stringifyTile).filter((t) => !movementTileStrings.includes(t))));
     }
 
-    getTileCost(hero: Hero, tile: Coords) {
-        const tileType = this.terrain[tile.y][tile.x];
-        switch (tileType) {
-            case "tree": return hero.getMovementType() === "infantry" ? 2 : 1;
-            case "trench": return hero.getMovementType() === "cavalry" ? 3 : 1;
-            default: return 1;
-        }
-    }
-
     getDistance(tile1: Coords, tile2: Coords) {
-        return Math.abs(tile1.x - tile2.x) + Math.abs(tile1.y - tile2.y);
+        return this.pathfinder.getDistance(tile1, tile2);
     }
 
     heroCanUseTile(tile: Coords, hero: Hero) {
         const tileType = this.terrain[tile.y][tile.x];
-        switch (tileType) {
-            case "void": return hero.getMovementType() === "flier";
-            case "wall": return false;
-            case "tree": return hero.getMovementType() !== "cavalry";
-            default: return true;
-        }
+        return this.pathfinder.checkCrossability(tileType, hero.getMovementType());
     }
 
     moveHero(hero: Hero, destination: Coords) {
@@ -152,6 +149,11 @@ class Battle {
 
     startCombat(attacker: Hero, defender: Hero) {
         return new FEH.Combat({ attacker, defender }).createCombat();
+    }
+
+    getTileCost(hero: Hero, tile: Coords) {
+        const tileType = this.terrain[tile.y][tile.x];
+        return this.pathfinder.getTileCost(tileType, hero.getMovementType());
     }
 
     setAlliesAndEnemies() {

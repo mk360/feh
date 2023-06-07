@@ -147,28 +147,30 @@ export default class MainScene extends Phaser.Scene {
         hero.x = dragX;
         hero.y = dragY;
       });
-      let a: string[] = [];
       const s = hero.getInternalHero();
       hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
         if (this.walkCoords.includes(target.name)) {
-          const path = battle.buildWalkingPath(s.coordinates, target.name, s, a.map((k) => {
-            let [y, z] = k.split("-").map(Number);
-            return {
-              x: y,
-              y: z
-            }
-          }));
-          console.log({ path });
-          if (a.includes(target.name) &&`${s.coordinates.x}-${s.coordinates.y}` !== target.name) {
-            a.splice(a.indexOf(target.name), 1);
-          } else if (a.length <= battle.getMovementRange(s) && !a.includes(target.name)) a.push(target.name);
-          const { x, y } = target;
-          const img = this.children.getByName(`movement-${hero.getInternalHero().name}`) as GameObjects.Image;
-          img.x = x;
-          img.y = y;
+          console.log(battle.crossTile(s, target.name));
         }
       });
+
+      hero.on("dragend", () => {
+        const { x, y } = hero.getInternalHero().coordinates;
+        const { x: x1, y: y1 } = gridToPixels(x, y);
+        this.tweens.add({
+          targets: hero,
+          x: x1,
+          y: y1,
+          duration: 100
+        });
+      });
+      
+      hero.on("dragleave", (_, target: GameObjects.Rectangle) => {
+        battle.leaveTile(target.name);
+      });
+
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
+        battle.resetPathfinder();
         this.clearTiles([...this.walkCoords, ...this.attackCoords]);
         if (timeStamp - clickTimestamp <= dblClickMargin) {
           this.sound.play("confirm");
