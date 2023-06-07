@@ -38,9 +38,15 @@ class Battle {
         }
     }
 
-    crossTile(hero: Hero, tile: string) {
+    crossTile(hero: Hero, tile: string, walkTiles: string[]) {
         const movementRange = this.pathfinder.getMovementRange(hero);
-        return this.pathfinder.crossTile(tile, movementRange, hero);
+        const { tiles, complete } = this.pathfinder.crossTile(tile, movementRange);
+        if (complete) {
+            return tiles;
+        } else {
+            const remainingTiles = walkTiles.filter((t) => !tiles.includes(t));
+            const distances = 
+        }
     }
 
     leaveTile(tile: string) {

@@ -27,24 +27,25 @@ class Pathfinder {
         this.lastCrossedTile = "";
     }
     
-    crossTile(tile: string, range: number, {
-        statuses,
-        movementType
-    }: { statuses: (StatusBuff | StatusDebuff)[], movementType: MovementType }) {
+    crossTile(tile: string, range: number) {
+        const effectiveRange = range + 1;
         if (this.tiles.includes(tile)) {
             this.tiles.splice(this.tiles.indexOf(this.lastCrossedTile), 1);
+        } else if (this.tiles.length < effectiveRange && !this.tiles.includes(tile)) {
+            this.tiles.push(tile);
         } else {
             const partialPath = this.salvageExistingPath(this.tiles, tile);
-            return this.autocompletePath(partialPath, range, tile, { statuses, movementType });
+            return {
+                tiles: partialPath,
+                complete: false
+            };
         }
-
-        if (this.tiles.length < range + 1 && !this.tiles.includes(tile)) {
-            this.tiles.push(tile);
-        }
-
-        return this.tiles;
+        return {
+            tiles: this.tiles,
+            complete: true,
+        };
     }
-
+    
     private salvageExistingPath(path: string[], newTile: string) {
         const mostValidPath: string[] = [];
         let baseDistance = Infinity;
@@ -56,15 +57,6 @@ class Pathfinder {
             } else return mostValidPath;
         }
         return mostValidPath;
-    }
-
-    autocompletePath(existingPath: string[], remainingRange: number, targetTile: string, {
-        statuses,
-        movementType
-    }: { statuses: (StatusBuff | StatusDebuff)[], movementType: MovementType }) {
-        let pathCopy: string[] = [];
-        pathCopy = pathCopy.concat(existingPath);
-
     }
 
     leaveTile(tile: string) {
