@@ -150,7 +150,7 @@ export default class MainScene extends Phaser.Scene {
       const s = hero.getInternalHero();
       hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
         if (this.walkCoords.includes(target.name)) {
-          console.log(battle.crossTile(s, target.name, this.walkCoords));
+          battle.crossTile(s, target.name, this.walkCoords);
         }
       });
 

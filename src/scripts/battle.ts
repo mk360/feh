@@ -9,6 +9,7 @@ import * as Heroes from "./data/heroes";
 import stringifyTile from "./utils/stringify-tile";
 import Pathfinder from "./classes/path-finder";
 import TileType from "../types/tiles";
+import toCoords from "./utils/to-coords";
 
 
 class Battle {
@@ -41,12 +42,29 @@ class Battle {
     crossTile(hero: Hero, tile: string, walkTiles: string[]) {
         const movementRange = this.pathfinder.getMovementRange(hero);
         const { tiles, complete } = this.pathfinder.crossTile(tile, movementRange);
+        console.log({ complete, tiles });
         if (complete) {
             return tiles;
         } else {
-            const remainingTiles = walkTiles.filter((t) => !tiles.includes(t));
-            const distances = 
+            const distances = this.buildArrowPath(tiles, walkTiles, movementRange - tiles.length + 1);
         }
+    }
+
+    buildArrowPath(existingTiles: string[], validTiles: string[], remainingRange: number) {
+        let currentTile = existingTiles[existingTiles.length - 1];
+        const path = new Set<string>(existingTiles);
+        let maxDistance = remainingRange;
+        while (maxDistance) {
+            const nearby = getNearby(toCoords(currentTile)).filter((tile) => {
+                const isNewTile = !path.has(tile.x + "-" + tile.y);
+                const canBeCrossed = validTiles.includes(tile.x + "-" + tile.y);
+                return isNewTile && canBeCrossed;
+            });
+            const closest = nearby.sort(this.getDistance.bind(this));
+            currentTile = closest[0].x + "-" + closest[0].y;
+            maxDistance--;
+        }
+        return [];
     }
 
     leaveTile(tile: string) {
@@ -80,7 +98,7 @@ class Battle {
         return this.pathfinder.getMovementRange(hero);
     }
 
-    tileHasEnemy(hero: Hero, tile: Coords) {
+    private tileHasEnemy(hero: Hero, tile: Coords) {
         const tileData = this.map[tile.y][tile.x];
         if (!tileData) return false;
         return (tileData.id in this.team1 && hero.id in this.team2) || (tileData.id in this.team2 && hero.id in this.team1);
@@ -118,11 +136,11 @@ class Battle {
         return Array.from(new Set(extraTiles.map(stringifyTile).filter((t) => !movementTileStrings.includes(t))));
     }
 
-    getDistance(tile1: Coords, tile2: Coords) {
+    getDistance(tile1: string | Coords, tile2: string | Coords) {
         return this.pathfinder.getDistance(tile1, tile2);
     }
 
-    heroCanUseTile(tile: Coords, hero: Hero) {
+    private heroCanUseTile(tile: Coords, hero: Hero) {
         const tileType = this.terrain[tile.y][tile.x];
         return this.pathfinder.checkCrossability(tileType, hero.getMovementType());
     }

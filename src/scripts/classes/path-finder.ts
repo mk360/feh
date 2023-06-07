@@ -6,8 +6,6 @@ class Pathfinder {
     private tiles: string[] = [];
     private lastCrossedTile = "";
 
-    getDistance(tile1: string, tile2: string): number;
-    getDistance(tile1: Coords, tile2: Coords): number;
     getDistance(tile1: string | Coords, tile2: string | Coords) {
         let tile1Coords: Coords = typeof tile1 === "object" ? tile1 : {
             x: +tile1[0],
