@@ -10,6 +10,7 @@ import stringifyTile from "./utils/stringify-tile";
 import Pathfinder from "./classes/path-finder";
 import TileType from "../types/tiles";
 import toCoords from "./utils/to-coords";
+import getNearby from "./utils/get-nearby";
 
 
 class Battle {
@@ -19,7 +20,7 @@ class Battle {
     team2: {
         [heroId: string]: Hero;
     };
-    map: {
+    private map: {
         [k: number]: (Hero | null)[];
     };
 
@@ -41,30 +42,15 @@ class Battle {
 
     crossTile(hero: Hero, tile: string, walkTiles: string[]) {
         const movementRange = this.pathfinder.getMovementRange(hero);
-        const { tiles, complete } = this.pathfinder.crossTile(tile, movementRange);
-        console.log({ complete, tiles });
+        const { coordinates } = hero;
+        const { tiles, complete } = this.pathfinder.crossTile(tile, movementRange, coordinates);
         if (complete) {
             return tiles;
         } else {
-            const distances = this.buildArrowPath(tiles, walkTiles, movementRange - tiles.length + 1);
+            const autoTiles = this.pathfinder.buildAutomaticPath(tiles, walkTiles, movementRange - tiles.length + 1);
+            this.pathfinder.setTiles(autoTiles);
+            return autoTiles;
         }
-    }
-
-    buildArrowPath(existingTiles: string[], validTiles: string[], remainingRange: number) {
-        let currentTile = existingTiles[existingTiles.length - 1];
-        const path = new Set<string>(existingTiles);
-        let maxDistance = remainingRange;
-        while (maxDistance) {
-            const nearby = getNearby(toCoords(currentTile)).filter((tile) => {
-                const isNewTile = !path.has(tile.x + "-" + tile.y);
-                const canBeCrossed = validTiles.includes(tile.x + "-" + tile.y);
-                return isNewTile && canBeCrossed;
-            });
-            const closest = nearby.sort(this.getDistance.bind(this));
-            currentTile = closest[0].x + "-" + closest[0].y;
-            maxDistance--;
-        }
-        return [];
     }
 
     leaveTile(tile: string) {
@@ -108,7 +94,7 @@ class Battle {
         let existingRange = range ?? this.getMovementRange(hero) + 1;
         if (existingRange === 0) return [];
         let tiles = previousTiles || [hero.coordinates];
-        let result: Coords[] = [];
+        let result = new Set<string>();
         let validTiles = tiles.map((tile) => {
             return getNearby(tile).filter((filteredTile) => {
                 const heroCanReachTile = !this.tileHasEnemy(hero, filteredTile) && this.heroCanUseTile(filteredTile, hero);
@@ -117,11 +103,11 @@ class Battle {
             });
         }).flat();
         validTiles = validTiles.concat(this.getMovementTiles(hero, existingRange - 1, validTiles));
-        result = result.concat(validTiles);
-        return Array.from(new Set(result.map((t) => t.x + "-" + t.y))).map((t) => ({
-            x: +t[0],
-            y: +t[2]
-        }));
+        for (let validTile of validTiles) {
+            result.add(validTile.x + '-' + validTile.y);
+        }
+
+        return Array.from(result).map(toCoords);
     }
 
     getAttackTiles(hero: Hero, movementTiles: Coords[]) {
@@ -217,37 +203,6 @@ class Battle {
             combatOutcome
         });
     }
-};
-
-function isValid(tile: Coords) {
-    return tile.x >= 1 && tile.x <= 6 && tile.y >= 1 && tile.y <= 8;
-}
-  
-function getNearby(coords: Coords) {
-    const { x, y } = coords;
-    const nearbyTiles = [coords];
-
-    nearbyTiles.push({
-        x: x + 1,
-        y
-    });
-
-    nearbyTiles.push({
-        x: x-1,
-        y
-    });
-
-    nearbyTiles.push({
-        x,
-        y: y + 1
-    });
-
-    nearbyTiles.push({
-        x,
-        y: y-1
-    });
-
-    return nearbyTiles.filter(isValid);
 };
 
 const battle = new Battle();

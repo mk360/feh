@@ -1,21 +1,17 @@
 import { MovementType, StatusBuff, StatusDebuff } from "feh-battles/dec/types";
 import TileType from "../../types/tiles";
 import Coords from "../../interfaces/coords";
+import toCoords from "../utils/to-coords";
+import getNearby from "../utils/get-nearby";
 
 class Pathfinder {
     private tiles: string[] = [];
     private lastCrossedTile = "";
 
     getDistance(tile1: string | Coords, tile2: string | Coords) {
-        let tile1Coords: Coords = typeof tile1 === "object" ? tile1 : {
-            x: +tile1[0],
-            y: +tile1[2]
-        };
+        let tile1Coords: Coords = typeof tile1 === "object" ? tile1 : toCoords(tile1);
 
-        let tile2Coords: Coords = typeof tile2 === "object" ? tile2 : {
-            x: +tile2[0],
-            y: +tile2[2]
-        };
+        let tile2Coords: Coords = typeof tile2 === "object" ? tile2 : toCoords(tile2);
 
         return Math.abs(tile1Coords.x - tile2Coords.x) + Math.abs(tile1Coords.y - tile2Coords.y);
     }
@@ -24,12 +20,17 @@ class Pathfinder {
         this.tiles = [];
         this.lastCrossedTile = "";
     }
+
+    setTiles(tiles: string[]) {
+        this.tiles = tiles;
+    }
     
-    crossTile(tile: string, range: number) {
+    crossTile(tile: string, range: number, startingCoordinates: Coords) {
         const effectiveRange = range + 1;
+        
         if (this.tiles.includes(tile)) {
             this.tiles.splice(this.tiles.indexOf(this.lastCrossedTile), 1);
-        } else if (this.tiles.length < effectiveRange && !this.tiles.includes(tile)) {
+        } else if (this.tiles.length < effectiveRange && !this.tiles.includes(tile) && this.getDistance(startingCoordinates, tile) <= 1) {
             this.tiles.push(tile);
         } else {
             const partialPath = this.salvageExistingPath(this.tiles, tile);
@@ -59,6 +60,27 @@ class Pathfinder {
 
     leaveTile(tile: string) {
         this.lastCrossedTile = tile;
+    }
+
+    buildAutomaticPath(existingTiles: string[], validTiles: string[], remainingRange: number) {
+        let currentTile = existingTiles[existingTiles.length - 1];
+        const path = new Set<string>(existingTiles);
+        let maxDistance = remainingRange;
+        while (maxDistance) {
+            const nearby = getNearby(toCoords(currentTile)).filter((tile) => {
+                const isNewTile = !path.has(tile.x + "-" + tile.y);
+                const canBeCrossed = validTiles.includes(tile.x + "-" + tile.y);
+                return isNewTile && canBeCrossed;
+            });
+            const closest = nearby.sort((tile1, tile2) => {
+                return this.getDistance(tile1, currentTile) - this.getDistance(tile2, currentTile);
+            });
+            currentTile = closest[0].x + "-" + closest[0].y;
+            path.add(currentTile);
+            maxDistance--;
+        }
+
+        return Array.from(path);
     }
 
     getMovementRange({

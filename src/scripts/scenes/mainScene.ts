@@ -44,7 +44,7 @@ export default class MainScene extends Phaser.Scene {
   heroBackground: Phaser.GameObjects.Rectangle;
   movementAllowedImages: Phaser.GameObjects.Group;
   movementAllowedTween: Phaser.Tweens.Tween;
-  movementArrows: Phaser.GameObjects.Group;
+  movementUI: Phaser.GameObjects.Group;
   combatForecast: CombatForecast;
   interactionIndicator: InteractionIndicator;
   interactionIndicatorTween: Tweens.Tween;
@@ -68,7 +68,7 @@ export default class MainScene extends Phaser.Scene {
         this.clearTiles([...this.walkCoords, ...this.attackCoords]);
         this.walkCoords = [];
         this.attackCoords = [];
-        this.displayIdleHeroes();
+        this.highlightIdleHeroes();
       });
     }
   }
@@ -88,12 +88,10 @@ export default class MainScene extends Phaser.Scene {
     this.highlightedHero = null;
   }
 
-  // quand on survole une case, l'ajouter aux cases à traverser
-
-  displayIdleHeroes() {
+  highlightIdleHeroes() {
     this.movementAllowedImages.setVisible(true);
     this.movementAllowedTween.resume();
-    this.movementArrows.clear(true);
+    this.movementUI.clear(true);
   }
 
   killHero(hero: Hero) {
@@ -150,7 +148,9 @@ export default class MainScene extends Phaser.Scene {
       const s = hero.getInternalHero();
       hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
         if (this.walkCoords.includes(target.name)) {
-          battle.crossTile(s, target.name, this.walkCoords);
+          const path = battle.crossTile(s, target.name, this.walkCoords);
+          this.renderPath(path);
+          this.sound.playAudioSprite("sfx", "hover");
         }
       });
 
@@ -227,6 +227,14 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
+  renderPath(path: string[]) {
+    const beginning = path[0];
+    const beginningTile = this.getTile(beginning);
+    const end = path[path.length - 1];
+    const { x, y } = beginningTile.getCenter();
+    this.movem
+  }
+
   preload() {
     this.load.image("map", "assets/maps/map.webp");
     this.load.image("movement-allowed", "assets/movement-allowed.png");
@@ -289,7 +297,7 @@ export default class MainScene extends Phaser.Scene {
 
   startBackgroundMusic(volume: number) {
     const bgm = this.sound.add("bgm");
-    const loopPoint = bgm.addMarker({
+    bgm.addMarker({
       name: "loop",
       start: 4.25
     });
@@ -301,7 +309,7 @@ export default class MainScene extends Phaser.Scene {
 
   create() {
     this.movementAllowedImages = this.add.group();
-    this.movementArrows = this.add.group();
+    this.movementUI = this.add.group();
     this.add.rectangle(0, 180, 750, 1000, 0xFFFFFF).setOrigin(0);
     const banner = this.add.image(-90, 0, "background").setOrigin(0).setTint(0x0F343D);
     this.startBackgroundMusic(0.13);
