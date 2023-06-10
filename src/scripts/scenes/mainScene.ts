@@ -256,7 +256,6 @@ export default class MainScene extends Phaser.Scene {
     this.rosary.x = startX;
     this.rosary.y = startY;
     this.rosary.setVisible(true);
-    console.log({ start, end });
     this.endArrow.x = endTile.x;
     this.endArrow.y = endTile.y;
     this.endArrow.setVisible(end !== start);

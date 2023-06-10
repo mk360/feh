@@ -57,7 +57,7 @@ class Battle {
                 tilesInBetween
             };
         } else {
-            const autoTiles = this.pathfinder.buildAutomaticPath(tiles, walkTiles, movementRange - tiles.length + 1);
+            const autoTiles = this.pathfinder.buildAutomaticPath(tiles, walkTiles, movementRange - tiles.length + 1, tile);
             this.pathfinder.setTiles(autoTiles);
             const start = autoTiles[0];
             const end = autoTiles[autoTiles.length - 1];

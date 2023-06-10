@@ -27,13 +27,13 @@ class Pathfinder {
     
     crossTile(tile: string, range: number, startingCoordinates: Coords) {
         const effectiveRange = range + 1;
-        
         if (this.tiles.includes(tile)) {
             this.tiles.splice(this.tiles.indexOf(this.lastCrossedTile), 1);
         } else if (this.tiles.length < effectiveRange && !this.tiles.includes(tile) && this.getDistance(startingCoordinates, tile) <= 1) {
             this.tiles.push(tile);
         } else {
             const partialPath = this.salvageExistingPath(this.tiles, tile);
+            if (tile === "3-3") console.log({ partialPath });
             return {
                 tiles: partialPath,
                 complete: false
@@ -62,9 +62,9 @@ class Pathfinder {
         this.lastCrossedTile = tile;
     }
 
-    buildAutomaticPath(existingTiles: string[], validTiles: string[], remainingRange: number) {
+    buildAutomaticPath(existingTiles: string[], validTiles: string[], remainingRange: number, target: string) {
         let currentTile = existingTiles[existingTiles.length - 1];
-        const path = new Set<string>(existingTiles);
+        const path = new Set(existingTiles);
         let maxDistance = remainingRange;
         while (maxDistance) {
             const nearby = getNearby(toCoords(currentTile)).filter((tile) => {
@@ -73,7 +73,7 @@ class Pathfinder {
                 return isNewTile && canBeCrossed;
             });
             const closest = nearby.sort((tile1, tile2) => {
-                return this.getDistance(tile1, currentTile) - this.getDistance(tile2, currentTile);
+                return this.getDistance(tile1, target) - this.getDistance(tile2, target);
             });
             currentTile = closest[0].x + "-" + closest[0].y;
             path.add(currentTile);
