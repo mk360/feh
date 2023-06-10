@@ -479,7 +479,7 @@ class UnitInfosBanner extends GameObjects.Container {
             const statChange = internalHero.mapBoosts[statKey] + internalHero.mapPenalties[statKey];
             value.setColor(statChange > 0 ? TextColors.boon : statChange < 0 ? TextColors.bane : "white");
             if (statKey === "hp") {
-                this.remove(this.stats.hp.value);
+                this.remove(this.stats.hp.value, true);
                 this.stats.hp.value = renderHP({
                     scene: this.scene,
                     x: this.stats.hp.value.x,

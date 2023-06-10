@@ -45,11 +45,31 @@ class Battle {
         const { coordinates } = hero;
         const { tiles, complete } = this.pathfinder.crossTile(tile, movementRange, coordinates);
         if (complete) {
-            return tiles;
+            const start = tiles[0];
+            const end = tiles[tiles.length - 1];
+            let tilesInBetween: string[] = [];
+            if (tiles.length > 2) {
+                tilesInBetween = tiles.slice(1, tiles.length - 1);
+            }
+            return {
+                start,
+                end,
+                tilesInBetween
+            };
         } else {
             const autoTiles = this.pathfinder.buildAutomaticPath(tiles, walkTiles, movementRange - tiles.length + 1);
             this.pathfinder.setTiles(autoTiles);
-            return autoTiles;
+            const start = autoTiles[0];
+            const end = autoTiles[autoTiles.length - 1];
+            let tilesInBetween: string[] = [];
+            if (autoTiles.length > 2) {
+                tilesInBetween = autoTiles.slice(1, autoTiles.length - 1);
+            }
+            return {
+                start,
+                end,
+                tilesInBetween
+            };
         }
     }
 
