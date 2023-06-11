@@ -1,16 +1,16 @@
 import FEH from "feh-battles";
 import Hero from "feh-battles/dec/hero";
-import Coords from "../interfaces/coords";
+import Coords from "../../interfaces/coords";
 import MapEffectRunner from "feh-battles/dec/map-effect";
-import Team from "../types/team";
-import MapData from "../maps/lava.json";
+import Team from "../../types/team";
+import MapData from "../../maps/lava.json";
 import { CombatOutcome } from "feh-battles/dec/combat";
-import * as Heroes from "./data/heroes";
-import stringifyTile from "./utils/stringify-tile";
-import Pathfinder from "./classes/path-finder";
-import TileType from "../types/tiles";
-import toCoords from "./utils/to-coords";
-import getNearby from "./utils/get-nearby";
+import * as Heroes from "../data/heroes";
+import stringifyTile from "../utils/stringify-tile";
+import Pathfinder from "./path-finder";
+import TileType from "../../types/tiles";
+import toCoords from "../utils/to-coords";
+import getNearby from "../utils/get-nearby";
 
 
 class Battle {
@@ -71,6 +71,22 @@ class Battle {
                 tilesInBetween
             };
         }
+    }
+
+    decideTileAction(tile: string, hero: Hero) {
+        const { coordinates: { x: previousX, y: previousY } } = hero;
+        const coordinatedTiles = toCoords(tile);
+        const mapData = this.map[coordinatedTiles.y][coordinatedTiles.x];
+        if (!mapData) {
+            this.map[previousY][previousX] = null;
+            this.map[coordinatedTiles.y][coordinatedTiles.x] = hero;
+            hero.coordinates = coordinatedTiles;
+            return {
+                action: "move",
+                args: coordinatedTiles
+            };
+        }
+
     }
 
     leaveTile(tile: string) {
@@ -191,7 +207,6 @@ class Battle {
             for (let heroId2 in this.team1) {
                 if (heroId1 !== heroId2) {
                     this.team1[heroId1].setAlly(this.team1[heroId2]);
-                    this.team1[heroId2].setAlly(this.team1[heroId1]);
                 }
             }
 
@@ -204,7 +219,6 @@ class Battle {
             for (let heroId2 in this.team2) {
                 if (heroId1 !== heroId2) {
                     this.team2[heroId1].setAlly(this.team2[heroId2]);
-                    this.team2[heroId2].setAlly(this.team2[heroId1]);
                 }
             }
         }

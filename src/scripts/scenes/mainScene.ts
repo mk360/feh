@@ -4,11 +4,12 @@ import UnitInfosBanner from '../objects/unit-infos-banner';
 import { renderText } from '../utils/text-renderer';
 import CombatForecast from '../objects/combat-forecast';
 import Coords from '../../interfaces/coords';
-import battle from '../battle';
+import battle from '../classes/battle';
 import HeroData from "feh-battles/dec/hero";
 import InteractionIndicator from '../objects/interaction-indicator';
 import Team from '../../types/team';
 import stringifyTile from '../utils/stringify-tile';
+import toCoords from '../utils/to-coords';
 
 const squareSize = 125;
 const squaresOffset = 63;
@@ -42,6 +43,7 @@ export default class MainScene extends Phaser.Scene {
   turn: Team = "team1";
   rng = new Phaser.Math.RandomDataGenerator();
   heroBackground: Phaser.GameObjects.Rectangle;
+  movementArrows: GameObjects.Group;
   movementAllowedImages: Phaser.GameObjects.Group;
   movementAllowedTween: Phaser.Tweens.Tween;
   movementUI: Phaser.GameObjects.Group;
@@ -157,20 +159,22 @@ export default class MainScene extends Phaser.Scene {
       });
       const s = hero.getInternalHero();
       hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
+        console.log(target.name, this.walkCoords.includes(target.name));
         if (this.walkCoords.includes(target.name)) {
           const movementImage = this.children.getByName(`movement-${s.name}`) as GameObjects.Image;
           movementImage.x = target.x;
           movementImage.y = target.y;
           movementImage.setVisible(true);
           const path = battle.crossTile(s, target.name, this.walkCoords);
+          console.log({ path });
           this.renderPath(path);
           this.sound.playAudioSprite("sfx", "hover");
-          
         }
       });
 
       hero.on("dragend", () => {
         const { x, y } = hero.getInternalHero().coordinates;
+        // const action = battle.decideTileAction()
         const { x: x1, y: y1 } = gridToPixels(x, y);
         this.rosary.setVisible(false);
         this.tweens.add({
@@ -183,10 +187,14 @@ export default class MainScene extends Phaser.Scene {
         const movementImage = this.children.getByName(`movement-${s.name}`) as GameObjects.Image;
         movementImage.x = tile.x;
         movementImage.y = tile.y;
+        this.endArrow.setVisible(false);
+        this.movementUI.clear(true, true);
       });
       
       hero.on("dragleave", (_, target: GameObjects.Rectangle) => {
-        battle.leaveTile(target.name);
+        if (this.walkCoords.includes(target.name)) {
+          battle.leaveTile(target.name);
+        }
       });
 
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
@@ -228,7 +236,7 @@ export default class MainScene extends Phaser.Scene {
       this.children.remove(this.children.getByName("movement-" + hero.getInternalHero().name));
       hero.image.clearTint();
       this.input.setDraggable(hero, false);
-      hero.setInteractive();
+      hero.setInteractive(undefined, undefined, true);
       hero.off("dragstart");
       hero.off("pointerdown").on("pointerdown", () => {
         this.displayRanges(hero.getInternalHero());
@@ -236,7 +244,7 @@ export default class MainScene extends Phaser.Scene {
         this.highlightedHero = hero;
         this.unitInfosBanner.setVisible(true).setHero(hero);
       });
-    }
+    }    
 
     for (let effect of effects) {
       const target = this.children.getByName(effect.targetHeroId) as Hero;
@@ -248,8 +256,9 @@ export default class MainScene extends Phaser.Scene {
   }
 
   renderPath(path: { start: string, end: string, tilesInBetween: string[] }) {
-    this.movementUI.setVisible(false);
+    this.movementUI.setVisible(true).clear(true, true);
     const { start, end, tilesInBetween } = path;
+    const fullPath = [start].concat(tilesInBetween).concat(end);
     const startTile = this.getTile(start);
     const endTile = this.getTile(end);
     const { x: startX, y: startY } = startTile.getCenter();
@@ -259,6 +268,39 @@ export default class MainScene extends Phaser.Scene {
     this.endArrow.x = endTile.x;
     this.endArrow.y = endTile.y;
     this.endArrow.setVisible(end !== start);
+    const endArrowDirection = getTilesDirection(toCoords(fullPath[fullPath.length - 2]), toCoords(end));
+    const verticalAngle = endArrowDirection === "down" ? 90 : endArrowDirection === "up" ? -90 : null;
+    const horizontalAngle = endArrowDirection === "left" ? 180 : endArrowDirection === "right" ? 0 : null;
+    const finalAngle = verticalAngle ?? horizontalAngle;
+    this.endArrow.setAngle(finalAngle);
+
+    if (start !== end) {
+      this.rosary.setTexture("rosary-arrow");
+      const rosaryDirection = getTilesDirection(toCoords(start), toCoords(fullPath[1]));
+      const verticalAngle = rosaryDirection === "down" ? 0 : rosaryDirection === "up" ? 180 : null;
+      const horizontalAngle = rosaryDirection === "left" ? 90 : rosaryDirection === "right" ? -90 : null;
+      const finalAngle = verticalAngle ?? horizontalAngle;
+      this.rosary.setAngle(finalAngle);
+    }
+
+    if (tilesInBetween) {
+      for (let i = 0; i < tilesInBetween.length; i++) {
+        const tile = tilesInBetween[i];
+        const previousTile = i === 0 ? start : tilesInBetween[i - 1];
+        const nextTile = i === tilesInBetween.length - 1 ? end : tilesInBetween[i + 1];
+        const gameTile = this.getTile(tile);
+        const x = getTilesDirection(toCoords(previousTile), toCoords(tilesInBetween[i]));
+        const y = getTilesDirection(toCoords(tilesInBetween[i]), toCoords(nextTile));
+        const tileCenter = gameTile.getCenter();
+        if (x === y) {
+          const straightPath = new GameObjects.Image(this, tileCenter.x, tileCenter.y, `path-${x}`);
+          this.movementUI.add(straightPath, true);
+        } else {
+          const elbow = new GameObjects.Image(this, tileCenter.x, tileCenter.y, `path-${x}-${y}`);
+          this.movementUI.add(elbow, true);
+        }
+      }
+    }
   }
 
   // todo: simplify signature
@@ -305,14 +347,20 @@ export default class MainScene extends Phaser.Scene {
     this.load.audio("confirm", "assets/audio/confirm.mp3");
     this.load.image("nameplate", "assets/nameplate.png");
     this.load.image("end-arrow", "assets/end-arrow-fixed.png");
-    this.load.image("path-down-right", "assets/path-down-left.png");
-    this.load.image("path-down-left", "assets/path-down-right.png");
-    this.load.image("path-up-right", "assets/path-up-right.png");
-    this.load.image("path-up-left", "assets/path-up-left.png");
+    this.load.image("path-down-right", "assets/path-up-left.png");
+    this.load.image("path-right-down", "assets/path-down-left.png");
+    this.load.image("path-down-left", "assets/path-up-right.png");
+    this.load.image("path-left-down", "assets/path-down-right.png");
+    this.load.image("path-up-right", "assets/path-down-right.png");
+    this.load.image("path-right-up", "assets/path-up-right.png");
+    this.load.image("path-up-left", "assets/path-down-left.png");
+    this.load.image("path-left-up", "assets/path-up-left.png");
     this.load.image("buff", "assets/buff-arrow.png");
     this.load.image("debuff", "assets/debuff-arrow.png");
-    this.load.image("horizontal", "assets/horizontal.png");
-    this.load.image("vertical", "assets/vertical-fixed.png");
+    this.load.image("path-left", "assets/horizontal.png");
+    this.load.image("path-right", "assets/horizontal.png");
+    this.load.image("path-up", "assets/vertical-fixed.png");
+    this.load.image("path-down", "assets/vertical-fixed.png");
     this.load.image("unit-bg", "assets/unitbg.png");
     this.load.image("rosary", "assets/rosary-current.png");
     this.load.image("rosary-arrow", "assets/rosary-arrow.png");
@@ -358,9 +406,11 @@ export default class MainScene extends Phaser.Scene {
     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(5));
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(1);
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
-    this.rosary = this.add.image(0, 0, "rosary").setVisible(false);
+    const p = gridToPixels(5, 5);
+    this.rosary = this.add.image(p.x, p.y, "rosary-arrow").setVisible(true);
+    (this.children.getByName(`movement-Lucina`) as GameObjects.Image).x = p.x;
+    (this.children.getByName(`movement-Lucina`) as GameObjects.Image).y = p.y;
     this.endArrow = this.add.image(0, 0, "end-arrow").setVisible(false);
-    // this.tileHighlight = this.add.image(0, 0, "").setVisible(false);
 }
 
   displayRanges(hero: HeroData) {
@@ -426,12 +476,10 @@ function getTilesDirection(tile1: Coords, tile2: Coords) {
   };
 
   if (tile1.y !== tile2.y) {
-    directions.y = tile1.y < tile2.y ? "down" : "up";
+    return tile1.y < tile2.y ? "down" : "up";
   }
 
   if (tile1.x !== tile2.x) {
-    directions.x  = tile1.x < tile2.x ? "right" : "left";
+    return tile1.x < tile2.x ? "right" : "left";
   }
-
-  return directions;
 };

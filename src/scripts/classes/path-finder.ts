@@ -33,7 +33,6 @@ class Pathfinder {
             this.tiles.push(tile);
         } else {
             const partialPath = this.salvageExistingPath(this.tiles, tile);
-            if (tile === "3-3") console.log({ partialPath });
             return {
                 tiles: partialPath,
                 complete: false

@@ -433,7 +433,6 @@ OstiasPulse2.onTurnStart = ({ wielder }) => {
     };
 
     const targetedAllies: Hero[] = [wielder];
-
     for (let ally of wielder.allies) {
         if (wielder.getDistance(ally) === 1) targetedAllies.push(ally);
         moveTypes[ally.movementType]++;
