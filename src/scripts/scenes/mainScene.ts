@@ -1,4 +1,4 @@
-import { GameObjects, Structs, Tweens } from 'phaser';
+import { Game, GameObjects, Structs, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import { renderText } from '../utils/text-renderer';
@@ -29,14 +29,35 @@ function pixelsToGrid(x: number, y: number) {
   };
 }
 
+function createHeroQuoter(scene: MainScene) {
+  let previousQuote = "";
+
+  return (hero: Hero) => {
+    const internalHero = hero.getInternalHero();
+    const n = scene.rng.integerInRange(1, 3);
+    if (previousQuote) scene.sound.stopByKey(previousQuote);
+    const soundFile = internalHero.name + " quotes";
+    scene.sound.playAudioSprite(internalHero.name + " quotes", n.toString(), { volume: 0.2 });
+    previousQuote = soundFile;
+  };
+}
 const dblClickMargin = 300;
+
+function createDoubleTapHandler(scene: MainScene) {
+  let previousTimeStamp = 0;
+  return (timeStamp: number) => {
+    const isDoubleTap = timeStamp - previousTimeStamp <= dblClickMargin;
+    previousTimeStamp = timeStamp;
+    return isDoubleTap;
+  };
+}
+
 
 export default class MainScene extends Phaser.Scene {
   unitInfosBanner: UnitInfosBanner;
   walkCoords: string[] = [];
   attackCoords: string[] = [];
   heroes: Hero[] = [];
-  highlightedHero: Hero;
   team1: Hero[] = [];
   team2: Hero[] = [];
   heroesWhoMoved: Hero[] = [];
@@ -88,15 +109,21 @@ export default class MainScene extends Phaser.Scene {
     this.input.setDraggable(hero, false);
     hero.disableInteractive();
     hero.image.setTint(0x777777);
+    this.sound.play("confirm");
     this.heroesWhoMoved.push(hero);
     this.children.remove(this.children.getByName("movement-" + hero.getInternalHero().name));
-    this.highlightedHero = null;
+    this.endArrow.setVisible(false);
+    this.highlightIdleHeroes();
+    this.movementUI.clear(true, true);
+    this.clearTiles(this.walkCoords.concat(this.attackCoords));
   }
 
   highlightIdleHeroes() {
     this.movementAllowedImages.setVisible(true);
+    (this.movementAllowedTween.targets as GameObjects.Image[]).forEach((image) => {
+      image.setAlpha(1);
+    })
     this.movementAllowedTween.resume();
-    this.movementUI.clear(true);
   }
 
   killHero(hero: Hero) {
@@ -130,8 +157,11 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
+  playHeroQuote = createHeroQuoter(this);
+  handleDoubleTap = createDoubleTapHandler(this);
+
   setTurn(turn: Team) {
-    this.movementAllowedImages.clear();
+    this.movementAllowedImages.clear(true, true);
     const otherTeam = turn === "team1" ? "team2" : "team1";
     this.turn = turn;
     this.heroesWhoMoved = [];
@@ -148,9 +178,6 @@ export default class MainScene extends Phaser.Scene {
       const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);    
       img.setDisplaySize(matchingTile.width, matchingTile.height);
       this.movementAllowedImages.add(img);
-
-      let previousSoundFile = "";
-      let clickTimestamp = 0;
       
       hero.off("pointerdown");
       hero.on("drag", (_, dragX: number, dragY: number) => {
@@ -158,37 +185,66 @@ export default class MainScene extends Phaser.Scene {
         hero.y = dragY;
       });
       const s = hero.getInternalHero();
-      hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
-        console.log(target.name, this.walkCoords.includes(target.name));
+      hero.on("dragenter", (_, target: GameObjects.Rectangle | Hero) => {
         if (this.walkCoords.includes(target.name)) {
           const movementImage = this.children.getByName(`movement-${s.name}`) as GameObjects.Image;
           movementImage.x = target.x;
           movementImage.y = target.y;
           movementImage.setVisible(true);
           const path = battle.crossTile(s, target.name, this.walkCoords);
-          console.log({ path });
           this.renderPath(path);
           this.sound.playAudioSprite("sfx", "hover");
+        }
+
+        if (target instanceof Hero) {
+          this.combatForecast.setForecastData({
+            attacker: {
+              hero,
+              startHP: 20,
+              endHP: 0,
+              effective: false,
+              damage: 2,
+              turns: 2,
+              statChanges: {}
+            },
+            defender: {
+              hero: target,
+              startHP: 15,
+              endHP: 9,
+              statChanges: {},
+              turns: 2,
+              damage: 10,
+              effective: false
+            }
+          }).setVisible(true);
         }
       });
 
       hero.on("dragend", () => {
         const { x, y } = hero.getInternalHero().coordinates;
+        const targetTile = pixelsToGrid(hero.x, hero.y);
         // const action = battle.decideTileAction()
         const { x: x1, y: y1 } = gridToPixels(x, y);
         this.rosary.setVisible(false);
-        this.tweens.add({
-          targets: hero,
-          x: x1,
-          y: y1,
-          duration: 100
-        });
-        const tile = this.getTile(x + "-" + y);
-        const movementImage = this.children.getByName(`movement-${s.name}`) as GameObjects.Image;
-        movementImage.x = tile.x;
-        movementImage.y = tile.y;
-        this.endArrow.setVisible(false);
-        this.movementUI.clear(true, true);
+        if (this.walkCoords.includes(targetTile.x + "-" + targetTile.y)) {
+          const { x: x2, y: y2 } = pixelsToGrid(hero.x, hero.y);
+          if (x2 !== x || y2 !== y) {
+            this.moveHero(hero, { x: x2, y: y2 });
+          }
+        } else {
+          this.tweens.add({
+            targets: hero,
+            x: x1,
+            y: y1,
+            duration: 100
+          });
+          const tile = this.getTile(x + "-" + y);
+          const movementImage = this.children.getByName(`movement-${s.name}`) as GameObjects.Image;
+          movementImage.x = tile.x;
+          movementImage.y = tile.y;
+          this.endArrow.setVisible(false);
+          this.movementUI.clear(true, true);
+        }
       });
       
       hero.on("dragleave", (_, target: GameObjects.Rectangle) => {
@@ -200,23 +256,19 @@ export default class MainScene extends Phaser.Scene {
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
         battle.resetPathfinder();
         this.clearTiles([...this.walkCoords, ...this.attackCoords]);
-        if (timeStamp - clickTimestamp <= dblClickMargin) {
+
+        if (this.handleDoubleTap(timeStamp)) {
           this.sound.play("confirm");
           this.endAction(hero);
           return;
         }
         const internalHero = hero.getInternalHero();
-        clickTimestamp = timeStamp;
         this.movementAllowedImages.setVisible(false);
         const img = this.children.getByName(`movement-${internalHero.name}`) as GameObjects.Image;
         img.setVisible(true);
         this.movementAllowedTween.pause();
+        this.playHeroQuote(hero);
         this.sound.playAudioSprite("sfx", "tap");
-        const n = this.rng.integerInRange(1, 3);
-        if (previousSoundFile) this.sound.stopByKey(previousSoundFile);
-        const soundFile = internalHero.name + " quotes";
-        this.sound.playAudioSprite(internalHero.name + " quotes", n.toString(), { volume: 0.2 });
-        previousSoundFile = soundFile;
         this.unitInfosBanner.setHero(hero).setVisible(true);
         this.displayRanges(hero.getInternalHero());
       });
@@ -231,17 +283,16 @@ export default class MainScene extends Phaser.Scene {
     });
 
     for (let hero of this[otherTeam]) {
-      hero.off("dragover");
       hero.off("dragend");
       this.children.remove(this.children.getByName("movement-" + hero.getInternalHero().name));
       hero.image.clearTint();
       this.input.setDraggable(hero, false);
       hero.setInteractive(undefined, undefined, true);
       hero.off("dragstart");
+      hero.off("dragenter");
       hero.off("pointerdown").on("pointerdown", () => {
         this.displayRanges(hero.getInternalHero());
         this.sound.playAudioSprite("sfx", "tap");
-        this.highlightedHero = hero;
         this.unitInfosBanner.setVisible(true).setHero(hero);
       });
     }    
@@ -319,6 +370,7 @@ export default class MainScene extends Phaser.Scene {
     const { x, y } = gridToPixels(destination.x, destination.y);
     hero.x = x;
     hero.y = y;
+    this.endAction(hero);
   }
 
   startBackgroundMusic(volume: number) {
@@ -388,7 +440,6 @@ export default class MainScene extends Phaser.Scene {
     const banner = this.add.image(-90, 0, "background").setOrigin(0).setTint(0x0F343D);
     this.startBackgroundMusic(0.13);
     banner.setDisplaySize(banner.displayWidth, 180);
-    this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
     this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setDepth(0);
     this.createTiles();
     
@@ -396,20 +447,18 @@ export default class MainScene extends Phaser.Scene {
       const hero = battle.team1[heroId];
       this.addHero(hero, "team1");
     }
-
+    
     for (let heroId in battle.team2) {
       const hero = battle.team2[heroId];
       this.addHero(hero, "team2");
     }
-
+    
     this.setTurn("team1");
     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(5));
     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(1);
+    this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false));
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
-    const p = gridToPixels(5, 5);
-    this.rosary = this.add.image(p.x, p.y, "rosary-arrow").setVisible(true);
-    (this.children.getByName(`movement-Lucina`) as GameObjects.Image).x = p.x;
-    (this.children.getByName(`movement-Lucina`) as GameObjects.Image).y = p.y;
+    this.rosary = this.add.image(0, 0, "rosary").setVisible(false);
     this.endArrow = this.add.image(0, 0, "end-arrow").setVisible(false);
 }
 
