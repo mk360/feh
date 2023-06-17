@@ -73,20 +73,29 @@ class Battle {
         }
     }
 
-    decideTileAction(tile: string, hero: Hero) {
-        const { coordinates: { x: previousX, y: previousY } } = hero;
+    areEnemies(hero1: Hero, hero2: Hero) {
+        return (hero1.id in this.team1 && hero2.id in this.team2) || (hero1.id in this.team2 && hero2.id in this.team1);
+    }
+
+    decideTileAction(tile: string, hero: Hero, walkCoords: string[], attackCoords: string[]) {
         const coordinatedTiles = toCoords(tile);
-        const mapData = this.map[coordinatedTiles.y][coordinatedTiles.x];
-        if (!mapData) {
-            this.map[previousY][previousX] = null;
-            this.map[coordinatedTiles.y][coordinatedTiles.x] = hero;
-            hero.coordinates = coordinatedTiles;
+        const mapData = this.map[coordinatedTiles.y]?.[coordinatedTiles.x];
+        if (walkCoords.includes(tile) && !mapData) {
             return {
-                action: "move",
+                type: "move" as const,
                 args: coordinatedTiles
             };
         }
 
+        if (attackCoords.includes(tile) && mapData && this.areEnemies(hero, mapData)) {
+            const path = this.pathfinder.tiles[this.pathfinder.tiles.length - 1];
+            
+        }
+
+        return {
+            type: "cancel" as const,
+            args: hero.coordinates
+        };
     }
 
     leaveTile(tile: string) {

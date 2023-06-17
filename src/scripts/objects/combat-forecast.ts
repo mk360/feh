@@ -14,7 +14,7 @@ interface ForecastHeroData {
     }>;
     startHP: number;
     effective: boolean;
-    endHP: number;
+    remainingHP: number;
     turns: number;
     damage: number;
 }
@@ -206,7 +206,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         statChangesX: number;
         xShift: number;
     }) {
-        side.statMods.clear(true);
+        side.statMods.clear(true, true);
         const { statChanges, hero } = params;
         side.damage.setText(params.damage.toString()).setColor(params.effective ? TextColors.effective : TextColors.white);
         
@@ -258,7 +258,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
             scene: this.scene,
             x: side.predictedHP.x,
             y: side.predictedHP.y,
-            value: params.endHP,
+            value: params.remainingHP,
             style: {
                 fontSize: "36px"
             }
@@ -299,11 +299,11 @@ class CombatForecast extends Phaser.GameObjects.Container {
 
         let koPortrait: GameObjects.Image;
 
-        if (params.attacker.endHP === 0) {
+        if (params.attacker.remainingHP === 0) {
             koPortrait = this.firstHero.portrait;
         }
 
-        if (params.defender.endHP === 0) {
+        if (params.defender.remainingHP === 0) {
             koPortrait = this.secondHero.portrait;
         }
 

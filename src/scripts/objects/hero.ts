@@ -3,7 +3,7 @@ import { renderText } from "../utils/text-renderer";
 import HeroData from "feh-battles/dec/hero";
 import Team from "../../types/team";
 
-const fullWidth = 60;
+const hpBarWidth = 60;
 
 class Hero extends GameObjects.Container {
     hpBar: GameObjects.Rectangle;
@@ -30,9 +30,9 @@ class Hero extends GameObjects.Container {
         this.hpText = renderText(scene, -15, hpBarHeight, data.maxHP, {
             fontSize: "18px"
         }).setOrigin(1, 0.5);
-        this.hpBar = new GameObjects.Rectangle(scene, this.hpText.getRightCenter().x, hpBarHeight, fullWidth, 5, team === "team1" ? 0x54DFF4 : 0xFA4D69).setOrigin(0, 0).setDepth(2);
+        this.hpBar = new GameObjects.Rectangle(scene, this.hpText.getRightCenter().x, hpBarHeight, hpBarWidth, 5, team === "team1" ? 0x54DFF4 : 0xFA4D69).setOrigin(0, 0).setDepth(2);
         this.weaponType = new GameObjects.Image(scene, -30, -40, "weapons", `${data.getWeapon().color}-${data.getWeapon().type}`);
-        this.hpBarBackground = new GameObjects.Rectangle(scene, this.hpBar.getLeftCenter().x - 1, hpBarHeight - 1, fullWidth + 2, 7, 0x000000).setOrigin(0, 0);
+        this.hpBarBackground = new GameObjects.Rectangle(scene, this.hpBar.getLeftCenter().x - 1, hpBarHeight - 1, hpBarWidth + 2, 7, 0x000000).setOrigin(0, 0);
         this.add(this.hpBarBackground);
         this.add(this.hpBar);
         this.add(this.weaponType);
@@ -49,11 +49,12 @@ class Hero extends GameObjects.Container {
         return this.data.get("hero") as HeroData;
     }
 
-    update() {
+    updateHP(newHP: number) {
         const { maxHP, stats: { hp } } = this.getInternalHero();
-        this.hpText.setText(hp.toString());
-        const hpRatio = hp / maxHP;
-        this.hpBar.displayWidth = fullWidth * hpRatio;
+        const usedHPValue = newHP ?? hp;
+        this.hpText.setText(usedHPValue.toString());
+        const hpRatio = usedHPValue / maxHP;
+        this.hpBar.displayWidth = hpBarWidth * hpRatio;
     }
 
     toggleStatuses() {
@@ -64,7 +65,6 @@ class Hero extends GameObjects.Container {
             } else {
                 this.statusIndex++;
             }
-
             this.statusesImage.setTexture(this.statuses[this.statusIndex]);
         }
     }

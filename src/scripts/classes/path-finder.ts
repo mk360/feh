@@ -5,7 +5,7 @@ import toCoords from "../utils/to-coords";
 import getNearby from "../utils/get-nearby";
 
 class Pathfinder {
-    private tiles: string[] = [];
+    tiles: string[] = [];
     private lastCrossedTile = "";
 
     getDistance(tile1: string | Coords, tile2: string | Coords) {
