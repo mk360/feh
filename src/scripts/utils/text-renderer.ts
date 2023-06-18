@@ -18,6 +18,14 @@ export function renderText(scene: Scene, x: number, y: number, content: string |
     });
 };
 
+export function renderDamageText(config: TextRenderingConfig) {
+    const { text } = renderTextWith2DContext(config);
+    text.style.stroke = "white";
+    text.style.strokeThickness = 5;
+    text.style.color = "red";
+    return text;
+}
+
 export function renderStatText(config: TextRenderingConfig) {
     const { gradient, text } = renderTextWith2DContext(config);
     gradient.addColorStop(0, "white");

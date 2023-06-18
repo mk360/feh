@@ -1,7 +1,7 @@
 import { GameObjects, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
-import { renderText } from '../utils/text-renderer';
+import { renderDamageText, renderText } from '../utils/text-renderer';
 import CombatForecast from '../objects/combat-forecast';
 import Coords from '../../interfaces/coords';
 import battle from '../classes/battle';
@@ -193,13 +193,36 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
-  runCombat(outcome: CombatOutcome) {
-    outcome.turns
-    for (let turn of outcome.turns) {
-      const isAdvantage = turn.effective || turn.advantage === "advantage";
-      const isDisadvantage = turn.advantage === "disadvantage" && !turn.effective;
-      const damageFontSize = isDisadvantage ? 14 : isAdvantage ? 26 : 20;
+  getHeroCoordinates(hero: Hero) {
+    const coordinatesVector = new Phaser.Math.Vector2(hero.x, hero.y);
+    coordinatesVector.add(hero.image.getCenter());
 
+    return coordinatesVector;
+  }
+
+  createDamageText(turn: CombatOutcome["turns"][number]) {
+    const isAdvantage = turn.effective || turn.advantage === "advantage";
+    const isDisadvantage = turn.advantage === "disadvantage" && !turn.effective;
+    const damageFontSize = isDisadvantage ? 14 : isAdvantage ? 26 : 20;
+    const defenderObject = this.children.getByName(turn.defender.id) as Hero;
+    const coordinatesVector = this.getHeroCoordinates(defenderObject);
+    const damageText = renderDamageText({
+      scene: this,
+      x: coordinatesVector.x,
+      y: coordinatesVector.y,
+      content: turn.damage,
+      style: {
+        fontSize: damageFontSize,
+      }
+    });
+
+    return damageText;
+  }
+
+  runCombat(outcome: CombatOutcome) {
+    for (let turn of outcome.turns) {
+      const damageText = this.createDamageText(turn);
+      this.add.existing(damageText);
     }
   };
 
@@ -328,7 +351,6 @@ export default class MainScene extends Phaser.Scene {
   }
 
   renderPath(path: { start: string, end: string, tilesInBetween: string[] }) {
-    if (this.turn === "team2") console.log(path);
     this.movementArrows.setVisible(true).clear(true, true);
     const { start, end, tilesInBetween } = path;
     const fullPath = [start].concat(tilesInBetween).concat(end);
@@ -449,6 +471,9 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+    // this.tweens.add({
+      
+    // })
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.rectangle(0, 180, 750, 1000, 0xFFFFFF).setOrigin(0);
