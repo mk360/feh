@@ -10,6 +10,9 @@ import InteractionIndicator from '../objects/interaction-indicator';
 import Team from '../../types/team';
 import stringifyTile from '../utils/stringify-tile';
 import toCoords from '../utils/to-coords';
+import UIAction from '../../interfaces/ui-action';
+import UIActionDict from '../../interfaces/ui-action-dict';
+import { CombatOutcome } from 'feh-battles/dec/combat';
 
 const squareSize = 125;
 const squaresOffset = 63;
@@ -86,6 +89,119 @@ export default class MainScene extends Phaser.Scene {
       tile.setFillStyle(fillColor, alpha);
     }
   }
+
+  activateHero(hero: Hero) {
+    hero.on("drag", (_, dragX: number, dragY: number) => {
+        hero.x = dragX;
+        hero.y = dragY;
+      });
+      const s = hero.getInternalHero();
+      hero.on("dragenter", (_, target: GameObjects.Rectangle | Hero) => {
+        if (this.turn === "team2") console.log(target);
+        if (target instanceof GameObjects.Rectangle && this.walkCoords.includes(target.name)) {
+          const movementImage = this.children.getByName(`movement-${s.name}`) as GameObjects.Image;
+          movementImage.x = target.x;
+          movementImage.y = target.y;
+          movementImage.setVisible(true);
+          const path = battle.crossTile(s, target.name, this.walkCoords);
+          this.renderPath(path);
+          this.sound.playAudioSprite("sfx", "hover");
+        }
+
+        if (target instanceof Hero && target.team !== hero.team) {
+          const predictedOutcome = battle.startCombat(hero.getInternalHero(), target.getInternalHero());
+          this.combatForecast.setForecastData({
+            attacker: {
+              hero,
+              ...predictedOutcome.attacker,
+            },
+            defender: {
+              hero: target,
+              ...predictedOutcome.defender,
+            }
+          }).setVisible(true);
+        }
+      });
+
+      hero.on("dragend", () => {
+        const targetTile = pixelsToGrid(hero.x, hero.y);
+        const actions = battle.decideTileAction(targetTile.x + "-" + targetTile.y, hero.getInternalHero(), this.walkCoords, this.attackCoords);
+        for (let action of actions) {
+          this.processAction(action, hero);
+        }
+        this.rosary.setVisible(false);
+        
+      });
+      
+      hero.on("dragleave", (_, target: GameObjects.Rectangle) => {
+        if (this.walkCoords.includes(target.name)) {
+          battle.leaveTile(target.name);
+        }
+      });
+
+      hero.on("pointerdown", ({ event: { timeStamp } }) => {
+        battle.resetPathfinder();
+        this.clearTiles([...this.walkCoords, ...this.attackCoords]);
+
+        if (this.handleDoubleTap(timeStamp)) {
+          this.sound.play("confirm");
+          this.endAction(hero);
+          return;
+        }
+        const internalHero = hero.getInternalHero();
+        this.movementAllowedImages.setVisible(false);
+        const img = this.children.getByName(`movement-${internalHero.name}`) as GameObjects.Image;
+        img.setVisible(true);
+        this.movementAllowedTween.pause();
+        this.playHeroQuote(hero);
+        this.displayHeroInformations(hero)();
+      });
+  }
+
+  processAction(action: UIAction, hero: Hero) {
+    if (action.type === "cancel") {
+      const { args } = action;
+      this.endArrow.setVisible(false);
+      this.movementArrows.clear(true, true);
+      const pxCoords = gridToPixels(args.x, args.y);
+      this.tweens.add({
+        targets: hero,
+        x: pxCoords.x,
+        y: pxCoords.y,
+        duration: 100
+      });
+      battle.resetPathfinder();
+    }
+
+    if (action.type === "move") {
+      const { args } = action;
+      this.endArrow.setVisible(false);
+      this.movementArrows.clear(true, true);
+      const pxCoords = gridToPixels(args.x, args.y);
+      hero.x = pxCoords.x;
+      hero.y = pxCoords.y;
+      battle.moveHero(hero.getInternalHero(), args);
+    }
+
+    if (action.type === "disable") {
+      const hero = this.children.getByName(action.args.id) as Hero;
+      this.endAction(hero);
+    }
+
+    if (action.type === "attack") {
+      console.log(action.args);
+    }
+  }
+
+  runCombat(outcome: CombatOutcome) {
+    outcome.turns
+    for (let turn of outcome.turns) {
+      const isAdvantage = turn.effective || turn.advantage === "advantage";
+      const isDisadvantage = turn.advantage === "disadvantage" && !turn.effective;
+      const damageFontSize = isDisadvantage ? 14 : isAdvantage ? 26 : 20;
+
+    }
+  };
 
   clearTiles(tiles: string[]) {
     for (let tileName of tiles) {
@@ -174,8 +290,6 @@ export default class MainScene extends Phaser.Scene {
     battle.resetEffects(turn);
     const effects = battle.getTurnStartEffects(turn);
     for (let hero of this[turn]) {
-      hero.statuses = [];
-      hero.disableInteractive().setInteractive();
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
       this.input.setDraggable(hero, true);
@@ -183,91 +297,7 @@ export default class MainScene extends Phaser.Scene {
       const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);
       img.setDisplaySize(matchingTile.width, matchingTile.height);
       this.movementAllowedImages.add(img, true);
-      
-      hero.on("drag", (_, dragX: number, dragY: number) => {
-        hero.x = dragX;
-        hero.y = dragY;
-      });
-      const s = hero.getInternalHero();
-      hero.on("dragenter", (_, target: GameObjects.Rectangle | Hero) => {
-        if (target instanceof GameObjects.Rectangle && this.walkCoords.includes(target.name)) {
-          const movementImage = this.children.getByName(`movement-${s.name}`) as GameObjects.Image;
-          movementImage.x = target.x;
-          movementImage.y = target.y;
-          movementImage.setVisible(true);
-          const path = battle.crossTile(s, target.name, this.walkCoords);
-          this.renderPath(path);
-          this.sound.playAudioSprite("sfx", "hover");
-        }
-
-        if (target instanceof Hero && target.team !== hero.team) {
-          const predictedOutcome = battle.startCombat(hero.getInternalHero(), target.getInternalHero());
-          this.combatForecast.setForecastData({
-            attacker: {
-              hero,
-              ...predictedOutcome.attacker,
-            },
-            defender: {
-              hero: target,
-              ...predictedOutcome.defender,
-            }
-          }).setVisible(true);
-        }
-      });
-
-      hero.on("dragend", () => {
-        const targetTile = pixelsToGrid(hero.x, hero.y);
-        const action = battle.decideTileAction(targetTile.x + "-" + targetTile.y, hero.getInternalHero(), this.walkCoords);
-        
-        this.rosary.setVisible(false);
-        if (action.type === "move") {
-          const { args } = action;
-          this.endArrow.setVisible(false);
-          this.movementArrows.clear(true, true);
-          const pxCoords = gridToPixels(args.x, args.y);
-          hero.x = pxCoords.x;
-          hero.y = pxCoords.y;
-          battle.moveHero(hero.getInternalHero(), args);
-          this.endAction(hero);
-        }
-        if (action.type === "cancel") {
-          const { args } = action;
-          this.endArrow.setVisible(false);
-          this.movementArrows.clear(true, true);
-          const pxCoords = gridToPixels(args.x, args.y);
-          this.tweens.add({
-            targets: hero,
-            x: pxCoords.x,
-            y: pxCoords.y,
-            duration: 100
-          });
-          battle.resetPathfinder();
-        }
-      });
-      
-      hero.on("dragleave", (_, target: GameObjects.Rectangle) => {
-        if (this.walkCoords.includes(target.name)) {
-          battle.leaveTile(target.name);
-        }
-      });
-
-      hero.on("pointerdown", ({ event: { timeStamp } }) => {
-        battle.resetPathfinder();
-        this.clearTiles([...this.walkCoords, ...this.attackCoords]);
-
-        if (this.handleDoubleTap(timeStamp)) {
-          this.sound.play("confirm");
-          this.endAction(hero);
-          return;
-        }
-        const internalHero = hero.getInternalHero();
-        this.movementAllowedImages.setVisible(false);
-        const img = this.children.getByName(`movement-${internalHero.name}`) as GameObjects.Image;
-        img.setVisible(true);
-        this.movementAllowedTween.pause();
-        this.playHeroQuote(hero);
-        this.displayHeroInformations(hero)();
-      });
+      this.activateHero(hero);
     }
     this.movementAllowedTween?.stop().destroy();
     this.movementAllowedTween = this.tweens.add({
@@ -283,14 +313,9 @@ export default class MainScene extends Phaser.Scene {
       this.movementAllowedImages.remove(expiredMovementImage, true, true);
       hero.image.clearTint();
       this.input.setDraggable(hero, false);
-      hero.setInteractive(undefined, undefined, true);
       hero.off("dragstart");
       hero.off("dragenter");
-      hero.off("pointerdown").on("pointerdown", () => {
-        this.displayRanges(hero.getInternalHero());
-        this.sound.playAudioSprite("sfx", "tap");
-        this.unitInfosBanner.setVisible(true).setHero(hero);
-      });
+      hero.off("pointerdown").on("pointerdown", this.displayHeroInformations(hero));
     }    
 
     for (let effect of effects) {
@@ -303,6 +328,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   renderPath(path: { start: string, end: string, tilesInBetween: string[] }) {
+    if (this.turn === "team2") console.log(path);
     this.movementArrows.setVisible(true).clear(true, true);
     const { start, end, tilesInBetween } = path;
     const fullPath = [start].concat(tilesInBetween).concat(end);

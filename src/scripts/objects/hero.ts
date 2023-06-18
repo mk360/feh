@@ -10,6 +10,7 @@ class Hero extends GameObjects.Container {
     hpBarBackground: GameObjects.Rectangle;
     weaponType: GameObjects.Image;
     image: GameObjects.Image;
+    whiteGlowImage: GameObjects.Image;
     hpText: GameObjects.Text;
     team: Team;
     statuses: string[];
@@ -23,7 +24,9 @@ class Hero extends GameObjects.Container {
         this.statuses = [];
         this.setName(data.id);
         this.image = new GameObjects.Image(scene, 0, 0, data.name, "map").setScale(0.7).setDepth(1);
+        this.whiteGlowImage = new GameObjects.Image(scene, 0, 0, data.name, "map").setScale(0.7).setDepth(2).setAlpha(0).setTintFill(0xFFFFFF);
         this.add(this.image);
+        this.add(this.whiteGlowImage);
         this.team = team;
         this.statusesImage = new GameObjects.Image(scene, 45, 45, "").setVisible(false);
         const hpBarHeight = this.statusesImage.getCenter().y;        

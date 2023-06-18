@@ -11,6 +11,7 @@ import Pathfinder from "./path-finder";
 import TileType from "../../types/tiles";
 import toCoords from "../utils/to-coords";
 import getNearby from "../utils/get-nearby";
+import UIAction from "../../interfaces/ui-action";
 
 
 class Battle {
@@ -77,25 +78,30 @@ class Battle {
         return (hero1.id in this.team1 && hero2.id in this.team2) || (hero1.id in this.team2 && hero2.id in this.team1);
     }
 
-    decideTileAction(tile: string, hero: Hero, walkCoords: string[], attackCoords: string[]) {
+    decideTileAction(tile: string, hero: Hero, walkCoords: string[], attackCoords: string[]): UIAction[] {
         const coordinatedTiles = toCoords(tile);
         const mapData = this.map[coordinatedTiles.y]?.[coordinatedTiles.x];
         if (walkCoords.includes(tile) && !mapData) {
-            return {
-                type: "move" as const,
-                args: coordinatedTiles
-            };
+            return [{ type: "move", args: coordinatedTiles }, { type: "disable", args: hero }];
         }
 
         if (attackCoords.includes(tile) && mapData && this.areEnemies(hero, mapData)) {
-            const path = this.pathfinder.tiles[this.pathfinder.tiles.length - 1];
-            
+            const finalTile = toCoords(this.pathfinder.tiles[this.pathfinder.tiles.length - 1]);
+            const outcome = this.startCombat(hero, mapData);
+            return [{ type: "move", args: finalTile }, {
+                type: "attack",
+                args: {
+                    attacker: hero,
+                    defender: mapData,
+                    outcome
+                }
+            }];
         }
 
-        return {
-            type: "cancel" as const,
+        return [{
+            type: "cancel",
             args: hero.coordinates
-        };
+        }];
     }
 
     leaveTile(tile: string) {
