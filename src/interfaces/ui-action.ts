@@ -1,6 +1,5 @@
 import Hero from "feh-battles/dec/hero";
 import Coords from "./coords";
-import UIActionDict from "./ui-action-dict";
 import { CombatOutcome } from "feh-battles/dec/combat";
 
 interface CancelAction {
@@ -27,6 +26,14 @@ interface DisableAction {
     args: Hero;
 }
 
-type UIAction = AttackAction | MoveAction | CancelAction | DisableAction;
+interface PreviewAction {
+    type: "preview",
+    args: {
+        attacker: Hero;
+        defender: Hero;
+    };
+}
+
+type UIAction = AttackAction | MoveAction | CancelAction | DisableAction | PreviewAction;
 
 export default UIAction;

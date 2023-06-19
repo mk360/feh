@@ -1,4 +1,4 @@
-import { GameObjects, Scene } from "phaser";
+import { GameObjects, Scene, Tweens } from "phaser";
 import { renderText } from "../utils/text-renderer";
 import HeroData from "feh-battles/dec/hero";
 import Team from "../../types/team";
@@ -48,6 +48,18 @@ class Hero extends GameObjects.Container {
         this.setSize(120, 120);
     }
 
+    createFlashTween() {
+        this.whiteGlowImage.x = this.image.x;
+        this.whiteGlowImage.y = this.image.y;
+        const baseTween = this.scene.tweens.create({
+            targets: this.whiteGlowImage,
+            alpha: 1,
+            duration: 300,
+            yoyo: true,
+        });
+        return baseTween as Tweens.Tween;
+    }
+
     getInternalHero() {
         return this.data.get("hero") as HeroData;
     }
@@ -57,6 +69,7 @@ class Hero extends GameObjects.Container {
         const usedHPValue = newHP ?? hp;
         this.hpText.setText(usedHPValue.toString());
         const hpRatio = usedHPValue / maxHP;
+        this.getInternalHero().stats.hp = newHP;
         this.hpBar.displayWidth = hpBarWidth * hpRatio;
     }
 

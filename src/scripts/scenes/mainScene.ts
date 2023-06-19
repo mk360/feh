@@ -1,4 +1,4 @@
-import { GameObjects, Tweens } from 'phaser';
+import { GameObjects, Time, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import { renderDamageText, renderText } from '../utils/text-renderer';
@@ -11,7 +11,6 @@ import Team from '../../types/team';
 import stringifyTile from '../utils/stringify-tile';
 import toCoords from '../utils/to-coords';
 import UIAction from '../../interfaces/ui-action';
-import UIActionDict from '../../interfaces/ui-action-dict';
 import { CombatOutcome } from 'feh-battles/dec/combat';
 
 const squareSize = 125;
@@ -78,6 +77,7 @@ export default class MainScene extends Phaser.Scene {
   endArrow: GameObjects.Image;
   tileHighlight: GameObjects.Image;
   updateDelta = 0;
+  timeline: Time.Timeline;
 
   constructor() {
     super({ key: 'MainScene' });
@@ -97,7 +97,6 @@ export default class MainScene extends Phaser.Scene {
       });
       const s = hero.getInternalHero();
       hero.on("dragenter", (_, target: GameObjects.Rectangle | Hero) => {
-        if (this.turn === "team2") console.log(target);
         if (target instanceof GameObjects.Rectangle && this.walkCoords.includes(target.name)) {
           const movementImage = this.children.getByName(`movement-${s.name}`) as GameObjects.Image;
           movementImage.x = target.x;
@@ -141,7 +140,7 @@ export default class MainScene extends Phaser.Scene {
 
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
         battle.resetPathfinder();
-        this.clearTiles([...this.walkCoords, ...this.attackCoords]);
+        this.clearTiles(this.walkCoords.concat(this.attackCoords));
 
         if (this.handleDoubleTap(timeStamp)) {
           this.sound.play("confirm");
@@ -189,7 +188,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     if (action.type === "attack") {
-      console.log(action.args);
+      this.runCombat(action.args.outcome);
     }
   }
 
@@ -214,22 +213,78 @@ export default class MainScene extends Phaser.Scene {
       style: {
         fontSize: damageFontSize,
       }
-    });
+    }).setDepth(4);
 
     return damageText;
   }
 
   runCombat(outcome: CombatOutcome) {
-    for (let turn of outcome.turns) {
+    const timeline = this.add.timeline([]);
+    for (let i = 0; i < outcome.turns.length; i++) {
+      const turn = outcome.turns[i];
       const damageText = this.createDamageText(turn);
+      const baseFontSize = +damageText.style.fontSize.toString().replace("px", "");
+      damageText.setFontSize(0);
       this.add.existing(damageText);
+      const attackerObject = this.children.getByName(turn.attacker.id) as Hero;
+      const defenderObject = this.children.getByName(turn.defender.id) as Hero;
+      const attackerCoordinates = this.getHeroCoordinates(attackerObject);
+      const defenderCoordinates = this.getHeroCoordinates(defenderObject);
+      const damageTween = this.tweens.create({
+        targets: damageText,
+        duration: 200,
+        fontSize: baseFontSize,
+        onComplete: () => {
+          this.children.remove(damageText);
+          damageText.destroy(true);
+        }
+      }) as Tweens.Tween;
+      timeline.add([{
+        at: i * 800 + 400,
+        tween: {
+          targets: attackerObject,
+          x: `-=${(attackerCoordinates.x - defenderCoordinates.x) / 2}`,
+          y: `-=${(attackerCoordinates.y - defenderCoordinates.y) / 2}`,
+          yoyo: true,
+          duration: 150,
+          onYoyo: () => {
+            this.sound.play("hit");
+            const defenderFlash = defenderObject.createFlashTween();
+            defenderFlash.play();
+            defenderObject.updateHP(turn.remainingHP);
+            damageTween.play();
+          }
+        }
+      }]);
     }
+
+    timeline.add([{
+      at: 800 * outcome.turns.length + 400,
+      tween: {
+        targets: [],
+        onComplete: () => {
+          const deadUnit = [outcome.attacker, outcome.defender].find((hero) => hero.remainingHP === 0);
+          if (deadUnit) {
+            const deadUnitObject = this.children.getByName(deadUnit.id) as Hero;
+            this.killHero(deadUnitObject);
+          }
+          if (outcome.attacker.remainingHP) {
+            const attackerObject = this.children.getByName(outcome.attacker.id) as Hero;
+            this.endAction(attackerObject);
+          }
+          this.game.input.enabled = true;
+        }
+      }
+    }]);
+
+    this.game.input.enabled = false;
+    timeline.play();
   };
 
   clearTiles(tiles: string[]) {
     for (let tileName of tiles) {
       this.getTile(tileName).setFillStyle(0x0).off("pointerdown").on("pointerdown", () => {
-        this.clearTiles([...this.walkCoords, ...this.attackCoords]);
+        this.clearTiles(this.walkCoords.concat(this.attackCoords));
         this.walkCoords = [];
         this.attackCoords = [];
         this.highlightIdleHeroes();
@@ -289,7 +344,7 @@ export default class MainScene extends Phaser.Scene {
         const tile = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.2).setName(name).setInteractive(undefined, undefined, true);
         tile.on("pointerdown", () => {
           if (!this.walkCoords.includes(name) && this.unitInfosBanner.visible) {
-            this.clearTiles([...this.walkCoords, ...this.attackCoords]);
+            this.clearTiles(this.walkCoords.concat(this.attackCoords));
             this.sound.playAudioSprite("sfx", "cancel");
             this.unitInfosBanner.setVisible(false);
           }
@@ -471,9 +526,6 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    // this.tweens.add({
-      
-    // })
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.rectangle(0, 180, 750, 1000, 0xFFFFFF).setOrigin(0);

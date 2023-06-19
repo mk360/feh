@@ -22,7 +22,7 @@ export function renderDamageText(config: TextRenderingConfig) {
     const { text } = renderTextWith2DContext(config);
     text.style.stroke = "white";
     text.style.strokeThickness = 5;
-    text.style.color = "red";
+    text.setColor("red");
     return text;
 }
 
