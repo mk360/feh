@@ -5,13 +5,6 @@ export const Ryoma = new FEH.Hero({
     name: "Ryoma",
     weaponColor: "red",
     weaponType: "sword",
-    // stats: {
-    //     hp: 41,
-    //     atk: 34,
-    //     spd: 39,
-    //     def: 28,
-    //     res: 20
-    // },
     boon: "atk",
     bane: "spd",
     lv1Stats: {
@@ -33,13 +26,6 @@ export const Ryoma = new FEH.Hero({
 
 export const Lyn = new FEH.Hero({
     name: "Lyn",
-    // stats: {
-    //     hp: 35,
-    //     atk: 33,
-    //     spd: 35,
-    //     def: 18,
-    //     res: 28
-    // },
     lv1Stats: {
         hp: 16,
         atk: 7,
@@ -63,13 +49,6 @@ export const Lyn = new FEH.Hero({
 
 export const Ike = new FEH.Hero({
     name: "Ike",
-    // stats: {
-    //     hp: 41,
-    //     atk: 36,
-    //     spd: 30,
-    //     def: 35,
-    //     res: 21
-    // },
     lv1Stats: {
         hp: 19,
         atk: 10,
@@ -93,13 +72,6 @@ export const Ike = new FEH.Hero({
 
 export const Corrin = new FEH.Hero({
     name: "Corrin",
-    // stats: {
-    //     hp: 42,
-    //     atk: 35,
-    //     spd: 35,
-    //     def: 31,
-    //     res: 24   
-    // },
     lv1Stats: {
         hp: 16,
         atk: 7,
@@ -137,31 +109,17 @@ export const Lucina = new FEH.Hero({
         hp: 55,
         atk: 60,
         spd: 60,
-        def: 45,
+        def: 40,
         res: 35
     },
     bane: "atk",
     boon: "def",
-    // stats: {
-    //     hp: 41,
-    //     atk: 34,
-    //     spd: 36,
-    //     def: 27,
-    //     res: 19
-    // }
 });
 
 export const Robin = new FEH.Hero({
     name: "Robin",
     weaponColor: "colorless",
     weaponType: "dragonstone",
-    // stats: {
-    //     hp: 40,
-    //     atk: 32,
-    //     spd: 35,
-    //     def: 30,
-    //     res: 25
-    // },
     lv1Stats: {
         hp: 16,
         atk: 8,
@@ -185,13 +143,6 @@ export const Ephraim = new FEH.Hero({
     name: "Ephraim",
     weaponColor: "green",
     weaponType: "axe",
-    // stats: {
-    //     hp: 46,
-    //     atk: 38,
-    //     spd: 27,
-    //     def: 37,
-    //     res: 26
-    // },
     lv1Stats: {
         hp: 22,
         atk: 10,
@@ -213,13 +164,6 @@ export const Hector = new FEH.Hero({
     name: "Hector",
     weaponColor: "green",
     weaponType: "axe",
-    // stats: {
-    //     hp: 47,
-    //     atk: 40,
-    //     spd: 23,
-    //     def: 38,
-    //     res: 26
-    // },
     bane: "spd",
     boon: "def",
     lv1Stats: {

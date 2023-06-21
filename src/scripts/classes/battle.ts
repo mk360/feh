@@ -86,7 +86,9 @@ class Battle {
         }
 
         if (attackCoords.includes(tile) && mapData && this.areEnemies(hero, mapData)) {
-            const finalTile = toCoords(this.pathfinder.tiles[this.pathfinder.tiles.length - 1]);
+            const { range } = hero.getWeapon();
+            const path = this.pathfinder.tiles;
+            const finalTile = toCoords(path.find((t) => this.getDistance(t, coordinatedTiles) === range));
             const outcome = this.startCombat(hero, mapData);
             return [{ type: "move", args: finalTile }, {
                 type: "attack",
