@@ -97,7 +97,6 @@ export default class MainScene extends Phaser.Scene {
         hero.x = dragX;
         hero.y = dragY;
       });
-      const s = hero.getInternalHero();
       hero.on("dragenter", (_, target: GameObjects.Rectangle | Hero) => {
         this.combatForecast.disable();
         if (target instanceof GameObjects.Rectangle && this.walkCoords.includes(target.name)) {
@@ -105,7 +104,7 @@ export default class MainScene extends Phaser.Scene {
           movementImage.x = target.x;
           movementImage.y = target.y;
           movementImage.setVisible(true);
-          const path = battle.crossTile(s, target.name, this.walkCoords);
+          const path = battle.crossTile(hero.getInternalHero(), target.name, this.walkCoords);
           this.renderPath(path);
           this.sound.playAudioSprite("sfx", "hover");
         }
@@ -191,15 +190,13 @@ export default class MainScene extends Phaser.Scene {
     if (action.type === "preview") {
       const { args } = action;
       this.unitInfosBanner.setVisible(false);
-      const attackerObject = this.children.getByName(args.attacker.id) as Hero;
-      const defenderObject = this.children.getByName(args.defender.id) as Hero;
       this.combatForecast.setVisible(true).setForecastData({
         attacker: {
-          hero: attackerObject,
+          hero: args.attacker,
           ...args.outcome.attacker
         },
         defender: {
-          hero: defenderObject,
+          hero: args.defender,
           ...args.outcome.defender
         }
       });

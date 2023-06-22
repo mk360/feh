@@ -1,14 +1,14 @@
 import { GameObjects, Tweens } from "phaser";
-import Hero from "./hero";
+import HeroData from "feh-battles/dec/hero";
 import HeroNameplate from "./hero-nameplate";
-import { renderBoonText, renderCritHPText, renderRegularHPText, renderText } from "../utils/text-renderer";
+import { renderCritHPText, renderRegularHPText, renderText } from "../utils/text-renderer";
 import HeroPortrait from "./hero-portrait";
 import Stats from "../../interfaces/stats";
 import TextColors from "../utils/text-colors";
 import renderHP from "../utils/render-hp";
 
 interface ForecastHeroData {
-    hero: Hero;
+    hero: HeroData;
     statChanges: Partial<{
         [k in keyof Omit<Stats, "hp">]: number;
     }>;
@@ -212,11 +212,11 @@ class CombatForecast extends Phaser.GameObjects.Container {
         xShift: number;
     }) {
         side.statMods.clear(true, true);
-        const { statChanges, hero } = params;
-        side.damage.setText(params.damage.toString()).setColor(params.effective ? TextColors.effective : TextColors.white);
+        const { statChanges, hero, effective, turns } = params;
+        side.damage.setText(params.damage.toString()).setColor(effective ? TextColors.effective : TextColors.white);
         
         if (params.turns >= 2) {
-            side.roundCount.setText("×" + params.turns);
+            side.roundCount.setText("×" + turns);
             side.damage.x -= 10; 
             side.roundCount.setX(side.damage.getRightCenter().x);
         }
@@ -236,16 +236,15 @@ class CombatForecast extends Phaser.GameObjects.Container {
             }
         }
 
-        const internalHero = hero.getInternalHero();
         side.nameplate.updateNameplate({
-            name: internalHero.name,
-            weaponColor: internalHero.getWeapon().color,
-            weaponType: internalHero.getWeapon().type,
+            name: hero.name,
+            weaponColor: hero.getWeapon().color,
+            weaponType: hero.getWeapon().type,
         });
 
-        const texture = `portrait${internalHero.stats.hp / internalHero.maxHP < 0.5 ? "-damage" : ""}`;
+        const texture = `portrait${hero.stats.hp / hero.maxHP < 0.5 ? "-damage" : ""}`;
 
-        side.portrait.setTexture(internalHero.name, texture);
+        side.portrait.setTexture(hero.name, texture);
 
         side.previousHP.destroy();
         side.predictedHP.destroy();
