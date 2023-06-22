@@ -78,17 +78,33 @@ class Battle {
         return (hero1.id in this.team1 && hero2.id in this.team2) || (hero1.id in this.team2 && hero2.id in this.team1);
     }
 
-    decideTileAction(tile: string, hero: Hero, walkCoords: string[], attackCoords: string[]): UIAction[] {
-        const coordinatedTiles = toCoords(tile);
-        const mapData = this.map[coordinatedTiles.y]?.[coordinatedTiles.x];
+    decideDragAction(tile: string, hero: Hero, walkCoords: string[], attackCoords: string[]): UIAction[] {
+        const coordinatedTile = toCoords(tile);
+        const mapData = this.map[coordinatedTile.y]?.[coordinatedTile.x];
+        if (mapData && this.areEnemies(hero, mapData) && attackCoords.includes(tile)) {
+            const preview = this.startCombat(hero, mapData);
+            return [{
+                type: "preview",
+                args: {
+                    attacker: hero,
+                    defender: mapData,
+                    outcome: preview
+                }
+            }];
+        }
+    }
+
+    decideDragDropAction(tile: string, hero: Hero, walkCoords: string[], attackCoords: string[]): UIAction[] {
+        const coordinatedTile = toCoords(tile);
+        const mapData = this.map[coordinatedTile.y]?.[coordinatedTile.x];
         if (walkCoords.includes(tile) && !mapData) {
-            return [{ type: "move", args: coordinatedTiles }, { type: "disable", args: hero }];
+            return [{ type: "move", args: coordinatedTile }, { type: "disable", args: hero }];
         }
 
         if (attackCoords.includes(tile) && mapData && this.areEnemies(hero, mapData)) {
             const { range } = hero.getWeapon();
             const path = this.pathfinder.tiles;
-            const finalTile = toCoords(path.find((t) => this.getDistance(t, coordinatedTiles) === range));
+            const finalTile = toCoords(path.find((t) => this.getDistance(t, coordinatedTile) === range));
             const outcome = this.startCombat(hero, mapData);
             return [{ type: "move", args: finalTile }, {
                 type: "attack",

@@ -31,6 +31,7 @@ interface PreviewAction {
     args: {
         attacker: Hero;
         defender: Hero;
+        outcome: CombatOutcome;
     };
 }
 

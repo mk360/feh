@@ -200,6 +200,11 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
     }
 
+    disable() {
+        this.koTween?.stop();
+        this.setVisible(false);
+    }
+
     private updateSide({ side, hero: params, statChangesX, xShift: xChangeBetweenStats }: {
         side: RenderedSide;
         hero: ForecastHeroData;
@@ -318,7 +323,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         }
 
         this.koTween = this.scene.tweens.add({
-            duration: 500,
+            duration: 1000,
             loop: -1,
             targets: [target],
             yoyo: true,

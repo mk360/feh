@@ -81,6 +81,8 @@ export default class MainScene extends Phaser.Scene {
 
   constructor() {
     super({ key: 'MainScene' });
+    this.walkCoords = [];
+    this.attackCoords = [];
   }
 
   fillTiles(tiles: string[], fillColor: number, alpha = 1) {
@@ -97,6 +99,7 @@ export default class MainScene extends Phaser.Scene {
       });
       const s = hero.getInternalHero();
       hero.on("dragenter", (_, target: GameObjects.Rectangle | Hero) => {
+        this.combatForecast.disable();
         if (target instanceof GameObjects.Rectangle && this.walkCoords.includes(target.name)) {
           const movementImage = this.children.getByName(`movement-${hero.name}`) as GameObjects.Image;
           movementImage.x = target.x;
@@ -107,24 +110,17 @@ export default class MainScene extends Phaser.Scene {
           this.sound.playAudioSprite("sfx", "hover");
         }
 
-        if (target instanceof Hero && target.team !== hero.team) {
-          const predictedOutcome = battle.startCombat(hero.getInternalHero(), target.getInternalHero());
-          this.combatForecast.setForecastData({
-            attacker: {
-              hero,
-              ...predictedOutcome.attacker,
-            },
-            defender: {
-              hero: target,
-              ...predictedOutcome.defender,
-            }
-          }).setVisible(true);
+        const actions = battle.decideDragAction(target.name, hero.getInternalHero(), this.walkCoords, this.attackCoords);
+        if (actions) {
+          for (let action of actions) {
+            this.processAction(action, hero);
+          }
         }
       });
 
       hero.on("dragend", () => {
         const targetTile = pixelsToGrid(hero.x, hero.y);
-        const actions = battle.decideTileAction(targetTile.x + "-" + targetTile.y, hero.getInternalHero(), this.walkCoords, this.attackCoords);
+        const actions = battle.decideDragDropAction(targetTile.x + "-" + targetTile.y, hero.getInternalHero(), this.walkCoords, this.attackCoords);
         for (let action of actions) {
           this.processAction(action, hero);
         }
@@ -147,10 +143,9 @@ export default class MainScene extends Phaser.Scene {
           this.endAction(hero);
           return;
         }
-        const internalHero = hero.getInternalHero();
         this.movementAllowedImages.setVisible(false);
         const img = this.children.getByName(`movement-${hero.name}`) as GameObjects.Image;
-        img.setVisible(true);
+        img.setVisible(true).setAlpha(1);
         this.movementAllowedTween.pause();
         this.playHeroQuote(hero);
         this.displayHeroInformations(hero)();
@@ -191,6 +186,23 @@ export default class MainScene extends Phaser.Scene {
 
     if (action.type === "attack") {
       this.runCombat(action.args.outcome);
+    }
+
+    if (action.type === "preview") {
+      const { args } = action;
+      this.unitInfosBanner.setVisible(false);
+      const attackerObject = this.children.getByName(args.attacker.id) as Hero;
+      const defenderObject = this.children.getByName(args.defender.id) as Hero;
+      this.combatForecast.setVisible(true).setForecastData({
+        attacker: {
+          hero: attackerObject,
+          ...args.outcome.attacker
+        },
+        defender: {
+          hero: defenderObject,
+          ...args.outcome.defender
+        }
+      });
     }
   }
 
@@ -269,7 +281,7 @@ export default class MainScene extends Phaser.Scene {
 
     if (outcome.attacker.remainingHP) {
       timeline.add([{
-        at: 800 * outcome.turns.length + 600,
+        at: 800 * outcome.turns.length + 900,
         tween: {
           targets: [],
           onComplete: () => {
@@ -294,14 +306,17 @@ export default class MainScene extends Phaser.Scene {
     timeline.play();
   };
 
+  resetView() {
+    this.clearTiles(this.walkCoords.concat(this.attackCoords));
+    this.walkCoords = [];
+    this.attackCoords = [];
+    this.highlightIdleHeroes();
+    this.unitInfosBanner.setVisible(false);
+  }
+
   clearTiles(tiles: string[]) {
     for (let tileName of tiles) {
-      this.getTile(tileName).setFillStyle(0x0).off("pointerdown").on("pointerdown", () => {
-        this.clearTiles(this.walkCoords.concat(this.attackCoords));
-        this.walkCoords = [];
-        this.attackCoords = [];
-        this.highlightIdleHeroes();
-      });
+      this.getTile(tileName).setFillStyle(0x0).off("pointerdown").on("pointerdown", this.resetView);
     }
   }
 
@@ -325,7 +340,7 @@ export default class MainScene extends Phaser.Scene {
     hero.image.setTint(0x777777);
     this.sound.play("confirm");
     this.heroesWhoMoved.push(hero);
-    this.children.remove(this.children.getByName("movement-" + hero.getInternalHero().name));
+    this.children.remove(this.children.getByName("movement-" + hero.name));
     this.endArrow.setVisible(false);
     this.highlightIdleHeroes();
     this.movementArrows.clear(true, true);
@@ -370,9 +385,8 @@ export default class MainScene extends Phaser.Scene {
         const tile = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.2).setName(name).setInteractive(undefined, undefined, true);
         tile.on("pointerdown", () => {
           if (!this.walkCoords.includes(name) && this.unitInfosBanner.visible) {
-            this.clearTiles(this.walkCoords.concat(this.attackCoords));
             this.sound.playAudioSprite("sfx", "cancel");
-            this.unitInfosBanner.setVisible(false);
+            this.resetView();
           }
         });
         // uncomment if you need to check tile coordinates
