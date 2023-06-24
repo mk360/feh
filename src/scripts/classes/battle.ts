@@ -41,6 +41,24 @@ class Battle {
         }
     }
 
+    getEnemyRange(team: "team1" | "team2") {
+        const completeRange = new Set<string>();
+        const teamData = this[team];
+        for (let heroId in teamData) {
+            const hero = teamData[heroId];
+            const movementTiles = this.getMovementTiles(hero);
+            const attackTiles = this.getAttackTiles(hero, movementTiles);
+            for (let tile of attackTiles) {
+                completeRange.add(tile);
+            }
+            for (let tile of movementTiles) {
+                completeRange.add(tile.x + "-" + tile.y);
+            }
+        }
+
+        return Array.from(completeRange);
+    }
+
     crossTile(hero: Hero, tile: string, walkTiles: string[]) {
         const movementRange = this.pathfinder.getMovementRange(hero);
         const { coordinates } = hero;

@@ -611,6 +611,18 @@ export default class MainScene extends Phaser.Scene {
       this.game.input.enabled = false;
       this.game.input.enabled = true;
     });
+    let enabled = false;
+    enemyRange.on("pointerdown", () => {
+      enabled = !enabled;
+      const otherTeam = this.turn === "team1" ? "team2" : "team1";
+      const enemyRangeTiles = battle.getEnemyRange(otherTeam);
+      if (enabled) {
+        this.enemyRangeCoords = enemyRangeTiles;
+        this.fillTiles(enemyRangeTiles, 0xFF5111, 1);
+      } else {
+        this.clearTiles(enemyRangeTiles);
+      }
+    });
     
     for (let heroId in battle.team1) {
       const hero = battle.team1[heroId];
