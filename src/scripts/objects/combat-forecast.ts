@@ -212,13 +212,15 @@ class CombatForecast extends Phaser.GameObjects.Container {
         xShift: number;
     }) {
         side.statMods.clear(true, true);
-        const { statChanges, hero, effective, turns } = params;
-        side.damage.setText(params.damage.toString()).setColor(effective ? TextColors.effective : TextColors.white);
+        const { statChanges, hero, effective, turns, damage } = params;
+        side.damage.setText(damage === 0 && turns === 0 ? "-" : damage.toString()).setColor(effective ? TextColors.effective : TextColors.white);
         
-        if (params.turns >= 2) {
+        if (turns >= 2) {
             side.roundCount.setText("×" + turns);
             side.damage.x -= 10; 
             side.roundCount.setX(side.damage.getRightCenter().x);
+        } else {
+            side.roundCount.setText("");
         }
 
         let xOffset = statChangesX;
@@ -286,7 +288,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
             hero: params.defender
         });
 
-        if (this.koTween) {
+        if (this.koTween?.targets) {
             (this.koTween.targets[0] as GameObjects.Image)?.setAlpha(1);
             this.koTween.stop();
         }
@@ -311,7 +313,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
             koPortrait = this.secondHero.portrait;
         }
 
-        this.runKOTween(koPortrait);
+        if (koPortrait) this.runKOTween(koPortrait);
         
         return this;
     }

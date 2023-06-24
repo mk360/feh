@@ -1,4 +1,4 @@
-import { renderCritHPText, renderRegularHPText, renderLabelText, renderText, renderBoonText, renderBaneText } from "../utils/text-renderer";
+import { renderRegularHPText, renderLabelText, renderText, renderBoonText, renderBaneText } from "../utils/text-renderer";
 import Hero from "./hero";
 import TextColors from "../utils/text-colors";
 import HeroNameplate from "./hero-nameplate";

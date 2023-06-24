@@ -54,7 +54,7 @@ class Hero extends GameObjects.Container {
         const baseTween = this.scene.tweens.create({
             targets: this.whiteGlowImage,
             alpha: 1,
-            duration: 300,
+            duration: 100,
             yoyo: true,
         });
         return baseTween as Tweens.Tween;
