@@ -156,67 +156,96 @@ export default class MainScene extends Phaser.Scene {
   }
 
   processAction(action: UIAction, hero: Hero) {
-    if (action.type === "cancel") {
-      const { args } = action;
-      this.endArrow.setVisible(false);
-      this.movementArrows.clear(true, true);
-      const pxCoords = gridToPixels(args.x, args.y);
-      this.tweens.add({
-        targets: hero,
-        x: pxCoords.x,
-        y: pxCoords.y,
-        duration: 100
-      });
-      (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).x = pxCoords.x;
-      (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).y = pxCoords.y;
-      battle.resetPathfinder();
-    }
-
-    if (action.type === "move") {
-      const { args } = action;
-      this.endArrow.setVisible(false);
-      this.movementArrows.clear(true, true);
-      const pxCoords = gridToPixels(args.x, args.y);
-      hero.x = pxCoords.x;
-      hero.y = pxCoords.y;
-      battle.moveHero(hero.getInternalHero(), args);
-    }
-
-    if (action.type === "disable") {
-      const hero = this.children.getByName(action.args.id) as Hero;
-      this.endAction(hero);
-    }
-
-    if (action.type === "attack") {
-      this.runCombat(action.args.outcome);
-    }
-
-    if (action.type === "preview") {
-      const { args } = action;
-      this.unitInfosBanner.setVisible(false);
-      this.interactionIndicatorTween?.destroy();
-      const defenderCoordinates = this.getHeroCoordinates(this.children.getByName(args.defender.id) as Hero);
-      this.interactionIndicator.x = defenderCoordinates.x;
-      this.interactionIndicator.y = defenderCoordinates.y - 80;
-      this.interactionIndicatorTween = this.tweens.add({
-        targets: [this.interactionIndicator],
-        y: defenderCoordinates.y - 70,
-        duration: 400,
-        loop: -1,
-        yoyo: true,
-      }) as Tweens.Tween;
-      this.interactionIndicatorTween.play();
-      this.interactionIndicator.setVisible(true);
-      this.combatForecast.setVisible(true).setForecastData({
-        attacker: {
-          hero: args.attacker,
-          ...args.outcome.attacker
-        },
-        defender: {
-          hero: args.defender,
-          ...args.outcome.defender
-        }
-      });
+    switch (action.type) {
+      case "cancel": {
+        const { args } = action;
+        this.endArrow.setVisible(false);
+        this.movementArrows.clear(true, true);
+        const pxCoords = gridToPixels(args.x, args.y);
+        this.tweens.add({
+          targets: hero,
+          x: pxCoords.x,
+          y: pxCoords.y,
+          duration: 100
+        });
+        (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).x = pxCoords.x;
+        (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).y = pxCoords.y;
+        battle.resetPathfinder();
+      }
+      break;
+      case "move": {
+        const { args } = action;
+        this.endArrow.setVisible(false);
+        this.movementArrows.clear(true, true);
+        const pxCoords = gridToPixels(args.x, args.y);
+        hero.x = pxCoords.x;
+        hero.y = pxCoords.y;
+        battle.moveHero(hero.getInternalHero(), args);
+      }
+      break;
+      case "disable": {
+        const { args } = action; 
+        const hero = this.children.getByName(args.id) as Hero;
+        this.endAction(hero);
+      }
+      break;
+      case "attack": {
+        const { args } = action;
+        this.runCombat(args.outcome);
+      }
+      break;
+      case "preview": {
+        const { args } = action;
+        this.unitInfosBanner.setVisible(false);
+        this.interactionIndicatorTween?.destroy();
+        const defenderCoordinates = this.getHeroCoordinates(this.children.getByName(args.defender.id) as Hero);
+        this.interactionIndicator.x = defenderCoordinates.x;
+        this.interactionIndicator.y = defenderCoordinates.y - 80;
+        this.interactionIndicatorTween = this.tweens.add({
+          targets: [this.interactionIndicator],
+          y: defenderCoordinates.y - 70,
+          duration: 400,
+          loop: -1,
+          yoyo: true,
+        }) as Tweens.Tween;
+        this.interactionIndicatorTween.play();
+        this.interactionIndicator.setVisible(true);
+        this.combatForecast.setVisible(true).setForecastData({
+          attacker: {
+            hero: args.attacker,
+            ...args.outcome.attacker
+          },
+          defender: {
+            hero: args.defender,
+            ...args.outcome.defender
+          }
+        });
+      }
+      break;
+      case "switch": {
+        const { args } = action;
+        const { firstHero, secondHero } = args;
+        const firstHeroPx = gridToPixels(firstHero.coordinates.x, firstHero.coordinates.y);
+        const secondHeroPx = gridToPixels(secondHero.coordinates.x, secondHero.coordinates.y);
+        battle.switchHeroes(firstHero, secondHero);
+        this.add.timeline([{
+          at: 0,
+          tween: {
+            targets: this.children.getByName(firstHero.id),
+            x: secondHeroPx.x,
+            y: secondHeroPx.y,
+            duration: 75
+          }
+        }, {
+          at: 0,
+          tween: {
+            targets: this.children.getByName(secondHero.id),
+            x: firstHeroPx.x,
+            y: firstHeroPx.y,
+            duration: 75,
+          }
+        }]).play();
+      }
     }
   }
 
