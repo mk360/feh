@@ -13,6 +13,7 @@ import toCoords from '../utils/to-coords';
 import UIAction from '../../interfaces/ui-action';
 import { CombatOutcome } from 'feh-battles/dec/combat';
 import Button from '../objects/button';
+import ActionsTray from '../objects/actions-tray';
 
 const squareSize = 125;
 const squaresOffset = 63;
@@ -76,7 +77,7 @@ export default class MainScene extends Phaser.Scene {
   interactionIndicator: InteractionIndicator;
   interactionIndicatorTween: Tweens.Tween;
   fpsText: GameObjects.Text;
-  actionsTray: GameObjects.Group;
+  actionsTray = new ActionsTray(this);
   rosary: GameObjects.Image;
   endArrow: GameObjects.Image;
   tileHighlight: GameObjects.Image;
@@ -607,7 +608,6 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("weapon-icon", "assets/weapon_icon.png");
     this.load.image("unit-banner-bg", "assets/unit-banner-bg.png");
     this.load.image("forecast-bg", "assets/forecast-bg.png");
-    // todo: compress into audio sprite
     this.load.audio("bgm", "assets/audio/bgm/leif's army in search of victory.ogg");
     for (let hero of ["Corrin", "Hector", "Ike", "Lucina", "Lyn", "Robin", "Ryoma", "Ephraim"]) {
       this.load.atlas(hero, `assets/battle/${hero}.webp`, `assets/battle/${hero}.json`);
@@ -621,8 +621,23 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
+  switchPositionsMode() {
+    const team = battle[this.turn];
+    for (let id in team) {
+      const hero = team[id];
+      const heroObj = this.children.getByName(hero.id) as Hero;
+      heroObj.off("pointerdown").off("dragenter").off("dragend").on("dragend", () => {
+        const target = pixelsToGrid(heroObj.x, heroObj.y);
+        console.log(target);
+        const actions = battle.decideDragDropAction(target.x + "-" + target.y, hero, [], [], true);
+        for (let action of actions) {
+          this.processAction(action, heroObj);
+        }
+      });
+    }
+  }
+
   create() {
-    this.actionsTray = this.add.group();
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.rectangle(0, 180, 750, 1000, 0xFFFFFF).setOrigin(0);
@@ -631,17 +646,27 @@ export default class MainScene extends Phaser.Scene {
     banner.setDisplaySize(banner.displayWidth, 180);
     this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setDepth(0);
     this.createTiles();
-    const endTurn = new Button(this, 70, 1250, "End Turn");
-    const enemyRange = new Button(this, 190, 1250, "Enemy Range");
-    this.actionsTray.add(endTurn, true);
-    this.actionsTray.add(enemyRange, true);
-    endTurn.on("pointerdown", () => {
+    let switchPos = false;
+    const endTurn = new Button(this, "End Turn");
+    const enemyRange = new Button(this, "Enemy Range");
+    const switchPositions = new Button(this, "Switch");
+    // todo: implement a "starting state" we can go back to
+    switchPositions.on("pointerup", () => {
+      switchPos = !switchPos;
+      if (switchPos) {
+        battle.resetEffects(this.turn);
+        this.switchPositionsMode();
+      } else {
+        this.setTurn(this.turn);
+      }
+    });
+    this.actionsTray.addAction(endTurn).addAction(enemyRange).addAction(switchPositions);
+    endTurn.on("pointerup", () => {
       this.setTurn(this.turn === "team1" ? "team2" : "team1");
-      this.game.input.enabled = false;
-      this.game.input.enabled = true;
     });
     let enabled = false;
-    enemyRange.on("pointerdown", () => {
+    // todo: find a way to make enemy range tiles and regular movement / atk tiles overlap seamlessly
+    enemyRange.on("pointerup", () => {
       enabled = !enabled;
       const otherTeam = this.turn === "team1" ? "team2" : "team1";
       const enemyRangeTiles = battle.getEnemyRange(otherTeam);
