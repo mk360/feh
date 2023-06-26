@@ -29,6 +29,14 @@ class Battle {
         [k: number]: { [k: number]: TileType }
     };
 
+    private turns = {
+        team1: 1,
+        team2: 1
+    }
+
+    private actionableCharacters: string[] = [];
+    // todo: implement "end turn" logic
+
     private effectRunner: MapEffectRunner;
     private pathfinder = new Pathfinder();
 
@@ -112,7 +120,16 @@ class Battle {
         }
     }
 
-    decideDragDropAction(tile: string, hero: Hero, walkCoords: string[], attackCoords: string[]): UIAction[] {
+    switchHeroes(hero1: Hero, hero2: Hero) {
+        const { coordinates } = hero1;
+        const { coordinates: secondCoordinates } = hero2;
+        this.map[coordinates.y][coordinates.x] = hero2;
+        this.map[secondCoordinates.y][secondCoordinates.x] = hero1;
+        hero1.coordinates = {...secondCoordinates};
+        hero2.coordinates = {...coordinates};
+    }
+
+    decideDragDropAction(tile: string, hero: Hero, walkCoords: string[], attackCoords: string[], isSwitchMode = false): UIAction[] {
         const coordinatedTile = toCoords(tile);
         const mapData = this.map[coordinatedTile.y]?.[coordinatedTile.x];
         if (walkCoords.includes(tile) && !mapData) {
@@ -130,6 +147,16 @@ class Battle {
                     attacker: hero,
                     defender: mapData,
                     outcome
+                }
+            }];
+        }
+
+        if (mapData && !this.areEnemies(hero, mapData) && isSwitchMode) {
+            return [{
+                type: "switch",
+                args: {
+                    firstHero: hero,
+                    secondHero: mapData
                 }
             }];
         }

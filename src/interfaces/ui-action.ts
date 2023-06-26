@@ -26,7 +26,7 @@ interface DisableAction {
     args: Hero;
 }
 
-interface PreviewAction {
+interface PreviewBattleAction {
     type: "preview",
     args: {
         attacker: Hero;
@@ -35,6 +35,14 @@ interface PreviewAction {
     };
 }
 
-type UIAction = AttackAction | MoveAction | CancelAction | DisableAction | PreviewAction;
+interface SwitchTeammatesAction {
+    type: "switch",
+    args: {
+        firstHero: Hero;
+        secondHero: Hero;
+    };
+}
+
+type UIAction = AttackAction | MoveAction | CancelAction | DisableAction | PreviewBattleAction | SwitchTeammatesAction;
 
 export default UIAction;

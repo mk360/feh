@@ -4,8 +4,8 @@ import { renderText } from "../utils/text-renderer";
 class Button extends GameObjects.Container {
     private label: GameObjects.Text;
 
-    constructor(scene: Scene, x: number, y: number, label: string) {
-        super(scene, x, y);
+    constructor(scene: Scene, label: string) {
+        super(scene);
         const button = new GameObjects.Image(scene, 0, 0, "ui-button").setScale(0.9);
         this.label = renderText(scene, -30, -35, label, {
             fontSize: 20
