@@ -324,7 +324,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         }
 
         this.koTween = this.scene.tweens.add({
-            duration: 1000,
+            duration: 1500,
             loop: -1,
             targets: [target],
             yoyo: true,
