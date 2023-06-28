@@ -54,6 +54,7 @@ class Battle {
         const teamData = this[team];
         for (let heroId in teamData) {
             const hero = teamData[heroId];
+            if (!hero.getWeapon()) continue;
             const movementTiles = this.getMovementTiles(hero);
             const attackTiles = this.getAttackTiles(hero, movementTiles);
             for (let tile of attackTiles) {
@@ -225,6 +226,7 @@ class Battle {
     }
 
     getAttackTiles(hero: Hero, movementTiles: Coords[]) {
+        if (!hero.getWeapon()) return [];
         let weaponRange = hero.getWeapon().range;
         const movementTileStrings = movementTiles.map(stringifyTile);
         let extraTiles: Coords[] = movementTiles;
