@@ -104,6 +104,8 @@ export default class MainScene extends Phaser.Scene {
       });
       hero.on("dragenter", (_, target: GameObjects.Rectangle | Hero) => {
         this.combatForecast.disable();
+        this.interactionIndicatorTween?.stop();
+        this.interactionIndicator.setVisible(false);
         if (target instanceof GameObjects.Rectangle && this.walkTiles.includes(target.name)) {
           const movementImage = this.children.getByName(`movement-${hero.name}`) as GameObjects.Image;
           movementImage.x = target.x;
@@ -129,7 +131,6 @@ export default class MainScene extends Phaser.Scene {
           this.processAction(action, hero);
         }
         this.rosary.setVisible(false);
-        
       });
       
       hero.on("dragleave", (_, target: GameObjects.Rectangle) => {
@@ -186,7 +187,7 @@ export default class MainScene extends Phaser.Scene {
       break;
       case "disable": {
         const { args } = action; 
-        const hero = this.children.getByName(args.id) as Hero;
+        const hero = this.getByName<Hero>(args.id);
         this.endAction(hero);
       }
       break;
@@ -199,7 +200,7 @@ export default class MainScene extends Phaser.Scene {
         const { args } = action;
         this.unitInfosBanner.setVisible(false);
         this.interactionIndicatorTween?.destroy();
-        const defenderCoordinates = this.getHeroCoordinates(this.children.getByName(args.defender.id) as Hero);
+        const defenderCoordinates = this.getHeroCoordinates(this.getByName<Hero>(args.defender.id));
         this.interactionIndicator.x = defenderCoordinates.x;
         this.interactionIndicator.y = defenderCoordinates.y - 80;
         this.interactionIndicatorTween = this.tweens.add({
@@ -210,7 +211,7 @@ export default class MainScene extends Phaser.Scene {
           yoyo: true,
         }) as Tweens.Tween;
         this.interactionIndicatorTween.play();
-        this.interactionIndicator.setVisible(true);
+        this.interactionIndicator.setVisible(true).setContent("attack");
         this.combatForecast.setVisible(true).setForecastData({
           attacker: {
             hero: args.attacker,
@@ -260,9 +261,9 @@ export default class MainScene extends Phaser.Scene {
   createDamageText(turn: CombatOutcome["turns"][number]) {
     const isAdvantage = turn.effective || turn.advantage === "advantage";
     const isDisadvantage = turn.advantage === "disadvantage" && !turn.effective;
-    const damageFontSize = isDisadvantage ? 20 : isAdvantage ? 30 : 26;
-    const defenderObject = this.children.getByName(turn.defender.id) as Hero;
-    const coordinatesVector = this.getHeroCoordinates(defenderObject);
+    const damageFontSize = isDisadvantage ? 28 : isAdvantage ? 44 : 36;
+    const defenderObject = this.getByName<Hero>(turn.defender.id);
+    const coordinatesVector = this.getHeroCoordinates(defenderObject).subtract({ x: 30, y: 30 });
     const damageText = renderDamageText({
       scene: this,
       x: coordinatesVector.x,
@@ -280,10 +281,10 @@ export default class MainScene extends Phaser.Scene {
     const timeline = this.add.timeline([]);
     for (let i = 0; i < outcome.turns.length; i++) {
       const turn = outcome.turns[i];
-      const damageText = this.createDamageText(turn).setVisible(false).setOrigin(0);
+      const damageText = this.createDamageText(turn).setVisible(false);
       this.add.existing(damageText);
-      const attackerObject = this.children.getByName(turn.attacker.id) as Hero;
-      const defenderObject = this.children.getByName(turn.defender.id) as Hero;
+      const attackerObject = this.getByName<Hero>(turn.attacker.id);
+      const defenderObject = this.getByName<Hero>(turn.defender.id);
       const attackerCoordinates = this.getHeroCoordinates(attackerObject);
       const defenderCoordinates = this.getHeroCoordinates(defenderObject);
       const damageTween = this.tweens.create({
@@ -310,8 +311,8 @@ export default class MainScene extends Phaser.Scene {
           onYoyo: () => {
             this.sound.play("hit");
             defenderObject.updateHP(turn.remainingHP);
-            const combatAttacker = this.children.getByName(outcome.attacker.id) as Hero;
-            const combatDefender = this.children.getByName(outcome.defender.id) as Hero;
+            const combatAttacker = this.getByName<Hero>(outcome.attacker.id);
+            const combatDefender = this.getByName<Hero>(outcome.defender.id);
             const attackerRatio = combatAttacker.getInternalHero().stats.hp / combatAttacker.getInternalHero().maxHP;
             const defenderHPRatio = combatDefender.getInternalHero().stats.hp / combatDefender.getInternalHero().maxHP;
             this.combatForecast.updatePortraits(attackerRatio, defenderHPRatio);
@@ -329,7 +330,7 @@ export default class MainScene extends Phaser.Scene {
 
     const deadUnit = [outcome.attacker, outcome.defender].find((hero) => hero.remainingHP === 0);
     if (deadUnit) {
-      const deadUnitObject = this.children.getByName(deadUnit.id) as Hero;
+      const deadUnitObject = this.getByName<Hero>(deadUnit.id);
       const koTween = this.createKOTween(deadUnitObject);
       timeline.add([{tween: koTween, at: 800 * outcome.turns.length + 500 }])
     }
@@ -340,7 +341,7 @@ export default class MainScene extends Phaser.Scene {
         tween: {
           targets: [],
           onComplete: () => {
-            const attackerObject = this.children.getByName(outcome.attacker.id) as Hero;
+            const attackerObject = this.getByName<Hero>(outcome.attacker.id);
             this.endAction(attackerObject);
           }
         }
@@ -352,12 +353,15 @@ export default class MainScene extends Phaser.Scene {
       tween: {
         targets: [],
         onComplete: () => {
+          this.combatForecast.disable();
           this.game.input.enabled = true;
         }
       }
     }]);
 
     this.game.input.enabled = false;
+    this.interactionIndicatorTween?.stop();
+    this.interactionIndicator.setVisible(false);
     timeline.play();
   };
 
@@ -496,12 +500,16 @@ export default class MainScene extends Phaser.Scene {
     }    
 
     for (let effect of effects) {
-      const target = this.children.getByName(effect.targetHeroId) as Hero;
+      const target = this.getByName<Hero>(effect.targetHeroId);
       if (target && effect.appliedEffect.stats) {
         target.getInternalHero().setMapBoosts(effect.appliedEffect.stats);
         target.statuses.push("buff");
       }
     }
+  }
+
+  getByName<T extends GameObjects.GameObject>(name: string): T {
+    return this.children.getByName(name) as T;
   }
 
   renderPath(path: { start: string, end: string, tilesInBetween: string[] }) {
@@ -580,10 +588,9 @@ export default class MainScene extends Phaser.Scene {
     const team = battle[this.turn];
     for (let id in team) {
       const hero = team[id];
-      const heroObj = this.children.getByName(hero.id) as Hero;
+      const heroObj = this.getByName<Hero>(hero.id);
       heroObj.off("pointerdown").off("dragenter").off("dragend").on("dragend", () => {
         const target = pixelsToGrid(heroObj.x, heroObj.y);
-        console.log(target);
         const actions = battle.decideDragDropAction(target.x + "-" + target.y, hero, [], [], true);
         for (let action of actions) {
           this.processAction(action, heroObj);
@@ -604,9 +611,12 @@ export default class MainScene extends Phaser.Scene {
     let switchPos = false;
     const endTurn = new Button(this, "End Turn");
     const enemyRange = new Button(this, "Enemy Range");
-    const switchPositions = new Button(this, "Switch");
+    const swapSpaces = new Button(this, "Swap Spaces");
     // todo: implement a "starting state" we can go back to
-    switchPositions.on("pointerup", () => {
+    swapSpaces.on("pointerup", () => {
+      // set all tiles to a green color
+      // when you click on a hero, display his movement range, movement image
+      // todo: think of a way to layer / override ranges on top of each other
       switchPos = !switchPos;
       if (switchPos) {
         battle.resetEffects(this.turn);
@@ -615,7 +625,7 @@ export default class MainScene extends Phaser.Scene {
         this.setTurn(this.turn);
       }
     });
-    this.actionsTray.addAction(endTurn).addAction(enemyRange).addAction(switchPositions);
+    this.actionsTray.addAction(endTurn).addAction(enemyRange).addAction(swapSpaces);
     endTurn.on("pointerup", () => {
       this.setTurn(this.turn === "team1" ? "team2" : "team1");
     });

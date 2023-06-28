@@ -13,6 +13,7 @@ class InteractionIndicator extends GameObjects.Container {
 
     setContent(frame: "attack" | "assist" | "switch") {
         this.bubbleContent.setFrame(frame);
+        return this;
     }
 };
 
