@@ -152,7 +152,7 @@ export default class MainScene extends Phaser.Scene {
         img.setVisible(true).setAlpha(1);
         this.movementAllowedTween.pause();
         this.playHeroQuote(hero);
-        this.displayHeroInformations(hero)();
+        this.displayHeroInformations(hero);
       });
   }
 
@@ -371,16 +371,16 @@ export default class MainScene extends Phaser.Scene {
 
   clearTiles(tiles: string[]) {
     for (let tileName of tiles) {
-      this.getTile(tileName).setFillStyle(0x0).off("pointerdown").on("pointerdown", this.resetView);
+      this.getTile(tileName).setFillStyle(0x0).off("pointerdown").on("pointerdown", () => {
+        this.resetView();
+      });
     }
   }
 
   displayHeroInformations(hero: Hero) {
-    return () => {
-      this.displayRanges(hero.getInternalHero());
-      this.sound.playAudioSprite("sfx", "tap");
-      this.unitInfosBanner.setVisible(true).setHero(hero);
-    }
+    this.displayRanges(hero.getInternalHero());
+    this.sound.playAudioSprite("sfx", "tap");
+    this.unitInfosBanner.setVisible(true).setHero(hero);
   }
 
   endAction(hero: Hero) {
@@ -389,7 +389,9 @@ export default class MainScene extends Phaser.Scene {
     hero.off("dragenter");
     hero.off("dragleave");
     hero.off("dragend");
-    hero.off("pointerdown").on("pointerdown", this.displayHeroInformations(hero));
+    hero.off("pointerdown").on("pointerdown", () => {
+      this.displayHeroInformations(hero);
+    });
     this.input.setDraggable(hero, false);
     battle.resetPathfinder();
     hero.image.setTint(0x777777);
@@ -488,7 +490,9 @@ export default class MainScene extends Phaser.Scene {
       this.input.setDraggable(hero, false);
       hero.off("dragstart");
       hero.off("dragenter");
-      hero.off("pointerdown").on("pointerdown", this.displayHeroInformations(hero));
+      hero.off("pointerdown").on("pointerdown", () => {
+        this.displayHeroInformations(hero);
+      });
     }    
 
     for (let effect of effects) {
