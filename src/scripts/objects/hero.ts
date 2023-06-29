@@ -82,6 +82,8 @@ class Hero extends GameObjects.Container {
                 this.statusIndex++;
             }
             this.statusesImage.setTexture(this.statuses[this.statusIndex]);
+        } else {
+            this.statusesImage.setVisible(false);
         }
     }
 

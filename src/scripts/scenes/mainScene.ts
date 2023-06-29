@@ -1,4 +1,4 @@
-import { GameObjects, Time, Tweens } from 'phaser';
+import { Game, GameObjects, Time, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import { renderDamageText, renderText } from '../utils/text-renderer';
@@ -68,6 +68,10 @@ export default class MainScene extends Phaser.Scene {
   team2: Hero[] = [];
   heroesWhoMoved: Hero[] = [];
   turn: Team = "team1";
+  enemyRangeLayer: GameObjects.Layer;
+  movementRangeLayer: GameObjects.Layer;
+  heroesLayer: GameObjects.Layer;
+  temporaryAssetsLayer: GameObjects.Layer;
   rng = new Phaser.Math.RandomDataGenerator();
   heroBackground: Phaser.GameObjects.Rectangle;
   movementArrows: GameObjects.Group;
@@ -589,7 +593,9 @@ export default class MainScene extends Phaser.Scene {
     for (let id in team) {
       const hero = team[id];
       const heroObj = this.getByName<Hero>(hero.id);
-      heroObj.off("pointerdown").off("dragenter").off("dragend").on("dragend", () => {
+      heroObj.off("pointerdown").off("dragenter").off("dragend").on("pointerdown", () => {
+        this.displayHeroInformations(heroObj);
+      }).on("dragend", () => {
         const target = pixelsToGrid(heroObj.x, heroObj.y);
         const actions = battle.decideDragDropAction(target.x + "-" + target.y, hero, [], [], true);
         for (let action of actions) {
@@ -600,6 +606,11 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+    this.heroesLayer = this.enemyRangeLayer = this.movementRangeLayer = this.temporaryAssetsLayer = this.add.layer();
+    this.movementRangeLayer.setDepth(1);
+    this.heroesLayer.setDepth(2);
+    this.enemyRangeLayer.setDepth(3);
+    this.temporaryAssetsLayer.setDepth(4);
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.rectangle(0, 180, 750, 1000, 0xFFFFFF).setOrigin(0);
