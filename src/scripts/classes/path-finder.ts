@@ -16,8 +16,8 @@ class Pathfinder {
         return Math.abs(tile1Coords.x - tile2Coords.x) + Math.abs(tile1Coords.y - tile2Coords.y);
     }
 
-    reset() {
-        this.tiles = [];
+    reset(startingPoint: Coords) {
+        this.tiles = [startingPoint.x + "-" + startingPoint.y];
         this.lastCrossedTile = "";
     }
 
@@ -26,18 +26,14 @@ class Pathfinder {
     }
     
     crossTile(tile: string, range: number, startingCoordinates: Coords) {
-        const effectiveRange = range + 1;
-        if (this.tiles.includes(tile)) {
-            this.tiles.splice(this.tiles.indexOf(this.lastCrossedTile), 1);
-        } else if (this.tiles.length < effectiveRange && !this.tiles.includes(tile) && this.getDistance(startingCoordinates, tile) <= 1) {
-            this.tiles.push(tile);
-        } else {
-            const partialPath = this.salvageExistingPath(this.tiles, tile);
-            return {
-                tiles: partialPath,
-                complete: false
-            };
+        if (!this.tiles.includes(tile) && this.tiles.length < range + 1) {
+            if (this.getDistance(this.tiles[this.tiles.length 
+            - 1], tile) === 1) {
+                this.tiles.push(tile);
+            } else {
+            }
         }
+
         return {
             tiles: this.tiles,
             complete: true,

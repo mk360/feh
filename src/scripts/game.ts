@@ -3,7 +3,7 @@ import MainScene from './scenes/mainScene'
 import PreloadScene from './scenes/preloadScene'
 
 const DEFAULT_WIDTH = 750
-const DEFAULT_HEIGHT = 1300
+const DEFAULT_HEIGHT = 1320
 
 const config = {
   type: Phaser.WEBGL,

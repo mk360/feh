@@ -191,8 +191,8 @@ class Battle {
         }
     }
 
-    resetPathfinder() {
-        this.pathfinder.reset();
+    resetPathfinder(coords: Coords) {
+        this.pathfinder.reset(coords);
     }
 
     private getMovementRange(hero: Hero) {
