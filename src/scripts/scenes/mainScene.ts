@@ -1,4 +1,4 @@
-import { Game, GameObjects, Time, Tweens } from 'phaser';
+import { Animations, Game, GameObjects, Time, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import { renderDamageText, renderText } from '../utils/text-renderer';
@@ -66,6 +66,7 @@ export default class MainScene extends Phaser.Scene {
   heroes: Hero[] = [];
   team1: Hero[] = [];
   team2: Hero[] = [];
+  positionTiles: string[] = [];
   heroesWhoMoved: Hero[] = [];
   turn: Team = "team1";
   enemyRangeLayer: GameObjects.Layer;
@@ -116,6 +117,7 @@ export default class MainScene extends Phaser.Scene {
           movementImage.y = target.y;
           movementImage.setVisible(true);
           const path = battle.crossTile(hero.getInternalHero(), target.name, this.walkTiles);
+          console.log({ path });
           this.renderPath(path);
           this.sound.playAudioSprite("sfx", "hover");
         }
@@ -144,7 +146,8 @@ export default class MainScene extends Phaser.Scene {
       });
 
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
-        battle.resetPathfinder();
+        console.log({ hero });
+        battle.resetPathfinder(pixelsToGrid(hero.x, hero.y));
         this.clearTiles(this.walkTiles.concat(this.attackTiles));
 
         if (this.handleDoubleTap(timeStamp)) {
@@ -176,7 +179,7 @@ export default class MainScene extends Phaser.Scene {
         });
         (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).x = pxCoords.x;
         (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).y = pxCoords.y;
-        battle.resetPathfinder();
+        battle.resetPathfinder(args);
       }
       break;
       case "move": {
@@ -190,7 +193,7 @@ export default class MainScene extends Phaser.Scene {
       }
       break;
       case "disable": {
-        const { args } = action; 
+        const { args } = action;
         const hero = this.getByName<Hero>(args.id);
         this.endAction(hero);
       }
@@ -370,6 +373,7 @@ export default class MainScene extends Phaser.Scene {
   };
 
   resetView() {
+    this.movementRangeLayer.removeAll();
     this.clearTiles(this.walkTiles.concat(this.attackTiles));
     this.walkTiles = [];
     this.attackTiles = [];
@@ -378,6 +382,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   clearTiles(tiles: string[]) {
+    this.movementRangeLayer.removeAll();
     for (let tileName of tiles) {
       this.getTile(tileName).setFillStyle(0x0).off("pointerdown").on("pointerdown", () => {
         this.resetView();
@@ -401,7 +406,7 @@ export default class MainScene extends Phaser.Scene {
       this.displayHeroInformations(hero);
     });
     this.input.setDraggable(hero, false);
-    battle.resetPathfinder();
+    battle.resetPathfinder(hero.getInternalHero().coordinates);
     hero.image.setTint(0x777777);
     this.sound.play("confirm");
     this.heroesWhoMoved.push(hero);
@@ -468,6 +473,9 @@ export default class MainScene extends Phaser.Scene {
   setTurn(turn: Team) {
     this.movementAllowedImages.clear(true, true);
     const otherTeam = turn === "team1" ? "team2" : "team1";
+    if (turn !== this.turn) {
+      this.movementRangeLayer.removeAll();
+    }
     this.turn = turn;
     this.heroesWhoMoved = [];
     battle.resetEffects(turn);
@@ -513,7 +521,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   getByName<T extends GameObjects.GameObject>(name: string): T {
-    return this.children.getByName(name) as T;
+    return this.heroesLayer.getByName(name) as T;
   }
 
   renderPath(path: { start: string, end: string, tilesInBetween: string[] }) {
@@ -569,7 +577,7 @@ export default class MainScene extends Phaser.Scene {
   addHero(heroData: HeroData, team: Team) {
     const { x, y } = gridToPixels(heroData.coordinates.x, heroData.coordinates.y);
     const heroObject = new Hero(this, x, y, heroData, team).setInteractive();
-    this.add.existing(heroObject);
+    this.heroesLayer.add(heroObject);
     this.heroes.push(heroObject);
     this[team].push(heroObject);
     heroObject.setDepth(1);
@@ -589,6 +597,8 @@ export default class MainScene extends Phaser.Scene {
   };
 
   switchPositionsMode() {
+    this.movementAllowedTween.pause();
+    this.movementAllowedImages.setVisible(false);
     const team = battle[this.turn];
     for (let id in team) {
       const hero = team[id];
@@ -602,15 +612,23 @@ export default class MainScene extends Phaser.Scene {
           this.processAction(action, heroObj);
         }
       });
+      const tile = this.children.getByName(hero.coordinates.x + "-" + hero.coordinates.y) as GameObjects.Rectangle;
+      tile.setFillStyle(0x00FF00);
+      this.positionTiles.push(hero.coordinates.x + "-" + hero.coordinates.y);
     }
   }
 
   create() {
-    this.heroesLayer = this.enemyRangeLayer = this.movementRangeLayer = this.temporaryAssetsLayer = this.add.layer();
+    this.heroesLayer = this.add.layer();
+    this.enemyRangeLayer = this.add.layer();
+    this.movementRangeLayer = this.add.layer();
+    this.temporaryAssetsLayer = this.add.layer();
     this.movementRangeLayer.setDepth(1);
-    this.heroesLayer.setDepth(2);
-    this.enemyRangeLayer.setDepth(3);
+    this.enemyRangeLayer.setDepth(2);
+    this.heroesLayer.setDepth(3);
     this.temporaryAssetsLayer.setDepth(4);
+    this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(5);
+    this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false)).setDepth(5);
     this.movementAllowedImages = this.add.group();
     this.movementArrows = this.add.group();
     this.add.rectangle(0, 180, 750, 1000, 0xFFFFFF).setOrigin(0);
@@ -627,12 +645,14 @@ export default class MainScene extends Phaser.Scene {
     swapSpaces.on("pointerup", () => {
       // set all tiles to a green color
       // when you click on a hero, display his movement range, movement image
-      // todo: think of a way to layer / override ranges on top of each other
       switchPos = !switchPos;
       if (switchPos) {
         battle.resetEffects(this.turn);
         this.switchPositionsMode();
       } else {
+        this.clearTiles(this.positionTiles);
+        this.movementAllowedTween.resume();
+        this.movementAllowedImages.setVisible(true);
         this.setTurn(this.turn);
       }
     });
@@ -641,16 +661,19 @@ export default class MainScene extends Phaser.Scene {
       this.setTurn(this.turn === "team1" ? "team2" : "team1");
     });
     let enabled = false;
-    // todo: find a way to make enemy range tiles and regular movement / atk tiles overlap seamlessly
     enemyRange.on("pointerup", () => {
       enabled = !enabled;
       const otherTeam = this.turn === "team1" ? "team2" : "team1";
       const enemyRangeTiles = battle.getEnemyRange(otherTeam);
       if (enabled) {
         this.enemyRangeCoords = enemyRangeTiles;
-        this.fillTiles(enemyRangeTiles, 0xFF5111, 1);
+        for (let tile of enemyRangeTiles) {
+          const { x, y } = gridToPixels(+tile[0], +tile[2]);
+          const enemyRangeTile = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0x540000, 0.6 );
+          this.enemyRangeLayer.add(enemyRangeTile);
+        }
       } else {
-        this.clearTiles(enemyRangeTiles);
+        this.enemyRangeLayer.removeAll();
       }
     });
     
@@ -666,26 +689,40 @@ export default class MainScene extends Phaser.Scene {
     
     this.setTurn("team1");
     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(6));
-    this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(1);
-    this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false)).setDepth(1);
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
     this.rosary = this.add.image(0, 0, "rosary").setVisible(false);
     this.endArrow = this.add.image(0, 0, "end-arrow").setVisible(false);
+    const shine = this.add.particles(0, 0, "effect-shine", {
+      scale: {
+        start: 1,
+        end: 3
+      },
+      x: 150,
+      y: 250,
+    });
 }
 
-  displayRanges(hero: HeroData) {
+displayRanges(hero: HeroData) {
     this.clearTiles(this.walkTiles.concat(this.attackTiles));
     const walkTiles = battle.getMovementTiles(hero);
     const weaponTiles = battle.getAttackTiles(hero, walkTiles);
+
     const stringWalkTiles = walkTiles.map(stringifyTile);
+
+    for (let tile of weaponTiles) {
+      const { x, y } = gridToPixels(+tile[0], +tile[2]);
+      const img = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0xFF0000, 0.2);
+      this.movementRangeLayer.add(img);
+    }
+
+    for (let tile of stringWalkTiles) {
+      const { x, y } = gridToPixels(+tile[0], +tile[2]);
+      const img = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0x0000FF, 0.2);
+      this.movementRangeLayer.add(img);
+    }
+
     this.walkTiles = stringWalkTiles;
     this.attackTiles = weaponTiles;
-    this.fillTiles(stringWalkTiles, 0x0000FF);
-    this.fillTiles(weaponTiles, 0xFF0000);
-    return {
-      walkTiles: walkTiles.map(({ x, y }) => x + "-" + y),
-      weaponTiles,
-    };
   }
 
   getTile(name: string) {

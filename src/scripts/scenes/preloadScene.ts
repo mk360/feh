@@ -15,6 +15,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("background", "assets/unit-bg-test.png");
     this.load.audioSprite("sfx", "assets/audio/sfx.json", "assets/audio/sfx.ogg");
     this.load.audio("confirm", "assets/audio/confirm.mp3");
+    this.load.audio("effect-trigger", "assets/audio/effect-trigger.mp3");
     this.load.image("nameplate", "assets/nameplate.png");
     this.load.image("end-arrow", "assets/end-arrow-fixed.png");
     this.load.image("path-down-right", "assets/path-up-left.png");
@@ -39,6 +40,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("weapon-icon", "assets/weapon_icon.png");
     this.load.image("unit-banner-bg", "assets/unit-banner-bg.png");
     this.load.image("forecast-bg", "assets/forecast-bg.png");
+    this.load.image("effect-shine", "assets/effect.png");
     this.load.audio("bgm", "assets/audio/bgm/leif's army in search of victory.ogg");
     for (let hero of ["Corrin", "Hector", "Ike", "Lucina", "Lyn", "Robin", "Ryoma", "Ephraim"]) {
       this.load.atlas(hero, `assets/battle/${hero}.webp`, `assets/battle/${hero}.json`);
