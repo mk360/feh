@@ -479,6 +479,7 @@ export default class MainScene extends Phaser.Scene {
     this.turn = turn;
     this.heroesWhoMoved = [];
     battle.resetEffects(turn);
+    battle.resetEffects(otherTeam);
     const effects = battle.getTurnStartEffects(turn);
     for (let hero of this[turn]) {
       const { x, y } = pixelsToGrid(hero.x, hero.y);
@@ -651,8 +652,8 @@ export default class MainScene extends Phaser.Scene {
         this.switchPositionsMode();
       } else {
         this.clearTiles(this.positionTiles);
-        this.movementAllowedTween.resume();
         this.movementAllowedImages.setVisible(true);
+        this.movementAllowedTween.resume();
         this.setTurn(this.turn);
       }
     });
@@ -692,14 +693,14 @@ export default class MainScene extends Phaser.Scene {
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
     this.rosary = this.add.image(0, 0, "rosary").setVisible(false);
     this.endArrow = this.add.image(0, 0, "end-arrow").setVisible(false);
-    const shine = this.add.particles(0, 0, "effect-shine", {
-      scale: {
-        start: 1,
-        end: 3
-      },
-      x: 150,
-      y: 250,
-    });
+    // const shine = this.add.particles(0, 0, "effect-shine", {
+    //   scale: {
+    //     start: 1,
+    //     end: 3
+    //   },
+    //   x: 150,
+    //   y: 250,
+    // });
 }
 
 displayRanges(hero: HeroData) {
