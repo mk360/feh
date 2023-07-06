@@ -1,5 +1,6 @@
 interface RotatingIconsImage {
-    toggleIcons(): void;
+    toggleIcons(): this;
+    setIcons(icons: string[]): this;
     iconsList: string[];
 };
 

@@ -2,6 +2,7 @@ import { GameObjects, Scene, Tweens } from "phaser";
 import { renderText } from "../utils/text-renderer";
 import HeroData from "feh-battles/dec/hero";
 import Team from "../../types/team";
+import IconsSwitcher from "./icons-switcher";
 
 const hpBarWidth = 60;
 
@@ -14,7 +15,7 @@ class Hero extends GameObjects.Container {
     hpText: GameObjects.Text;
     team: Team;
     statuses: string[];
-    statusesImage: GameObjects.Image;
+    statusesImage: IconsSwitcher;
     statusIndex = 0;
 
     // todo: simplify constructor
@@ -28,7 +29,7 @@ class Hero extends GameObjects.Container {
         this.add(this.image);
         this.add(this.whiteGlowImage);
         this.team = team;
-        this.statusesImage = new GameObjects.Image(scene, 45, 45, "").setVisible(false);
+        this.statusesImage = new IconsSwitcher(scene, 45, 45, []);
         const hpBarHeight = this.statusesImage.getCenter().y;        
         this.hpText = renderText(scene, -15, hpBarHeight, data.maxHP, {
             fontSize: "18px"
@@ -51,13 +52,13 @@ class Hero extends GameObjects.Container {
     createFlashTween() {
         this.whiteGlowImage.x = this.image.x;
         this.whiteGlowImage.y = this.image.y;
-        const baseTween = this.scene.tweens.create({
+        const flashingTween = this.scene.tweens.create({
             targets: this.whiteGlowImage,
             alpha: 1,
             duration: 100,
             yoyo: true,
         });
-        return baseTween as Tweens.Tween;
+        return flashingTween as Tweens.Tween;
     }
 
     getInternalHero() {
@@ -74,22 +75,7 @@ class Hero extends GameObjects.Container {
     }
 
     toggleStatuses() {
-        this.statusesImage.setVisible(!!this.statuses.length);
-        if (this.statuses.length) {
-            if (this.statusIndex + 1 === this.statuses.length) {
-                this.statusIndex = 0;
-            } else {
-                this.statusIndex++;
-            }
-            this.statusesImage.setTexture(this.statuses[this.statusIndex]);
-        } else {
-            this.statusesImage.setVisible(false);
-        }
-    }
-
-    getNextIndex(array: any[], curIndex: number) {
-        if (curIndex === array.length - 1) return 0;
-        return curIndex + 1;
+        this.statusesImage.setVisible(!!this.statuses.length).toggleIcons();
     }
 };
 

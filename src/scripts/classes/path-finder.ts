@@ -25,12 +25,24 @@ class Pathfinder {
         this.tiles = tiles;
     }
     
-    crossTile(tile: string, range: number, startingCoordinates: Coords) {
-        if (!this.tiles.includes(tile) && this.tiles.length < range + 1) {
-            if (this.getDistance(this.tiles[this.tiles.length 
-            - 1], tile) === 1) {
+    crossTile(tile: string, range: number, allowedTiles: string[]) {
+        if (!this.tiles.includes(tile)) {
+            const distance = this.getDistance(this.tiles[this.tiles.length - 1], tile);
+            if (distance === 1) {
                 this.tiles.push(tile);
+            } else if (distance <= (range - this.tiles.length + 1)) {
+                const path = this.buildPath(this.tiles, tile, allowedTiles);
+                return {
+                    tiles: path,
+                    complete: true
+                };
             } else {
+                const reusablePath = this.salvageExistingPath(this.tiles, tile);
+                const newPath = this.buildPath(reusablePath, tile, allowedTiles);
+                return {
+                    tiles: newPath,
+                    complete: true
+                };
             }
         }
 
@@ -55,6 +67,18 @@ class Pathfinder {
 
     leaveTile(tile: string) {
         this.lastCrossedTile = tile;
+    }
+
+    buildPath(currentTiles: string[], to: string, allowedTiles: string[]) {
+        const completePath = [...currentTiles];
+        while (completePath[completePath.length - 1] !== to) {
+            const lastTile = completePath[completePath.length - 1];
+            const nearby = getNearby(toCoords(lastTile)).filter((t) => allowedTiles.includes(t.x + "-" + t.y));
+            const sorted = nearby.sort((t1, t2) => this.getDistance(t1, to) - this.getDistance(t2, to));
+            const { x, y } = sorted[0];
+            completePath.push(x + "-" + y);
+        }
+        return completePath;
     }
 
     buildAutomaticPath(existingTiles: string[], validTiles: string[], remainingRange: number, target: string) {

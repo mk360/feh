@@ -460,9 +460,9 @@ export default class MainScene extends Phaser.Scene {
           }
         });
         // uncomment if you need to check tile coordinates
-        // this.add.text(tile.getCenter().x, tile.getCenter().y, name, {
-        //   fontSize: "18px"
-        // });
+        this.add.text(tile.getCenter().x, tile.getCenter().y, name, {
+          fontSize: "18px"
+        });
       }
     }
   }

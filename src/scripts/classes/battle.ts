@@ -70,8 +70,7 @@ class Battle {
 
     crossTile(hero: Hero, tile: string, walkTiles: string[]) {
         const movementRange = this.pathfinder.getMovementRange(hero);
-        const { coordinates } = hero;
-        const { tiles, complete } = this.pathfinder.crossTile(tile, movementRange, coordinates);
+        const { tiles, complete } = this.pathfinder.crossTile(tile, movementRange, walkTiles);
         if (complete) {
             const start = tiles[0];
             const end = tiles[tiles.length - 1];
