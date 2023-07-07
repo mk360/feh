@@ -117,7 +117,6 @@ export default class MainScene extends Phaser.Scene {
           movementImage.y = target.y;
           movementImage.setVisible(true);
           const path = battle.crossTile(hero.getInternalHero(), target.name, this.walkTiles);
-          console.log({ path });
           this.renderPath(path);
           this.sound.playAudioSprite("sfx", "hover");
         }
@@ -138,15 +137,8 @@ export default class MainScene extends Phaser.Scene {
         }
         this.rosary.setVisible(false);
       });
-      
-      hero.on("dragleave", (_, target: GameObjects.Rectangle) => {
-        if (this.walkTiles.includes(target.name)) {
-          battle.leaveTile(target.name);
-        }
-      });
 
       hero.on("pointerdown", ({ event: { timeStamp } }) => {
-        console.log({ hero });
         battle.resetPathfinder(pixelsToGrid(hero.x, hero.y));
         this.clearTiles(this.walkTiles.concat(this.attackTiles));
 
@@ -538,7 +530,7 @@ export default class MainScene extends Phaser.Scene {
     this.endArrow.x = endTile.x;
     this.endArrow.y = endTile.y;
     this.endArrow.setVisible(end !== start);
-
+    console.log({ fullPath });
     const endArrowDirection = getTilesDirection(toCoords(fullPath[fullPath.length - 2]), toCoords(end));
     const verticalAngle = endArrowDirection === "down" ? 90 : endArrowDirection === "up" ? -90 : null;
     const horizontalAngle = endArrowDirection === "left" ? 180 : endArrowDirection === "right" ? 0 : null;
