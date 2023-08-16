@@ -6,7 +6,6 @@ import getNearby from "../utils/get-nearby";
 
 class Pathfinder {
     tiles: string[] = [];
-    private lastCrossedTile = "";
 
     getDistance(tile1: string | Coords, tile2: string | Coords) {
         let tile1Coords: Coords = typeof tile1 === "object" ? tile1 : toCoords(tile1);
@@ -18,7 +17,6 @@ class Pathfinder {
 
     reset(startingPoint: Coords) {
         this.tiles = [startingPoint.x + "-" + startingPoint.y];
-        this.lastCrossedTile = "";
     }
 
     setTiles(tiles: string[]) {
@@ -32,31 +30,19 @@ class Pathfinder {
                 this.tiles.push(tile);
             } else if (distance <= (range - this.tiles.length + 1)) {
                 const path = this.buildPath(this.tiles, tile, allowedTiles);
-                return {
-                    tiles: path,
-                    complete: true
-                };
+                return path;
             } else {
                 const reusablePath = this.salvageExistingPath(this.tiles, tile);
                 const newPath = this.buildPath(reusablePath, tile, allowedTiles);
-                return {
-                    tiles: newPath,
-                    complete: true
-                };
+                return newPath;
             }
         } else {
             const tileIndex = this.tiles.indexOf(tile);
-            const t = this.tiles.filter((_, i) => i <= tileIndex);
-            return {
-                tiles: Array.from(new Set(t)),
-                complete: true
-            };
+            const previousTiles = this.tiles.filter((_, i) => i <= tileIndex);
+            return Array.from(new Set(previousTiles));
         }
 
-        return {
-            tiles: Array.from(new Set(this.tiles)),
-            complete: true
-        }
+        return Array.from(new Set(this.tiles));
     }
     
     private salvageExistingPath(path: string[], newTile: string) {

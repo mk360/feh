@@ -378,23 +378,34 @@ JointDriveRes.setDescription("Grants Res+4 to allies within 2 spaces during comb
 
 export const SealAtkDef2 = new FEH.PassiveSkill().setName("Seal Atk/Def 2").setSlot("B");
 
-SealAtkDef2.onAfterCombat = ({ enemy, wielder }) => {
+SealAtkDef2.onAfterCombat = ({ enemy }) => {
     const targetEnemies = enemy.allies.filter((ally) => ally.getDistance(enemy) <= 2);
-    return [];
+    return targetEnemies.map((hero) => ({
+        targetHeroId: hero.id,
+        appliedEffect: {
+            stats: {
+                atk: -5,
+                def: -5
+            }
+        }
+    }));
 };
 
 SealAtkDef2.setDescription("Inflicts Atk/Def-5 on foe through its next action after combat.");
 
 export const Bushido2 = new FEH.PassiveSkill().setName("Bushido II").setSlot("B");
 
-Bushido2.onBeforeCombat = ({ wielder, enemy, damage }) => {
+Bushido2.onBeforeCombat = ({ enemy }) => {
     enemy.raiseCursor("damageIncrease", 7);
     if (enemy.getWeapon().effectiveAgainst.includes("flier")) {
         enemy.lowerCursor("effectiveness", 1);
     }
+};
+
+Bushido2.onRoundDefense = ({ wielder, enemy, damage }) => {
     if (wielder.getBattleStats().spd > enemy.getBattleStats().spd) {
         const reductionPercentage = Math.min(40, (wielder.getBattleStats().spd - enemy.getBattleStats().spd) * 4);
-        // wielder.raiseCursor("damageReduction", damage - Math.floor(damage * reductionPercentage));
+        wielder.raiseCursor("damageReduction", Math.floor(damage * reductionPercentage));
     }
 };
 
@@ -423,7 +434,7 @@ SwiftSparrow3.onInitiate = ({ wielder }) => {
 
 export const OstiasPulse2 = new FEH.PassiveSkill().setName("Ostia's Pulse II").setSlot("C").setDescription("At start of turn, grants Def/Res+6 to unit and allies for one turn, and also, if any unit or ally's Special cooldown count is at its maximum value, grants them Special cooldown count-1. All effects granted only if the number of that unit or ally's movement type on the current team is ≤ 2.");
 
-OstiasPulse2.onTurnStart = ({ wielder }) => {
+OstiasPulse2.onTurnStart = ({ wielder, battleState }) => {
     const effects: Effect[] = [];
     let moveTypes = {
         "armored": 1,
