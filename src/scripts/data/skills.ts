@@ -434,7 +434,7 @@ SwiftSparrow3.onInitiate = ({ wielder }) => {
 
 export const OstiasPulse2 = new FEH.PassiveSkill().setName("Ostia's Pulse II").setSlot("C").setDescription("At start of turn, grants Def/Res+6 to unit and allies for one turn, and also, if any unit or ally's Special cooldown count is at its maximum value, grants them Special cooldown count-1. All effects granted only if the number of that unit or ally's movement type on the current team is ≤ 2.");
 
-OstiasPulse2.onTurnStart = ({ wielder, battleState }) => {
+OstiasPulse2.onTurnStart = ({ wielder }) => {
     const effects: Effect[] = [];
     let moveTypes = {
         "armored": 1,

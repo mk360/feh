@@ -1,4 +1,4 @@
-import { Animations, Game, GameObjects, Time, Tweens } from 'phaser';
+import { GameObjects, Time, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import { renderDamageText, renderText } from '../utils/text-renderer';
@@ -63,9 +63,6 @@ export default class MainScene extends Phaser.Scene {
   walkTiles: string[] = [];
   enemyRangeCoords: string[] = [];
   attackTiles: string[] = [];
-  heroes: Hero[] = [];
-  team1: Hero[] = [];
-  team2: Hero[] = [];
   positionTiles: string[] = [];
   heroesWhoMoved: Hero[] = [];
   turn: Team = "team1";
@@ -188,6 +185,10 @@ export default class MainScene extends Phaser.Scene {
         const { args } = action;
         const hero = this.getByName<Hero>(args.id);
         this.endAction(hero);
+        const swapSpaces = this.actionsTray.children.entries.find((s) => s.name === "swap-spaces");
+        if (swapSpaces) {
+          this.actionsTray.remove(swapSpaces, true, true);
+        }
       }
       break;
       case "attack": {
@@ -246,6 +247,12 @@ export default class MainScene extends Phaser.Scene {
             duration: 75,
           }
         }]).play();
+        break;
+      }
+      case "start-turn": {
+        const { args: { turn } } = action;
+        this.setTurn(turn);
+        break;
       }
     }
   }
@@ -419,7 +426,6 @@ export default class MainScene extends Phaser.Scene {
 
   killHero(hero: Hero) {
     this[hero.team] = this[hero.team].filter(({ name }) => name !== hero.name);
-    this.heroes = this.heroes.filter(({ name }) => name !== hero.name);
   }
 
   createKOTween(hero: Hero) {
@@ -473,15 +479,18 @@ export default class MainScene extends Phaser.Scene {
     battle.resetEffects(turn);
     battle.resetEffects(otherTeam);
     const effects = battle.getTurnStartEffects(turn);
-    for (let hero of this[turn]) {
+    for (let heroId in battle.state.teams[battle.state.currentTurn].members) {
+      const hero = this.getByName<Hero>(heroId);
       const { x, y } = pixelsToGrid(hero.x, hero.y);
       let currentCoords: Coords = { x, y };
       this.input.setDraggable(hero, true);
-      const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.name}`).setDepth(0);
+      const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.name}`);
       const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);
       img.setDisplaySize(matchingTile.width, matchingTile.height);
       this.movementAllowedImages.add(img, true);
+      console.log(this.movementAllowedImages.getChildren());
       this.activateHero(hero);
+
     }
     this.movementAllowedTween?.stop().destroy();
     this.movementAllowedTween = this.tweens.add({
@@ -491,7 +500,8 @@ export default class MainScene extends Phaser.Scene {
       duration: 900,
       alpha: 0,
     });
-    for (let hero of this[otherTeam]) {
+    for (let heroId in battle.state.teams[otherTeam].members) {
+      const hero = this.getByName<Hero>(heroId);
       hero.off("dragend");
       const expiredMovementImage = this.children.getByName("movement-" + hero.name);
       this.movementAllowedImages.remove(expiredMovementImage, true, true);
@@ -571,9 +581,6 @@ export default class MainScene extends Phaser.Scene {
     const { x, y } = gridToPixels(heroData.coordinates.x, heroData.coordinates.y);
     const heroObject = new Hero(this, x, y, heroData, team).setInteractive();
     this.heroesLayer.add(heroObject);
-    this.heroes.push(heroObject);
-    this[team].push(heroObject);
-    heroObject.setDepth(1);
     return heroObject;
   }  
 
@@ -631,9 +638,9 @@ export default class MainScene extends Phaser.Scene {
     this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setDepth(0);
     this.createTiles();
     let switchPos = false;
-    const endTurn = new Button(this, "End Turn");
-    const enemyRange = new Button(this, "Enemy Range");
-    const swapSpaces = new Button(this, "Swap Spaces");
+    const endTurn = new Button(this, "End Turn").setName("end-turn");
+    const enemyRange = new Button(this, "Enemy Range").setName("enemy-range");
+    const swapSpaces = new Button(this, "Swap Spaces").setName("swap-spaces");
     // todo: implement a "starting state" we can go back to
     swapSpaces.on("pointerup", () => {
       // set all tiles to a green color
@@ -670,13 +677,13 @@ export default class MainScene extends Phaser.Scene {
       }
     });
     
-    for (let heroId in battle.team1) {
-      const hero = battle.team1[heroId];
+    for (let heroId in battle.state.teams.team1.members) {
+      const hero = battle.state.teams.team1.members[heroId];
       this.addHero(hero, "team1");
     }
     
-    for (let heroId in battle.team2) {
-      const hero = battle.team2[heroId];
+    for (let heroId in battle.state.teams.team2.members) {
+      const hero = battle.state.teams.team2.members[heroId];
       this.addHero(hero, "team2");
     }
     
@@ -724,17 +731,12 @@ displayRanges(hero: HeroData) {
 
   update(_, delta: number) {
     this.updateDelta += delta;
-    if (this.updateDelta >= 16.67 * 60) {
-      this.updateDelta = 0;
-      for (let hero of this.heroes) {
-        hero.toggleStatuses();
-      }
-    }
-
-    if (this.heroesWhoMoved.length === this[this.turn].length) {
-      const otherTeam = this.turn === "team1" ? "team2": "team1";
-      this.setTurn(otherTeam);
-    }
+    // if (this.updateDelta >= 16.67 * 60) {
+    //   this.updateDelta = 0;
+    //   for (let hero of this.heroes) {
+    //     hero.toggleStatuses();
+    //   }
+    // }
   }
 }
 

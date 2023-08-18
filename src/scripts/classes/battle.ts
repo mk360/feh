@@ -2,7 +2,6 @@ import FEH from "feh-battles";
 import Hero from "feh-battles/dec/hero";
 import Coords from "../../interfaces/coords";
 import MapEffectRunner from "feh-battles/dec/map-effect";
-import Team from "../../types/team";
 import MapData from "../../maps/lava.json";
 import { CombatOutcome } from "feh-battles/dec/combat";
 import * as Heroes from "../data/heroes";
@@ -12,15 +11,10 @@ import TileType from "../../types/tiles";
 import toCoords from "../utils/to-coords";
 import getNearby from "../utils/get-nearby";
 import UIAction from "../../interfaces/ui-action";
+import Team from "../../types/team";
 
 
 class Battle {
-    team1: {
-        [heroId: string]: Hero;
-    };
-    team2: {
-        [heroId: string]: Hero;
-    };
     private map: {
         [k: number]: (Hero | null)[];
     };
@@ -29,10 +23,7 @@ class Battle {
         [k: number]: { [k: number]: TileType }
     };
 
-    private turns = {
-        team1: 1,
-        team2: 1
-    }
+    state = FEH.BattleState.createBlankState();
 
     private actionableCharacters: string[] = [];
     // todo: implement "end turn" logic
@@ -41,8 +32,6 @@ class Battle {
     private pathfinder = new Pathfinder();
 
     constructor() {
-        this.team1 = {};
-        this.team2 = {};
         this.map = {};
         for (let i = 1; i < 9; i++) {
             this.map[i] = Array.from<Hero>({ length: 6 }).fill(null);
@@ -87,7 +76,7 @@ class Battle {
     }
 
     areEnemies(hero1: Hero, hero2: Hero) {
-        return (hero1.id in this.team1 && hero2.id in this.team2) || (hero1.id in this.team2 && hero2.id in this.team1);
+        return hero1.teamId !== hero2.teamId;
     }
 
     decideDragAction(tile: string, hero: Hero, walkCoords: string[], attackCoords: string[]): UIAction[] {
@@ -183,7 +172,7 @@ class Battle {
     private tileHasEnemy(hero: Hero, tile: Coords) {
         const tileData = this.map[tile.y][tile.x];
         if (!tileData) return false;
-        return (tileData.id in this.team1 && hero.id in this.team2) || (tileData.id in this.team2 && hero.id in this.team1);
+        return (tileData.id in this.state.teams.team1.members && hero.id in this.state.teams.team2.members) || (tileData.id in this.state.teams.team2.members && hero.id in this.state.teams.team1.members);
     };
 
     getMovementTiles(hero: Hero, range?: number, previousTiles?: Coords[]) {
@@ -249,13 +238,12 @@ class Battle {
 
     addHero(hero: Hero, team: Team, startingCoordinates: { x: number; y: number }) {
         hero.coordinates = startingCoordinates;
-
-        this[team][hero.id] = hero;
+        this.state.teams[team].addMember(hero);
         this.map[startingCoordinates.y][startingCoordinates.x] = hero;
     }
 
     startCombat(attacker: Hero, defender: Hero) {
-        return new FEH.Combat({ attacker, defender }).createCombat();
+        return new FEH.Combat({ attacker, defender, battleState: this.state }).createCombat();
     }
 
     getTileCost(hero: Hero, tile: Coords) {
@@ -264,27 +252,27 @@ class Battle {
     }
 
     setAlliesAndEnemies() {
-        for (let heroId1 in this.team1) {
-            for (let heroId2 in this.team1) {
+        for (let heroId1 in this.state.teams.team1.members) {
+            for (let heroId2 in this.state.teams.team1.members) {
                 if (heroId1 !== heroId2) {
-                    this.team1[heroId1].setAlly(this.team1[heroId2]);
+                    this.state.teams.team1.members[heroId1].setAlly(this.state.teams.team1.members[heroId2]);
                 }
             }
 
-            for (let enemy in this.team2) {
-                this.team1[heroId1].setEnemy(this.team2[enemy]);
+            for (let enemy in this.state.teams.team2.members) {
+                this.state.teams.team1.members[heroId1].setEnemy(this.state.teams.team2.members[enemy]);
             }
         }
 
-        for (let heroId1 in this.team2) {
-            for (let heroId2 in this.team2) {
+        for (let heroId1 in this.state.teams.team2.members) {
+            for (let heroId2 in this.state.teams.team2.members) {
                 if (heroId1 !== heroId2) {
-                    this.team2[heroId1].setAlly(this.team2[heroId2]);
+                    this.state.teams.team2.members[heroId1].setAlly(this.state.teams.team2.members[heroId2]);
                 }
             }
         }
 
-        this.effectRunner = new FEH.MapEffectRunner(this.team1, this.team2);
+        this.effectRunner = new FEH.MapEffectRunner(this.state.teams.team1.members, this.state.teams.team2.members);
     }
 
     getTurnStartEffects(team: Team) {

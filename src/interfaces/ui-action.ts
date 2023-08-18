@@ -1,6 +1,7 @@
 import Hero from "feh-battles/dec/hero";
 import Coords from "./coords";
 import { CombatOutcome } from "feh-battles/dec/combat";
+import Team from "../types/team";
 
 interface CancelAction {
     type: "cancel";
@@ -41,8 +42,15 @@ interface SwitchTeammatesAction {
         firstHero: Hero;
         secondHero: Hero;
     };
+};
+
+interface StartTurnAction {
+    type: "start-turn",
+    args: {
+        turn: Team;
+    }
 }
 
-type UIAction = AttackAction | MoveAction | CancelAction | DisableAction | PreviewBattleAction | SwitchTeammatesAction;
+type UIAction = AttackAction | MoveAction | CancelAction | DisableAction | PreviewBattleAction | SwitchTeammatesAction | StartTurnAction;
 
 export default UIAction;
