@@ -5,12 +5,12 @@ import Team from "../types/team";
 
 interface CancelAction {
     type: "cancel";
-    args: Coords;
+    args: Coords & { hero: Hero };
 };
 
 interface MoveAction {
     type: "move";
-    args: Coords;
+    args: Coords & { hero: Hero };
 };
 
 interface AttackAction {
@@ -48,6 +48,7 @@ interface StartTurnAction {
     type: "start-turn",
     args: {
         turn: Team;
+        turnCount: number;
     }
 }
 

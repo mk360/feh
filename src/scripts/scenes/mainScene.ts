@@ -121,7 +121,7 @@ export default class MainScene extends Phaser.Scene {
         const actions = battle.decideDragAction(target.name, hero.getInternalHero(), this.walkTiles, this.attackTiles);
         if (actions) {
           for (let action of actions) {
-            this.processAction(action, hero);
+            this.processAction(action);
           }
         }
       });
@@ -130,7 +130,7 @@ export default class MainScene extends Phaser.Scene {
         const targetTile = pixelsToGrid(hero.x, hero.y);
         const actions = battle.decideDragDropAction(targetTile.x + "-" + targetTile.y, hero.getInternalHero(), this.walkTiles, this.attackTiles);
         for (let action of actions) {
-          this.processAction(action, hero);
+          this.processAction(action);
         }
         this.rosary.setVisible(false);
       });
@@ -153,13 +153,13 @@ export default class MainScene extends Phaser.Scene {
       });
   }
 
-  processAction(action: UIAction, hero: Hero) {
+  processAction(action: UIAction) {
     switch (action.type) {
       case "cancel": {
-        const { args } = action;
+        const { args: { x, y, hero } } = action;
         this.endArrow.setVisible(false);
         this.movementArrows.clear(true, true);
-        const pxCoords = gridToPixels(args.x, args.y);
+        const pxCoords = gridToPixels(x, y);
         this.tweens.add({
           targets: hero,
           x: pxCoords.x,
@@ -168,17 +168,18 @@ export default class MainScene extends Phaser.Scene {
         });
         (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).x = pxCoords.x;
         (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).y = pxCoords.y;
-        battle.resetPathfinder(args);
+        battle.resetPathfinder({ x, y });
       }
       break;
       case "move": {
-        const { args } = action;
+        const { args: { x, y, hero } } = action;
         this.endArrow.setVisible(false);
         this.movementArrows.clear(true, true);
-        const pxCoords = gridToPixels(args.x, args.y);
-        hero.x = pxCoords.x;
-        hero.y = pxCoords.y;
-        battle.moveHero(hero.getInternalHero(), args);
+        const pxCoords = gridToPixels(x, y);
+        const heroObject = this.getByName<Hero>(hero.id);
+        heroObject.x = pxCoords.x;
+        heroObject.y = pxCoords.y;
+        battle.moveHero(hero, { x, y });
       }
       break;
       case "disable": {
@@ -250,8 +251,8 @@ export default class MainScene extends Phaser.Scene {
         break;
       }
       case "start-turn": {
-        const { args: { turn } } = action;
-        this.setTurn(turn);
+        const { args } = action;
+        this.setTurn(args);
         break;
       }
     }
@@ -468,14 +469,12 @@ export default class MainScene extends Phaser.Scene {
   playHeroQuote = createHeroQuoter(this);
   handleDoubleTap = createDoubleTapHandler();
 
-  setTurn(turn: Team) {
+  setTurn({ turn, turnCount }: { turn: Team, turnCount: number }) {
     this.movementAllowedImages.clear(true, true);
     const otherTeam = turn === "team1" ? "team2" : "team1";
     if (turn !== this.turn) {
       this.movementRangeLayer.removeAll();
     }
-    this.turn = turn;
-    this.heroesWhoMoved = [];
     battle.resetEffects(turn);
     battle.resetEffects(otherTeam);
     const effects = battle.getTurnStartEffects(turn);
@@ -488,9 +487,8 @@ export default class MainScene extends Phaser.Scene {
       const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);
       img.setDisplaySize(matchingTile.width, matchingTile.height);
       this.movementAllowedImages.add(img, true);
-      console.log(this.movementAllowedImages.getChildren());
-      this.activateHero(hero);
-
+      // this.activateHero(hero);
+      
     }
     this.movementAllowedTween?.stop().destroy();
     this.movementAllowedTween = this.tweens.add({
@@ -503,8 +501,6 @@ export default class MainScene extends Phaser.Scene {
     for (let heroId in battle.state.teams[otherTeam].members) {
       const hero = this.getByName<Hero>(heroId);
       hero.off("dragend");
-      const expiredMovementImage = this.children.getByName("movement-" + hero.name);
-      this.movementAllowedImages.remove(expiredMovementImage, true, true);
       hero.image.clearTint();
       this.input.setDraggable(hero, false);
       hero.off("dragstart");
@@ -609,7 +605,7 @@ export default class MainScene extends Phaser.Scene {
         const target = pixelsToGrid(heroObj.x, heroObj.y);
         const actions = battle.decideDragDropAction(target.x + "-" + target.y, hero, [], [], true);
         for (let action of actions) {
-          this.processAction(action, heroObj);
+          this.processAction(action);
         }
       });
       const tile = this.children.getByName(hero.coordinates.x + "-" + hero.coordinates.y) as GameObjects.Rectangle;
@@ -653,12 +649,13 @@ export default class MainScene extends Phaser.Scene {
         this.clearTiles(this.positionTiles);
         this.movementAllowedImages.setVisible(true);
         this.movementAllowedTween.resume();
-        this.setTurn(this.turn);
+        // this.setTurn(this.turn); <--- create a "battle mode" function
       }
     });
     this.actionsTray.addAction(endTurn).addAction(enemyRange).addAction(swapSpaces);
     endTurn.on("pointerup", () => {
-      this.setTurn(this.turn === "team1" ? "team2" : "team1");
+      const action = battle.endTurn();
+      this.processAction(action);
     });
     let enabled = false;
     enemyRange.on("pointerup", () => {
@@ -687,7 +684,6 @@ export default class MainScene extends Phaser.Scene {
       this.addHero(hero, "team2");
     }
     
-    this.setTurn("team1");
     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(6));
     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
     this.rosary = this.add.image(0, 0, "rosary").setVisible(false);
@@ -700,6 +696,7 @@ export default class MainScene extends Phaser.Scene {
     //   x: 150,
     //   y: 250,
     // });
+    this.processAction(battle.initiateBattle());
 }
 
 displayRanges(hero: HeroData) {

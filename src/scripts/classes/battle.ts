@@ -38,6 +38,27 @@ class Battle {
         }
     }
 
+    initiateBattle(): UIAction {
+        return {
+            type: "start-turn",
+            args: {
+                turn: "team1",
+                turnCount: 1
+            }
+        };
+    }
+
+    endTurn(): UIAction {
+        this.state.endTurn();
+        return {
+            type: "start-turn",
+            args: {
+                turn: this.state.currentTurn,
+                turnCount: this.state.turns[this.state.currentTurn]
+            }
+        }
+    }
+
     getEnemyRange(team: "team1" | "team2") {
         const completeRange = new Set<string>();
         const teamData = this[team];
@@ -108,7 +129,7 @@ class Battle {
         const coordinatedTile = toCoords(tile);
         const mapData = this.map[coordinatedTile.y]?.[coordinatedTile.x];
         if (walkCoords.includes(tile) && !mapData) {
-            return [{ type: "move", args: coordinatedTile }, { type: "disable", args: hero }];
+            return [{ type: "move", args: { ...coordinatedTile, hero } }, { type: "disable", args: hero }];
         }
 
         if (attackCoords.includes(tile) && mapData && this.areEnemies(hero, mapData)) {
@@ -116,7 +137,7 @@ class Battle {
             const path = this.pathfinder.tiles;
             const finalTile = toCoords(path.find((t) => this.getDistance(t, coordinatedTile) === range));
             const outcome = this.startCombat(hero, mapData);
-            return [{ type: "move", args: finalTile }, {
+            return [{ type: "move", args: { ...finalTile, hero } }, {
                 type: "attack",
                 args: {
                     attacker: hero,
@@ -138,7 +159,10 @@ class Battle {
 
         return [{
             type: "cancel",
-            args: hero.coordinates
+            args: {
+                hero,
+                ...hero.coordinates
+            }
         }];
     }
 
