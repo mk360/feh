@@ -75,7 +75,7 @@ class Hero extends GameObjects.Container {
     }
 
     toggleStatuses() {
-        this.statusesImage.setVisible(!!this.statuses.length).toggleIcons();
+        this.statusesImage.setIcons(this.statuses).setVisible(!!this.statuses.length).toggleIcons();
     }
 };
 

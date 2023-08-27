@@ -6,8 +6,26 @@ import Stats from "../../interfaces/stats";
 export const Astra = new FEH.Special({
     name: "Astra",
     description: "Increases damage by 150%",
-    cooldown: 5
+    cooldown: 5,
+    shouldTrigger({ wielder, attacker }) {
+        return wielder.id === attacker.id;
+    },
+    trigger({ damage }) {
+        return damage * 2.5;
+    }
 });
+
+export const Ignis = new FEH.Special({
+    name: "Ignis",
+    description: "Increases damage by 80% of unit's defense.",
+    cooldown: 4,
+    shouldTrigger({ wielder, attacker }) {
+        return wielder.id === attacker.id;
+    },
+    trigger({ wielder, damage }) {
+        return damage + wielder.getBattleStats().def * 0.8;
+    }
+})
 
 export const Shove = new FEH.Assist({
     name: "Shove",

@@ -153,6 +153,14 @@ export default class MainScene extends Phaser.Scene {
       });
   }
 
+  removeSwapSpacesOption() {
+    const swapSpaces = this.actionsTray.children.entries.find((s) => s.name === "swap-spaces");
+
+    if (swapSpaces) {
+      this.actionsTray.remove(swapSpaces, true, true);
+    }
+  }
+
   processAction(action: UIAction) {
     switch (action.type) {
       case "cancel": {
@@ -161,13 +169,14 @@ export default class MainScene extends Phaser.Scene {
         this.movementArrows.clear(true, true);
         const pxCoords = gridToPixels(x, y);
         this.tweens.add({
-          targets: hero,
+          targets: this.heroesLayer.getByName(hero.id),
           x: pxCoords.x,
           y: pxCoords.y,
           duration: 100
         });
-        (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).x = pxCoords.x;
-        (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).y = pxCoords.y;
+        // this.movementAllowedImages.getMatching()
+        // (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).x = pxCoords.x;
+        // (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).y = pxCoords.y;
         battle.resetPathfinder({ x, y });
       }
       break;
@@ -186,10 +195,7 @@ export default class MainScene extends Phaser.Scene {
         const { args } = action;
         const hero = this.getByName<Hero>(args.id);
         this.endAction(hero);
-        const swapSpaces = this.actionsTray.children.entries.find((s) => s.name === "swap-spaces");
-        if (swapSpaces) {
-          this.actionsTray.remove(swapSpaces, true, true);
-        }
+        this.removeSwapSpacesOption();
       }
       break;
       case "attack": {
@@ -307,6 +313,7 @@ export default class MainScene extends Phaser.Scene {
           damageText.destroy(true);
         }
       }) as Tweens.Tween;
+      // add special trigger effect
       timeline.add([{
         at: i * 800 + 400,
         tween: {
@@ -339,6 +346,7 @@ export default class MainScene extends Phaser.Scene {
     if (deadUnit) {
       const deadUnitObject = this.getByName<Hero>(deadUnit.id);
       const koTween = this.createKOTween(deadUnitObject);
+      
       timeline.add([{tween: koTween, at: 800 * outcome.turns.length + 500 }])
     }
 
@@ -475,9 +483,7 @@ export default class MainScene extends Phaser.Scene {
     if (turn !== this.turn) {
       this.movementRangeLayer.removeAll();
     }
-    battle.resetEffects(turn);
-    battle.resetEffects(otherTeam);
-    const effects = battle.getTurnStartEffects(turn);
+    
     for (let heroId in battle.state.teams[battle.state.currentTurn].members) {
       const hero = this.getByName<Hero>(heroId);
       const { x, y } = pixelsToGrid(hero.x, hero.y);
@@ -487,16 +493,21 @@ export default class MainScene extends Phaser.Scene {
       const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);
       img.setDisplaySize(matchingTile.width, matchingTile.height);
       this.movementAllowedImages.add(img, true);
-      // this.activateHero(hero);
-      
+      this.activateHero(hero);
     }
+    
+    if (turnCount > 1) {
+      this.removeSwapSpacesOption();
+    }
+
     this.movementAllowedTween?.stop().destroy();
     this.movementAllowedTween = this.tweens.add({
       targets: this.movementAllowedImages.getChildren(),
       loop: -1,
       yoyo: true,
       duration: 900,
-      alpha: 0,
+      alpha: 0
+,
     });
     for (let heroId in battle.state.teams[otherTeam].members) {
       const hero = this.getByName<Hero>(heroId);
@@ -508,7 +519,10 @@ export default class MainScene extends Phaser.Scene {
       hero.off("pointerdown").on("pointerdown", () => {
         this.displayHeroInformations(hero);
       });
-    }    
+    }
+
+    battle.resetEffects(otherTeam);
+    const effects = battle.getTurnStartEffects(turn);
 
     for (let effect of effects) {
       const target = this.getByName<Hero>(effect.targetHeroId);
@@ -728,12 +742,13 @@ displayRanges(hero: HeroData) {
 
   update(_, delta: number) {
     this.updateDelta += delta;
-    // if (this.updateDelta >= 16.67 * 60) {
-    //   this.updateDelta = 0;
-    //   for (let hero of this.heroes) {
-    //     hero.toggleStatuses();
-    //   }
-    // }
+    if (this.updateDelta >= 16.67 * 60) {
+      this.updateDelta = 0;
+      for (let heroId in battle.getHeroes()) {
+        const hero = this.getByName<Hero>(heroId);
+        hero.toggleStatuses();
+      }
+    }
   }
 }
 

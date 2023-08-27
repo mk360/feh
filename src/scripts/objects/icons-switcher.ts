@@ -8,6 +8,7 @@ class IconsSwitcher extends GameObjects.Image implements RotatingIconsImage {
     constructor(scene: Scene, x: number, y: number, textures: string[]) {
         super(scene, x, y, "");
         this.iconsList = textures;
+        this.setVisible(!!this.iconsList.length);
     }
 
     toggleIcons() {
@@ -17,7 +18,8 @@ class IconsSwitcher extends GameObjects.Image implements RotatingIconsImage {
             this.iconIndex++;
         }
 
-        this.setFrame(this.iconsList[this.iconIndex]);
+        this.setTexture(this.iconsList[this.iconIndex]);
+        this.setVisible(!!this.iconsList.length);
         return this;
     }
 

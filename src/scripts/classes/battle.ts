@@ -38,6 +38,19 @@ class Battle {
         }
     }
 
+    getHeroes() {
+        const heroes: { [k: string]: Hero } = {};
+        for (let h in this.state.teams.team1.members) {
+            heroes[h] = this.state.teams.team1.members[h];
+        }
+
+        for (let h in this.state.teams.team2.members) {
+            heroes[h] = this.state.teams.team2.members[h];
+        }
+
+        return heroes;
+    }
+
     initiateBattle(): UIAction {
         return {
             type: "start-turn",
@@ -329,5 +342,7 @@ battle.addHero(Heroes.Ephraim, "team2", MapData.startingSlots.team2[0]);
 battle.addHero(Heroes.Lyn, "team2", MapData.startingSlots.team2[2]);
 
 battle.setAlliesAndEnemies();
+
+console.log(battle.startCombat(Heroes.Ryoma, Heroes.Ike));
 
 export default battle;
