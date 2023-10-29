@@ -111,7 +111,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.firstHero.roundCount = renderText(this.scene, this.firstHero.damage.getRightCenter().x + 1, this.firstHero.damage.getTopCenter().y, "×2", {
             fontSize: "18px"
         });
-        
+
         this.firstHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damage.getBottomLeft().x + 10, this.firstHero.damage.getBottomLeft().y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5);
 
         this.add(this.firstHero.portrait);
@@ -188,11 +188,11 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.add(this.forecastBackground);
         this.createFirstHero();
         this.createSecondHero();
-        
+
         this.add(renderText(scene, this.forecastBackground.getCenter().x, hpLineHeight, "HP", {
             fontSize: "22px",
         }).setOrigin(0.5));
-        
+
         this.portraitDisplayTween = scene.tweens.add({
             duration: 300,
             x: 850,
@@ -205,8 +205,9 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.setVisible(false);
     }
 
-    private updateSide({ side, hero: params, statChangesX, xShift: xChangeBetweenStats }: {
+    private updateSide({ side, team, hero: params, statChangesX, xShift: xChangeBetweenStats }: {
         side: RenderedSide;
+        team: "attacker" | "defender";
         hero: ForecastHeroData;
         statChangesX: number;
         xShift: number;
@@ -214,10 +215,9 @@ class CombatForecast extends Phaser.GameObjects.Container {
         side.statMods.clear(true, true);
         const { statChanges, hero, effective, turns, damage } = params;
         side.damage.setText(damage === 0 && turns === 0 ? "-" : damage.toString()).setColor(effective ? TextColors.effective : TextColors.white);
-        
         if (turns >= 2) {
             side.roundCount.setText("×" + turns);
-            side.damage.x -= 10; 
+            side.damage.x -= 10;
             side.roundCount.setX(side.damage.getRightCenter().x);
         } else {
             side.roundCount.setText("");
@@ -231,10 +231,14 @@ class CombatForecast extends Phaser.GameObjects.Container {
                 const statChangeValue = renderText(this.scene, xOffset, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
                     color: statValue < 0 ? TextColors.bane : TextColors.boon
                 }).setOrigin(1, 0);
-                const changedStat = renderText(this.scene, statChangeValue.getLeftCenter().x - 50, 140, capitalize(stat));
+                const changedStat = renderText(this.scene, statChangeValue.getLeftCenter().x - 35, 140, capitalize(stat));
                 side.statMods.add(changedStat).add(statChangeValue);
                 this.add(side.statMods.getChildren());
-                xOffset = changedStat.getLeftCenter().x + xChangeBetweenStats;
+                if (team === "attacker") {
+                    xOffset = changedStat.getLeftCenter().x + xChangeBetweenStats;
+                } else {
+                    xOffset = statChangeValue.getRightCenter().x + xChangeBetweenStats;
+                }
             }
         }
 
@@ -276,15 +280,18 @@ class CombatForecast extends Phaser.GameObjects.Container {
     }
 
     setForecastData(params: ForecastData) {
+        const forecastCenter = this.forecastBackground.getCenter();
         this.updateSide({
             side: this.firstHero,
-            statChangesX: this.forecastBackground.getCenter().x - 20,
+            statChangesX: forecastCenter.x - 15,
             xShift: -5,
+            team: "attacker",
             hero: params.attacker
         }).updateSide({
             side: this.secondHero,
-            statChangesX: this.forecastBackground.getCenter().x + 20,
-            xShift: 5,
+            statChangesX: forecastCenter.x + 75,
+            xShift: 65,
+            team: "defender",
             hero: params.defender
         });
 
@@ -314,7 +321,7 @@ class CombatForecast extends Phaser.GameObjects.Container {
         }
 
         if (koPortrait) this.runKOTween(koPortrait);
-        
+
         return this;
     }
 

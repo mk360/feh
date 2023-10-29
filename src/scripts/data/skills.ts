@@ -217,7 +217,7 @@ VengefulFighter3.setSlot("B");
 VengefulFighter3.setDescription("If unit's HP ≥ 50% and foe initiates combat, grants Special cooldown charge +1 per unit's attack, and unit makes a guaranteed follow-up attack. (Does not stack.)")
 
 VengefulFighter3.onDefense = ({ wielder }) => {
-    if (wielder.stats.hp / wielder.maxHP >= 0.5) {
+    if (wielder.stats.hp / wielder.maxHP >= 0.5 && wielder.getCursorValue("followup") < 1) {
         wielder.raiseCursor("followup", 1);
     }
 }
