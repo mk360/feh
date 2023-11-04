@@ -3,7 +3,7 @@ import Button from "../objects/button";
 import MainScene from "../scenes/mainScene";
 
 function createEndTurnButton(scene: MainScene) {
-    const button = new Button(scene, "End Turn");
+    const button = new Button(scene, "End Turn").setName("end-turn");
     button.on("pointerup", () => {
         const action = battle.endTurn();
         scene.processAction(action);

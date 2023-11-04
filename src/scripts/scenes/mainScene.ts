@@ -14,6 +14,9 @@ import UIAction from '../../interfaces/ui-action';
 import { CombatOutcome } from 'feh-battles/dec/combat';
 import Button from '../objects/button';
 import ActionsTray from '../objects/actions-tray';
+import PreparationState from '../../states/preparation';
+import FightingState from '../../states/fighting';
+import State from '../../states/state';
 
 const squareSize = 125;
 const squaresOffset = 63;
@@ -85,11 +88,22 @@ export default class MainScene extends Phaser.Scene {
   tileHighlight: GameObjects.Image;
   updateDelta = 0;
   timeline: Time.Timeline;
+  states: {
+    preparation: PreparationState;
+    fighting: FightingState;
+  };
+  currentState: State;
 
   constructor() {
     super({ key: 'MainScene' });
     this.walkTiles = [];
     this.attackTiles = [];
+    this.states = {
+      preparation: new PreparationState(this),
+      fighting: new FightingState(this)
+    };
+
+    this.currentState = this.states.preparation;
   }
 
   fillTiles(tiles: string[], fillColor: number, alpha = 1) {
@@ -153,16 +167,14 @@ export default class MainScene extends Phaser.Scene {
     });
   }
 
-  removeSwapSpacesOption() {
-    const swapSpaces = this.actionsTray.children.entries.find((s) => s.name === "swap-spaces");
-
-    if (swapSpaces) {
-      this.actionsTray.remove(swapSpaces, true, true);
-    }
-  }
-
   processAction(action: UIAction) {
     switch (action.type) {
+      case "display-enemy-range": {
+        const { enabled } = action;
+        this.displayEnemyRange(enabled);
+        break;
+      };
+
       case "cancel": {
         const { args: { x, y, hero } } = action;
         this.endArrow.setVisible(false);
@@ -195,7 +207,6 @@ export default class MainScene extends Phaser.Scene {
         const { args } = action;
         const hero = this.getByName<Hero>(args.id);
         this.endAction(hero);
-        this.removeSwapSpacesOption();
       }
         break;
       case "attack": {
@@ -259,6 +270,10 @@ export default class MainScene extends Phaser.Scene {
       case "start-turn": {
         const { args } = action;
         this.setTurn(args);
+        break;
+      };
+      case "swap-spaces": {
+        this.switchPositionsMode();
         break;
       }
     }
@@ -497,8 +512,12 @@ export default class MainScene extends Phaser.Scene {
     }
 
     if (turnCount > 1) {
-      this.removeSwapSpacesOption();
+      this.currentState = this.states.fighting;
+    } else {
+      this.currentState = this.states.preparation;
     }
+
+    this.currentState.changeActionsTray(this.actionsTray);
 
     this.movementAllowedTween?.stop().destroy();
     this.movementAllowedTween = this.tweens.add({
@@ -506,9 +525,9 @@ export default class MainScene extends Phaser.Scene {
       loop: -1,
       yoyo: true,
       duration: 900,
-      alpha: 0
-      ,
+      alpha: 0,
     });
+
     for (let heroId in battle.state.teams[otherTeam].members) {
       const hero = this.getByName<Hero>(heroId);
       hero.off("dragend");
@@ -607,6 +626,9 @@ export default class MainScene extends Phaser.Scene {
   };
 
   switchPositionsMode() {
+    this.currentState = this.states.preparation;
+    this.currentState.changeActionsTray(this.actionsTray);
+    battle.resetEffects(this.turn);
     this.movementAllowedTween.pause();
     this.movementAllowedImages.setVisible(false);
     const team = battle[this.turn];
@@ -628,6 +650,21 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
+  displayEnemyRange(enabled: boolean) {
+     const otherTeam = this.turn === "team1" ? "team2" : "team1";
+      const enemyRangeTiles = battle.getEnemyRange(otherTeam);
+      if (enabled) {
+        this.enemyRangeCoords = enemyRangeTiles;
+        for (let tile of enemyRangeTiles) {
+          const { x, y } = gridToPixels(+tile[0], +tile[2]);
+          const enemyRangeTile = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0x540000, 0.6);
+          this.enemyRangeLayer.add(enemyRangeTile);
+        }
+      } else {
+        this.enemyRangeLayer.removeAll();
+      }
+  }
+
   create() {
     this.heroesLayer = this.add.layer();
     this.enemyRangeLayer = this.add.layer();
@@ -647,47 +684,8 @@ export default class MainScene extends Phaser.Scene {
     banner.setDisplaySize(banner.displayWidth, 180);
     this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setDepth(0);
     this.createTiles();
-    let switchPos = false;
-    const endTurn = new Button(this, "End Turn").setName("end-turn");
     const enemyRange = new Button(this, "Enemy Range").setName("enemy-range");
-    const swapSpaces = new Button(this, "Swap Spaces").setName("swap-spaces");
-    // todo: implement a "starting state" we can go back to
-    swapSpaces.on("pointerup", () => {
-      // set all tiles to a green color
-      // when you click on a hero, display his movement range, movement image
-      switchPos = !switchPos;
-      if (switchPos) {
-        battle.resetEffects(this.turn);
-        this.switchPositionsMode();
-      } else {
-        this.clearTiles(this.positionTiles);
-        this.movementAllowedImages.setVisible(true);
-        this.movementAllowedTween.resume();
-        // this.setTurn(this.turn); <--- use the State pattern to control
-        // what options appear in the menu
-      }
-    });
-    this.actionsTray.addAction(endTurn).addAction(enemyRange).addAction(swapSpaces);
-    endTurn.on("pointerup", () => {
-      const action = battle.endTurn();
-      this.processAction(action);
-    });
-    let enabled = false;
-    enemyRange.on("pointerup", () => {
-      enabled = !enabled;
-      const otherTeam = this.turn === "team1" ? "team2" : "team1";
-      const enemyRangeTiles = battle.getEnemyRange(otherTeam);
-      if (enabled) {
-        this.enemyRangeCoords = enemyRangeTiles;
-        for (let tile of enemyRangeTiles) {
-          const { x, y } = gridToPixels(+tile[0], +tile[2]);
-          const enemyRangeTile = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0x540000, 0.6);
-          this.enemyRangeLayer.add(enemyRangeTile);
-        }
-      } else {
-        this.enemyRangeLayer.removeAll();
-      }
-    });
+
 
     for (let heroId in battle.state.teams.team1.members) {
       const hero = battle.state.teams.team1.members[heroId];

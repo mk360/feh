@@ -52,6 +52,15 @@ interface StartTurnAction {
     }
 }
 
-type UIAction = AttackAction | MoveAction | CancelAction | DisableAction | PreviewBattleAction | SwitchTeammatesAction | StartTurnAction;
+interface SwapSpacesAction {
+    type: "swap-spaces";
+}
+
+interface DisplayEnemyRangeAction {
+    type: "display-enemy-range";
+    enabled: boolean;
+}
+
+type UIAction = SwapSpacesAction | DisplayEnemyRangeAction | AttackAction | MoveAction | CancelAction | DisableAction | PreviewBattleAction | SwitchTeammatesAction | StartTurnAction;
 
 export default UIAction;

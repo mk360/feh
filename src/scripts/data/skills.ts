@@ -25,6 +25,18 @@ export const Ignis = new FEH.Special({
     trigger({ wielder, damage }) {
         return damage + wielder.getBattleStats().def * 0.8;
     }
+});
+
+export const Aether = new FEH.Special({
+    name: "Aether",
+    description: "Treats foe's Def/Res as if reduced by 50% during combat. Restores HP = half of damage dealt.",
+    cooldown: 5,
+    shouldTrigger({ wielder, attacker }) {
+        return wielder.id === attacker.id;
+    },
+    trigger({ wielder, damage, enemy }) {
+        
+    }
 })
 
 export const Shove = new FEH.Assist({
