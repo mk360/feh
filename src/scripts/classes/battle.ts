@@ -25,8 +25,7 @@ class Battle {
 
     state = FEH.BattleState.createBlankState();
 
-    private actionableCharacters: string[] = [];
-    // todo: implement "end turn" logic
+    private disabledCharacters: string[] = [];
 
     private effectRunner: MapEffectRunner;
     private pathfinder = new Pathfinder();
@@ -63,6 +62,7 @@ class Battle {
 
     endTurn(): UIAction {
         this.state.endTurn();
+        this.disabledCharacters = [];
         return {
             type: "start-turn",
             args: {
@@ -134,15 +134,23 @@ class Battle {
         const { coordinates: secondCoordinates } = hero2;
         this.map[coordinates.y][coordinates.x] = hero2;
         this.map[secondCoordinates.y][secondCoordinates.x] = hero1;
-        hero1.coordinates = {...secondCoordinates};
-        hero2.coordinates = {...coordinates};
+        hero1.coordinates = { ...secondCoordinates };
+        hero2.coordinates = { ...coordinates };
     }
 
     decideDragDropAction(tile: string, hero: Hero, walkCoords: string[], attackCoords: string[], isSwitchMode = false): UIAction[] {
         const coordinatedTile = toCoords(tile);
         const mapData = this.map[coordinatedTile.y]?.[coordinatedTile.x];
         if (walkCoords.includes(tile) && !mapData) {
-            return [{ type: "move", args: { ...coordinatedTile, hero } }, { type: "disable", args: hero }];
+            const heroMoved: UIAction[] = [{ type: "move", args: { ...coordinatedTile, hero } }, { type: "disable", args: hero }];
+            this.disabledCharacters.push(hero.id);
+            const hostTeam = hero.id in this.state.teams.team1.members ? this.state.teams.team1.members : this.state.teams.team2.members;
+            if (this.disabledCharacters.length === Object.keys(hostTeam).length) {
+                const newTurn = this.endTurn();
+                heroMoved.push(newTurn);
+            }
+
+            return heroMoved;
         }
 
         if (attackCoords.includes(tile) && mapData && this.areEnemies(hero, mapData)) {
