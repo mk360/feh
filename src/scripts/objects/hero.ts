@@ -17,7 +17,6 @@ class Hero extends GameObjects.Container {
     statuses: string[];
     statusesImage: IconsSwitcher;
     effectivenessImage: IconsSwitcher;
-    statusIndex = 0;
 
     // todo: simplify constructor
     constructor(scene: Scene, x: number, y: number, data: HeroData, team: Team) {
@@ -31,7 +30,7 @@ class Hero extends GameObjects.Container {
         this.add(this.whiteGlowImage);
         this.team = team;
         this.statusesImage = new IconsSwitcher(scene, 45, 45, []);
-        this.effectivenessImage = new IconsSwitcher(scene, 45, 45, []);
+        this.effectivenessImage = new IconsSwitcher(scene, 0, 0, []);
         const hpBarHeight = this.statusesImage.getCenter().y;
         this.hpText = renderText(scene, -15, hpBarHeight, data.maxHP, {
             fontSize: "18px"
@@ -43,6 +42,7 @@ class Hero extends GameObjects.Container {
         this.add(this.hpBar);
         this.add(this.weaponType);
         this.add(this.statusesImage);
+        this.add(this.effectivenessImage);
         const gradient = this.hpText.context.createLinearGradient(0, 0, 0, this.hpText.height);
         gradient.addColorStop(0, "white");
         gradient.addColorStop(0.7, this.team === "team1" ? "#54DFF4" : "#FA4D69");

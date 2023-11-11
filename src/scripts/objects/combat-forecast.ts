@@ -115,8 +115,8 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
 
         this.firstHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damage.getBottomLeft().x + 10, this.firstHero.damage.getBottomLeft().y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5);
-
-        for (let uiElement in this.firstHero) {
+        const { statMods, ...ui } = this.secondHero;
+        for (let uiElement in ui) {
             this.add(this.firstHero[uiElement]);
         }
     }
@@ -162,8 +162,8 @@ class CombatForecast extends Phaser.GameObjects.Container {
         });
         this.secondHero.hpBackground = new GameObjects.Image(this.scene, 510, hpLineHeight, "unit-bg").setScale(0.50, 0.75);
         this.secondHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damageLine.x + 260, this.firstHero.damageLine.y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5)
-
-        for (let uiElement in this.secondHero) {
+        const { statMods, ...ui } = this.secondHero;
+        for (let uiElement in ui) {
             this.add(this.secondHero[uiElement]);
         }
     }

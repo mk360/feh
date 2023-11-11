@@ -35,7 +35,7 @@ export const Aether = new FEH.Special({
         return wielder.id === attacker.id;
     },
     trigger({ wielder, damage, enemy }) {
-        
+        return [];
     }
 })
 
