@@ -37,6 +37,9 @@ interface RenderedSide {
     arrow: GameObjects.Text;
 };
 
+const hpTextHeight = 45;
+const hpLineHeight = 70;
+
 class CombatForecast extends Phaser.GameObjects.Container {
     private portraitDisplayTween: Tweens.Tween;
     private forecastBackground: GameObjects.Image;
@@ -66,10 +69,9 @@ class CombatForecast extends Phaser.GameObjects.Container {
         damage: null,
     };
     private koTween: Tweens.Tween;
+    private portraitTweens: Tweens.Tween[] = [];
 
     private createFirstHero() {
-        const hpTextHeight = 45;
-        const hpLineHeight = 70;
         this.firstHero.statMods = new GameObjects.Group(this.scene);
         this.firstHero.portrait = new HeroPortrait(this.scene, "");
         this.firstHero.nameplate = new HeroNameplate(this.scene, 100, 20, {
@@ -114,20 +116,12 @@ class CombatForecast extends Phaser.GameObjects.Container {
 
         this.firstHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damage.getBottomLeft().x + 10, this.firstHero.damage.getBottomLeft().y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5);
 
-        this.add(this.firstHero.portrait);
-        this.add(this.firstHero.hpBackground);
-        this.add(this.firstHero.previousHP);
-        this.add(this.firstHero.predictedHP);
-        this.add(this.firstHero.damageLine);
-        this.add(this.firstHero.damage);
-        this.add(this.firstHero.roundCount);
-        this.add(this.firstHero.arrow);
-        this.add(this.firstHero.nameplate);
+        for (let uiElement in this.firstHero) {
+            this.add(this.firstHero[uiElement]);
+        }
     }
 
     private createSecondHero() {
-        const hpTextHeight = 45;
-        const hpLineHeight = 70;
         this.secondHero.statMods = new GameObjects.Group(this.scene);
         this.secondHero.portrait = new HeroPortrait(this.scene, "").setFlipX(true).setX(1200).setOrigin(1, 0);
         this.secondHero.nameplate = new HeroNameplate(this.scene, 390, 20, {
@@ -169,16 +163,9 @@ class CombatForecast extends Phaser.GameObjects.Container {
         this.secondHero.hpBackground = new GameObjects.Image(this.scene, 510, hpLineHeight, "unit-bg").setScale(0.50, 0.75);
         this.secondHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damageLine.x + 260, this.firstHero.damageLine.y, "stat-line").setOrigin(0.5, 0).setScale(0.2, 0.5)
 
-        this.add(this.secondHero.portrait);
-        this.add(this.secondHero.hpBackground);
-        this.add(this.secondHero.previousHP);
-        this.add(this.secondHero.predictedHP);
-        this.add(this.secondHero.damageLine);
-        this.add(this.secondHero.roundCount);
-        this.add(this.secondHero.damage);
-        this.add(this.secondHero.roundCount);
-        this.add(this.secondHero.arrow);
-        this.add(this.secondHero.nameplate);
+        for (let uiElement in this.secondHero) {
+            this.add(this.secondHero[uiElement]);
+        }
     }
 
     constructor(scene: Phaser.Scene) {
@@ -352,6 +339,10 @@ class CombatForecast extends Phaser.GameObjects.Container {
             }).play();
         }
 
+        if (attackerHPRatio >= 0.5 && this.firstHero.portrait.frame.name.includes("damage")) {
+            this.scene.tweens.add
+        }
+
         if (defenderHPRatio < 0.5 && !this.secondHero.portrait.frame.name.includes("damage")) {
             this.scene.tweens.add({
                 targets: [this.secondHero.portrait],
@@ -363,6 +354,11 @@ class CombatForecast extends Phaser.GameObjects.Container {
                 }
             }).play();
         }
+    }
+
+    switchPortraitsTween(portrait: GameObjects.Image, shouldBeDamaged: boolean) {
+        const targetPortrait = shouldBeDamaged ? "portrait-damage" : "portrait";
+
     }
 }
 

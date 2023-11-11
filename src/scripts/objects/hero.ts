@@ -16,6 +16,7 @@ class Hero extends GameObjects.Container {
     team: Team;
     statuses: string[];
     statusesImage: IconsSwitcher;
+    effectivenessImage: IconsSwitcher;
     statusIndex = 0;
 
     // todo: simplify constructor
@@ -30,7 +31,8 @@ class Hero extends GameObjects.Container {
         this.add(this.whiteGlowImage);
         this.team = team;
         this.statusesImage = new IconsSwitcher(scene, 45, 45, []);
-        const hpBarHeight = this.statusesImage.getCenter().y;        
+        this.effectivenessImage = new IconsSwitcher(scene, 45, 45, []);
+        const hpBarHeight = this.statusesImage.getCenter().y;
         this.hpText = renderText(scene, -15, hpBarHeight, data.maxHP, {
             fontSize: "18px"
         }).setOrigin(1, 0.5);

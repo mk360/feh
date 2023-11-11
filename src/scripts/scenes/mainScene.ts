@@ -12,7 +12,6 @@ import stringifyTile from '../utils/stringify-tile';
 import toCoords from '../utils/to-coords';
 import UIAction from '../../interfaces/ui-action';
 import { CombatOutcome } from 'feh-battles/dec/combat';
-import Button from '../objects/button';
 import ActionsTray from '../objects/actions-tray';
 import PreparationState from '../../states/preparation';
 import FightingState from '../../states/fighting';
@@ -186,9 +185,7 @@ export default class MainScene extends Phaser.Scene {
           y: pxCoords.y,
           duration: 100
         });
-        // this.movementAllowedImages.getMatching()
-        // (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).x = pxCoords.x;
-        // (this.children.getByName(`movement-${hero.name}`) as GameObjects.Image).y = pxCoords.y;
+
         battle.resetPathfinder({ x, y });
       }
         break;
@@ -651,18 +648,18 @@ export default class MainScene extends Phaser.Scene {
   }
 
   displayEnemyRange(enabled: boolean) {
-     const otherTeam = this.turn === "team1" ? "team2" : "team1";
-      const enemyRangeTiles = battle.getEnemyRange(otherTeam);
-      if (enabled) {
-        this.enemyRangeCoords = enemyRangeTiles;
-        for (let tile of enemyRangeTiles) {
-          const { x, y } = gridToPixels(+tile[0], +tile[2]);
-          const enemyRangeTile = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0x540000, 0.6);
-          this.enemyRangeLayer.add(enemyRangeTile);
-        }
-      } else {
-        this.enemyRangeLayer.removeAll();
+    const otherTeam = this.turn === "team1" ? "team2" : "team1";
+    const enemyRangeTiles = battle.getEnemyRange(otherTeam);
+    if (enabled) {
+      this.enemyRangeCoords = enemyRangeTiles;
+      for (let tile of enemyRangeTiles) {
+        const { x, y } = gridToPixels(+tile[0], +tile[2]);
+        const enemyRangeTile = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0x540000, 0.6);
+        this.enemyRangeLayer.add(enemyRangeTile);
       }
+    } else {
+      this.enemyRangeLayer.removeAll();
+    }
   }
 
   create() {
@@ -684,8 +681,6 @@ export default class MainScene extends Phaser.Scene {
     banner.setDisplaySize(banner.displayWidth, 180);
     this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setDepth(0);
     this.createTiles();
-    const enemyRange = new Button(this, "Enemy Range").setName("enemy-range");
-
 
     for (let heroId in battle.state.teams.team1.members) {
       const hero = battle.state.teams.team1.members[heroId];
