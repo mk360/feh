@@ -720,13 +720,13 @@ export default class MainScene extends Phaser.Scene {
       this.movementRangeLayer.add(img);
     }
 
-    for (let tile of stringWalkTiles) {
-      const { x, y } = gridToPixels(+tile[0], +tile[2]);
+    for (let tile of walkTiles) {
+      const { x, y } = gridToPixels(tile.x, tile.y);
       const img = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0x0000FF, 0.2);
       this.movementRangeLayer.add(img);
     }
 
-    this.walkTiles = stringWalkTiles;
+    this.walkTiles = walkTiles.map(stringifyTile);
     this.attackTiles = weaponTiles;
   }
 

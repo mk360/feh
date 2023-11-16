@@ -339,26 +339,31 @@ class CombatForecast extends Phaser.GameObjects.Container {
             }).play();
         }
 
-        if (attackerHPRatio >= 0.5 && this.firstHero.portrait.frame.name.includes("damage")) {
-            this.scene.tweens.add
-        }
+        const attackerPortraitSwitcher = this.switchPortraitsTween(this.firstHero.portrait, attackerHPRatio <= 0.5);
+        const defenderPortraitSwitcher = this.switchPortraitsTween(this.secondHero.portrait, defenderHPRatio <= 0.5);
 
-        if (defenderHPRatio < 0.5 && !this.secondHero.portrait.frame.name.includes("damage")) {
-            this.scene.tweens.add({
-                targets: [this.secondHero.portrait],
+        if (attackerPortraitSwitcher) attackerPortraitSwitcher.play();
+        if (defenderPortraitSwitcher) defenderPortraitSwitcher.play();
+    }
+
+    private switchPortraitsTween(portrait: GameObjects.Image, shouldBeDamaged: boolean) {
+        const targetFrame = shouldBeDamaged ? "portrait-damage" : "portrait";
+        const shouldDisplayDamagedPortrait = targetFrame === "portrait-damage" && !portrait.frame.name.includes("damage");
+        const shouldDisplayStandardPortrait = targetFrame === "portrait" && portrait.frame.name.includes("damage");
+
+        if (shouldDisplayDamagedPortrait || shouldDisplayStandardPortrait) {
+            return this.scene.tweens.add({
+                targets: [portrait],
                 alpha: 0,
                 duration: 100,
                 yoyo: true,
                 onYoyo: () => {
-                    this.secondHero.portrait.setFrame("portrait-damage");
+                    portrait.setFrame(targetFrame);
                 }
-            }).play();
+            });
         }
-    }
 
-    switchPortraitsTween(portrait: GameObjects.Image, shouldBeDamaged: boolean) {
-        const targetPortrait = shouldBeDamaged ? "portrait-damage" : "portrait";
-
+        return null;
     }
 }
 
