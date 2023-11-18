@@ -425,17 +425,17 @@ SealAtkDef2.setDescription("Inflicts Atk/Def-5 on foe through its next action af
 
 export const Bushido2 = new FEH.PassiveSkill().setName("Bushido II").setSlot("B");
 
-Bushido2.onBeforeCombat = ({ enemy }) => {
-    enemy.raiseCursor("damageIncrease", 7);
+Bushido2.onBeforeCombat = ({ wielder, enemy }) => {
+    wielder.raiseCursor("damageIncrease", 7);
     if (enemy.getWeapon().effectiveAgainst.includes("flier")) {
         enemy.lowerCursor("effectiveness", 1);
     }
 };
 
-Bushido2.onRoundDefense = ({ wielder, enemy, damage }) => {
+Bushido2.onRoundDefense = ({ wielder, enemy }) => {
     if (wielder.getBattleStats().spd > enemy.getBattleStats().spd) {
         const reductionPercentage = Math.min(40, (wielder.getBattleStats().spd - enemy.getBattleStats().spd) * 4);
-        wielder.raiseCursor("damageReduction", Math.floor(damage * reductionPercentage));
+        wielder.multiplyCursor("damageReduction", 1 - (reductionPercentage / 100));
     }
 };
 
