@@ -10,9 +10,9 @@ export const Astra = new FEH.Special({
     shouldTrigger({ wielder, attacker }) {
         return wielder.id === attacker.id;
     },
-    trigger({ damage }) {
-        return damage * 2.5;
-    }
+    // trigger({ damage }) {
+    //     return damage * 2.5;
+    // }
 });
 
 export const Ignis = new FEH.Special({
@@ -22,9 +22,9 @@ export const Ignis = new FEH.Special({
     shouldTrigger({ wielder, attacker }) {
         return wielder.id === attacker.id;
     },
-    trigger({ wielder, damage }) {
-        return damage + wielder.getBattleStats().def * 0.8;
-    }
+    // trigger({ wielder, damage }) {
+    //     return damage + wielder.getBattleStats().def * 0.8;
+    // }
 });
 
 export const Aether = new FEH.Special({
@@ -80,7 +80,7 @@ export const DraconicRage = new FEH.Weapon({
     name: "Draconic Rage",
     might: 16,
     range: 1,
-    type: "dragonstone",
+    type: "breath",
     color: "blue",
     description: "Accelerates Special trigger (cooldown count-1). If the number of allies within 2 spaces (excluding unit) > the number of foes within 2 spaces (excluding target), grants Atk/Spd+5 during combat. If foe's Range = 2, calculates damage using the lower of foe's Def or Res."
 });
@@ -112,7 +112,7 @@ export const Expiration = new FEH.Weapon({
     name: "Expiration",
     might: 16,
     range: 1,
-    type: "dragonstone",
+    type: "breath",
     color: "colorless",
     description: "Unit can counterattack regardless of foe's range. If foe's Range = 2, calculates damage using the lower of foe's Def or Res."
 });
@@ -435,7 +435,7 @@ Bushido2.onBeforeCombat = ({ wielder, enemy }) => {
 Bushido2.onRoundDefense = ({ wielder, enemy }) => {
     if (wielder.getBattleStats().spd > enemy.getBattleStats().spd) {
         const reductionPercentage = Math.min(40, (wielder.getBattleStats().spd - enemy.getBattleStats().spd) * 4);
-        wielder.multiplyCursor("damageReduction", 1 - (reductionPercentage / 100));
+        // wielder.multiplyCursor("damageReduction", 1 - (reductionPercentage / 100));
     }
 };
 

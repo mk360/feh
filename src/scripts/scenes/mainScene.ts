@@ -48,9 +48,9 @@ function createHeroQuoter(scene: MainScene) {
   };
 }
 
-const dblClickMargin = 300;
 
 function createDoubleTapHandler() {
+  const dblClickMargin = 300;
   let previousTimeStamp = 0;
   return (timeStamp: number) => {
     const isDoubleTap = timeStamp - previousTimeStamp <= dblClickMargin;

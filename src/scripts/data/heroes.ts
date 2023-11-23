@@ -89,7 +89,7 @@ export const Corrin = new FEH.Hero({
     boon: "spd",
     bane: "hp",
     weaponColor: "blue",
-    weaponType: "dragonstone",
+    weaponType: "breath",
     movementType: "infantry",
 });
 
@@ -119,7 +119,7 @@ export const Lucina = new FEH.Hero({
 export const Robin = new FEH.Hero({
     name: "Robin",
     weaponColor: "colorless",
-    weaponType: "dragonstone",
+    weaponType: "breath",
     lv1Stats: {
         hp: 16,
         atk: 8,
