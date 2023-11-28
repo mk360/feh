@@ -14,6 +14,9 @@ const { filename } = cmd(options);
 const fileContents = JSON.parse(fs.readFileSync(path.join(__dirname, filename), "utf-8"));
 
 (async function runHeroPipeline() {
+    if (!fs.existsSync(path.join(__dirname, "../../src/assets/battle"))) {
+        fs.mkdirSync(path.join(__dirname, "../../src/assets/battle"));
+    }
     for (let { Name: name } of fileContents) {
         await downloadAssets(name);
         await compileAudio(name);
