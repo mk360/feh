@@ -16,6 +16,10 @@ import ActionsTray from '../objects/actions-tray';
 import PreparationState from '../../states/preparation';
 import FightingState from '../../states/fighting';
 import State from '../../states/state';
+import GameWorld from 'feh-battles/dec/world';
+const world = new GameWorld("bonjour");
+
+console.log(world);
 
 const squareSize = 125;
 const squaresOffset = 63;
