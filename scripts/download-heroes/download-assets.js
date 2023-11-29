@@ -11,5 +11,6 @@ module.exports = async function downloadHeroAssets(heroName) {
     downloadFile(`https://feheroes.fandom.com/Special:Filepath/VOICE_${urlName}_MAP_1.wav`, path.join(targetDir, 1 + ".wav")),
     downloadFile(`https://feheroes.fandom.com/Special:Filepath/VOICE_${urlName}_MAP_2.wav`, path.join(targetDir, 2 + ".wav")),
     downloadFile(`https://feheroes.fandom.com/Special:Filepath/VOICE_${urlName}_MAP_3.wav`, path.join(targetDir, 3 + ".wav")),
+    downloadFile(`https://feheroes.fandom.com/Special:Filepath/${urlName}_Face_FC.webp`, path.join(targetDir, "face.png"))
   ]);
 };
