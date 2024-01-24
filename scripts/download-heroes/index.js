@@ -27,4 +27,6 @@ const fileContents = JSON.parse(fs.readFileSync(path.join(__dirname, filename), 
     if (fs.existsSync(path.join(__dirname, "../../temp"))) {
         fs.rmSync(path.join(__dirname, "../../temp"), { force: true, recursive: true });
     }
+
+    process.exit(0);
 })();
