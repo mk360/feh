@@ -4,6 +4,7 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
    preload() {
+    console.log(this.game.registry.list);
     this.load.image("map", "assets/maps/map.webp");
     this.load.atlas("weapons", "assets/sheets/weapons.webp", "assets/sheets/weapons.json");
     this.load.atlas("skills", "assets/sheets/skills.webp", "assets/sheets/skills.json");

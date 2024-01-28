@@ -1,9 +1,9 @@
-import ActionsTray from "../scripts/objects/actions-tray";
-import MainScene from "../scripts/scenes/mainScene";
+// import ActionsTray from "../scripts/objects/actions-tray";
+// import MainScene from "../scripts/scenes/mainScene";
 
-interface State {
-    scene: MainScene;
-    changeActionsTray(actionsTray: ActionsTray): void;
-};
+// interface State {
+//     scene: MainScene;
+//     changeActionsTray(actionsTray: ActionsTray): void;
+// };
 
-export default State;
+// export default State;

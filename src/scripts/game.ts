@@ -1,5 +1,5 @@
 import 'phaser'
-import MainScene from './scenes/mainScene'
+// import MainScene from './scenes/mainScene'
 import PreloadScene from './scenes/preloadScene'
 
 const DEFAULT_WIDTH = 750
@@ -20,9 +20,12 @@ const config = {
     width: DEFAULT_WIDTH,
     height: DEFAULT_HEIGHT
   },
-  scene: [PreloadScene, MainScene],
+  scene: [PreloadScene],
 }
 
 window.addEventListener('load', () => {
   const game = new Phaser.Game(config)
+  game.registry.merge({
+    fire: "emblem"
+  });
 })
