@@ -1,12 +1,29 @@
+interface Component {
+  type: string;
+  [k: string]: any;
+}
+
+interface JSONEntity {
+  id: string;
+  tags: string[];
+  components: Component[];
+}
+
+function formatName(name: string) {
+  return name.replace(/: /, "_").replace(/ /g, "_");
+};
+
 export default class PreloadScene extends Phaser.Scene {
-  constructor(test: string) {
+  constructor() {
     super({ key: 'PreloadScene' })
   }
 
-   preload() {
-    console.log(this.game.registry.list);
+   async preload() {
+    const { world } = this.game.registry.list as {
+      id: string;
+      world: JSONEntity[];
+    };
     this.load.image("map", "assets/maps/map.webp");
-    this.load.atlas("weapons", "assets/sheets/weapons.webp", "assets/sheets/weapons.json");
     this.load.atlas("skills", "assets/sheets/skills.webp", "assets/sheets/skills.json");
     this.load.atlas("interactions", "assets/sheets/interactions.webp", "assets/sheets/interactions.json");
     this.load.atlas("skills-ui", "assets/sheets/skills-ui.webp", "assets/sheets/skills-ui.json");
@@ -23,9 +40,11 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("debuff", "assets/debuff-arrow.png");
     this.load.image("effect-shine", "assets/effect.png");
     this.load.audio("bgm", "assets/audio/bgm/leif's army in search of victory.ogg");
-    for (let hero of ["Corrin", "Hector", "Ike", "Lucina", "Lyn", "Robin", "Ryoma", "Ephraim"]) {
-      this.load.atlas(hero, `assets/battle/${hero}.webp`, `assets/battle/${hero}.json`);
-      this.load.audioSprite(`${hero} quotes`, `assets/audio/quotes/${hero}.json`, `assets/audio/quotes/${hero}.m4a`);
+    for (let hero of world) {
+      const heroName = hero.components.find((c) => c.type === "Name").value as string;
+      const formatted = formatName(heroName);
+      this.load.atlas(heroName, `assets/battle/${formatted}.webp`, `assets/battle/${formatted}.json`);
+      this.load.audioSprite(`${heroName} quotes`, `assets/audio/quotes/${formatted}.json`, `assets/audio/quotes/${formatted}.m4a`);
     }
   }
 

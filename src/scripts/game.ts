@@ -1,6 +1,7 @@
 import 'phaser'
 // import MainScene from './scenes/mainScene'
 import PreloadScene from './scenes/preloadScene'
+import MainScene from './scenes/mainScene'
 
 const DEFAULT_WIDTH = 750
 const DEFAULT_HEIGHT = 1320
@@ -20,12 +21,19 @@ const config = {
     width: DEFAULT_WIDTH,
     height: DEFAULT_HEIGHT
   },
-  scene: [PreloadScene],
+  scene: [PreloadScene, MainScene],
 }
 
-window.addEventListener('load', () => {
-  const game = new Phaser.Game(config)
-  game.registry.merge({
-    fire: "emblem"
-  });
-})
+const game = new Phaser.Game(config);
+
+// window.addEventListener('load', () => {
+//   fetch("http://localhost:3600/worlds/V5FF30oqj").then((response) => response.json()).then((world) => {
+//     console.log(world);
+//     game.registry.merge({
+//       world
+//     });
+//   });
+// })
+
+export default game;
+
