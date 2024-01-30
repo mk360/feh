@@ -1,5 +1,4 @@
 import 'phaser'
-// import MainScene from './scenes/mainScene'
 import PreloadScene from './scenes/preloadScene'
 import MainScene from './scenes/mainScene'
 
@@ -26,14 +25,14 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-// window.addEventListener('load', () => {
-//   fetch("http://localhost:3600/worlds/V5FF30oqj").then((response) => response.json()).then((world) => {
-//     console.log(world);
-//     game.registry.merge({
-//       world
-//     });
-//   });
-// })
+window.addEventListener('load', () => {
+  fetch("http://localhost:3600/worlds/V5FF30oqj").then((response) => response.json()).then((world) => {
+    console.log(world);
+    game.registry.merge({
+      world
+    });
+  });
+})
 
-export default game;
+export default config;
 
