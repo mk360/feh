@@ -3,7 +3,7 @@
   "version": "3.55.2",
   "description": "Phaser 3 starter template with TypeScript and webpack.",
   "homepage": "https://mk360.github.io/feh",
-  "main": "index.js",
+  "main": "./index.js",
   "scripts": {
     "start": "webpack serve --config webpack/webpack.dev.js",
     "build": "rimraf dist && webpack --config webpack/webpack.prod.js",
@@ -41,7 +41,8 @@
     "audiosprite": "^0.7.2",
     "command-line-args": "^5.2.1",
     "feh-battles": "file:../feh-battles",
-    "phaser": "^3.60.0"
+    "phaser": "^3.60.0",
+    "phaser3spectorjs": "^0.0.8"
   },
   "devDependencies": {
     "@sjchang/sprite-packer": "^1.0.3",

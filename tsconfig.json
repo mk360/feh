@@ -6,15 +6,24 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "allowJs": true,
+    "allowJs": false,
+    "outDir": "./lib",
+    "rootDir": "./src",
     "allowUnreachableCode": false,
     "noImplicitAny": false,
     "sourceMap": true,
     "strictPropertyInitialization": false,
-
     "moduleResolution": "node",
-    "lib": ["dom", "esnext"]
+    "lib": [
+      "dom",
+      "esnext"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
 }

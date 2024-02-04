@@ -14,7 +14,7 @@ const config = {
     min: 15,
   },
   scale: {
-    parent: 'phaser-game',
+    parent: 'game',
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: DEFAULT_WIDTH,
@@ -25,14 +25,4 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-window.addEventListener('load', () => {
-  fetch("http://localhost:3600/worlds/V5FF30oqj").then((response) => response.json()).then((world) => {
-    console.log(world);
-    game.registry.merge({
-      world
-    });
-  });
-})
-
-export default config;
-
+export default game;

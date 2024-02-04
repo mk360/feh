@@ -61,37 +61,28 @@
 // }
 
 interface Component {
-  type: string;
-  [k: string]: any;
+    type: string;
+    [k: string]: any;
 }
 
 interface JSONEntity {
-  id: string;
-  tags: string[];
-  components: Component[];
+    id: string;
+    tags: string[];
+    components: Component[];
 }
 
 export default class MainScene extends Phaser.Scene {
-  constructor() {
-    super({ key: "MainScene"});
-  }
+    constructor() {
+        super({ key: "MainScene" });
+    }
 
-  create() {
-    const { world: entities } = this.game.registry.list as {
-      id: string;
-      world: JSONEntity[];
-    };
-    let j = 0;
-    entities.forEach((entity, i) => {
-      const name = entity.components.find((d) => d.type === "Name").value;
-      const skills = entity.components.filter((d) => d.type === "Skill");
-      for (let skill of skills) {
-        this.add.image(600, 80 + 80 * j, "skills", skill.name);
-        j++;
-      }
-      const img = this.add.image(100 + Math.floor(i / 4) * 200, 200 * (i % 4) + 150, name, "map");
-    });
-  }
+    create() {
+        const entities = this.game.registry.list.world as JSONEntity[];
+        for (let i = 0; i < entities.length; i++) {
+            const entity = entities[i];
+            this.add.image(800, 60 * i, entity.components.find((d) => d.type === "Name").value, "map");
+        }
+    }
 }
 
 // export default class MainScene extends Phaser.Scene {
