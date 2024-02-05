@@ -3,19 +3,17 @@ import PreloadScene from './scenes/preloadScene'
 import MainScene from './scenes/mainScene'
 
 const DEFAULT_WIDTH = 750
-const DEFAULT_HEIGHT = 1320
+const DEFAULT_HEIGHT = 1200
 
-const config = {
+const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.WEBGL,
   backgroundColor: '#1F5E6D',
   fps: {
-    forceSetTimeout: true,
     target: 15,
     min: 15,
   },
   scale: {
     parent: 'game',
-    mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: DEFAULT_WIDTH,
     height: DEFAULT_HEIGHT

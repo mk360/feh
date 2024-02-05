@@ -1,5 +1,6 @@
 // import { GameObjects, Time, Tweens } from 'phaser';
-// import Hero from '../objects/hero';
+import { GameObjects } from 'phaser';
+import Hero from '../objects/hero';
 // import UnitInfosBanner from '../objects/unit-infos-banner';
 // import { renderDamageText, renderText } from '../utils/text-renderer';
 // import CombatForecast from '../objects/combat-forecast';
@@ -18,16 +19,16 @@
 // import State from '../../states/state';
 // import GameWorld from 'feh-battles/dec/world';
 
-// const squareSize = 125;
-// const squaresOffset = 63;
-// const fixedY = 120;
+const squareSize = 125;
+const squaresOffset = 63;
+const fixedY = 120;
 
-// function gridToPixels(x: number, y: number) {
-//   return {
-//     x: x * squareSize - squaresOffset,
-//     y: y * squareSize + fixedY,
-//   }
-// }
+function gridToPixels(x: number, y: number) {
+    return {
+        x: x * squareSize - squaresOffset,
+        y: y * squareSize + fixedY,
+    }
+}
 
 // function pixelsToGrid(x: number, y: number) {
 //   return {
@@ -60,28 +61,29 @@
 //   };
 // }
 
-interface Component {
-    type: string;
-    [k: string]: any;
-}
-
-interface JSONEntity {
-    id: string;
-    tags: string[];
-    components: Component[];
-}
-
 export default class MainScene extends Phaser.Scene {
     constructor() {
         super({ key: "MainScene" });
     }
 
+    private heroesLayer: GameObjects.Layer;
+    private map: GameObjects.Image;
+
     create() {
         const entities = this.game.registry.list.world as JSONEntity[];
-        for (let i = 0; i < entities.length; i++) {
-            const entity = entities[i];
-            this.add.image(800, 60 * i, entity.components.find((d) => d.type === "Name").value, "map");
+        this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
+        this.heroesLayer = this.add.layer();
+        for (let entity of entities) {
+            this.addHero(entity);
         }
+    }
+
+    addHero(entity: JSONEntity) {
+        const { x: gridX, y: gridY } = entity.components.find((c) => c.type === "Position");
+        const { x, y } = gridToPixels(gridX, gridY);
+        const heroObject = new Hero(this, x, y, entity).setInteractive();
+        this.heroesLayer.add(heroObject);
+        return heroObject;
     }
 }
 
@@ -95,7 +97,6 @@ export default class MainScene extends Phaser.Scene {
 //   turn: Team = "team1";
 //   enemyRangeLayer: GameObjects.Layer;
 //   movementRangeLayer: GameObjects.Layer;
-//   heroesLayer: GameObjects.Layer;
 //   temporaryAssetsLayer: GameObjects.Layer;
 //   rng = new Phaser.Math.RandomDataGenerator();
 //   heroBackground: Phaser.GameObjects.Rectangle;
