@@ -1,14 +1,13 @@
-// import { renderRegularHPText, renderLabelText, renderText, renderBoonText, renderBaneText } from "../utils/text-renderer";
-// import Hero from "./hero";
-// import TextColors from "../utils/text-colors";
-// import HeroNameplate from "./hero-nameplate";
-// import { GameObjects } from "phaser";
-// import Stats from "../../interfaces/stats";
-// import Textbox from "./textbox";
+import { renderRegularHPText, renderLabelText, renderText, renderBoonText, renderBaneText } from "../utils/text-renderer";
+import Hero from "./hero";
+import { GameObjects } from "phaser";
+import TextColors from "../utils/text-colors";
+import HeroNameplate from "./hero-nameplate";
+import Stats from "../../interfaces/stats";
+import Textbox from "./textbox";
 // import PassiveSkill from "feh-battles/dec/passive_skill";
-// import HeroData from "feh-battles/dec/hero";
 // import TextboxContent from "../../types/textbox-content";
-// import renderHP from "../utils/render-hp";
+import renderHP from "../utils/render-hp";
 
 // interface RenderedStat {
 //     label: GameObjects.Text;
@@ -16,77 +15,77 @@
 //     value: GameObjects.Text;
 // };
 
-// class UnitInfosBanner extends GameObjects.Container {
-//     private nameplate: HeroNameplate;
-//     private maxHP: GameObjects.Text;
-//     private weaponName: GameObjects.Text;
-//     private A: GameObjects.Image;
-//     private B: GameObjects.Image;
-//     private C: GameObjects.Image;
+class UnitInfosBanner extends GameObjects.Container {
+    private nameplate: HeroNameplate;
+    private maxHP: GameObjects.Text;
+    private weaponName: GameObjects.Text;
+    private A: GameObjects.Image;
+    private B: GameObjects.Image;
+    private C: GameObjects.Image;
 //     private S: GameObjects.Image;
 //     private textboxTarget: string;
-//     private heroPortrait: GameObjects.Image;
+    private heroPortrait: GameObjects.Image;
 //     private weaponBg: GameObjects.Image;
 //     private specialBg: GameObjects.Image;
 //     private special: GameObjects.Text;
-//     private textbox: Textbox;
+    private textbox: Textbox;
 //     private stats: {
 //         [k in keyof Stats]: RenderedStat;
 //     };
 //     private assistBg: GameObjects.Image;
 //     private assist: GameObjects.Text;
-//     private hpBackground: GameObjects.Image;
+    private hpBackground: GameObjects.Image;
     
-//     constructor(scene: Phaser.Scene) {
-//         super(scene, 0, 0);
-//         const blockX = 310;
-//         this.add(new GameObjects.Image(scene, 0, 0, "unit-banner-bg").setOrigin(0, 0));
-//         this.heroPortrait = new GameObjects.Image(scene, -100, 0, "").setOrigin(0);
-//         this.add(this.heroPortrait);
-//         this.hpBackground = new GameObjects.Image(scene, blockX - 140, 70, "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5);
-//         this.add(this.hpBackground.setInteractive());
-//         this.maxHP = renderRegularHPText({
-//             scene: this.scene,
-//             x: blockX,
-//             y: 56,
-//             content: "",
-//             style: {
-//                 fontSize: "18px"
-//             }
-//         });
+    constructor(scene: Phaser.Scene) {
+        super(scene, 0, 0);
+        const blockX = 310;
+        this.add(new GameObjects.Image(scene, 0, 0, "unit-banner-bg").setOrigin(0, 0));
+        this.heroPortrait = new GameObjects.Image(scene, -100, 0, "").setOrigin(0).setScale(0.6);
+        this.add(this.heroPortrait);
+        this.hpBackground = new GameObjects.Image(scene, blockX - 140, 70, "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5);
+        this.add(this.hpBackground.setInteractive());
+        this.maxHP = renderRegularHPText({
+            scene: this.scene,
+            x: blockX,
+            y: 56,
+            content: "",
+            style: {
+                fontSize: "18px"
+            }
+        });
 
-//         this.textbox = new Textbox(scene, 0, 0).setVisible(false);
+        this.textbox = new Textbox(scene, 0, 0).setVisible(false);
 
-//         this.nameplate = new HeroNameplate(scene, blockX - 150, 25, {
-//             name: "",
-//             weaponType: "",
-//             weaponColor: "",
-//         });
+        this.nameplate = new HeroNameplate(scene, blockX - 150, 25, {
+            name: "",
+            weaponType: "",
+            weaponColor: "",
+        });
 
-//         this.createStats();
+        // this.createStats();
 
-//         this.add([this.nameplate]);
-//         this.createMainSkills();
-//         const lvText = renderText(scene, 580, 15, "40", { fontSize: "20px"});
-//         this.add(renderText(scene, lvText.getLeftCenter().x + 5, lvText.getTopCenter().y - 15, "LV.", { fontSize: "14px"}));
-//         this.add(lvText);
+        this.add([this.nameplate]);
+        // this.createMainSkills();
+        // const lvText = renderText(scene, 580, 15, "40", { fontSize: "20px"});
+        // this.add(renderText(scene, lvText.getLeftCenter().x + 5, lvText.getTopCenter().y - 15, "LV.", { fontSize: "14px"}));
+        // this.add(lvText);
         
-//         this.weaponName = renderText(this.scene, this.weaponBg.getLeftCenter().x + 30, this.weaponBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
-//             fontSize: "19px"
-//         });
-//         this.assist = renderText(this.scene, this.assistBg.getLeftCenter().x + 30, this.assistBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
-//             fontSize: "19px"
-//         });
-//         this.special = renderText(this.scene, this.specialBg.getLeftCenter().x + 30, this.specialBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
-//             fontSize: "19px"
-//         });
-//         this.add(this.weaponName);
-//         this.add(this.special);
-//         this.add(this.assist);
-//         this.add(this.maxHP);
-//         this.add(this.textbox);
-//         this.createPassives(lvText);
-//     }
+        // this.weaponName = renderText(this.scene, this.weaponBg.getLeftCenter().x + 30, this.weaponBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
+        //     fontSize: "19px"
+        // });
+        // this.assist = renderText(this.scene, this.assistBg.getLeftCenter().x + 30, this.assistBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
+        //     fontSize: "19px"
+        // });
+        // this.special = renderText(this.scene, this.specialBg.getLeftCenter().x + 30, this.specialBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
+        //     fontSize: "19px"
+        // });
+        // this.add(this.weaponName);
+        // this.add(this.special);
+        // this.add(this.assist);
+        this.add(this.maxHP);
+        // this.add(this.textbox);
+        // this.createPassives(lvText);
+    }
 
 //     private displayTextbox() {
 //         this.textbox.setVisible(true).setScale(0);
@@ -419,22 +418,26 @@
 //         return textLines;
 //     };
 
-//     setHero(hero: Hero) {
-//         this.textbox.clearContent().setVisible(false);
-//         const internalHero = hero.getInternalHero();
-//         this.specialBg.off("pointerdown");
-//         if (internalHero.skills.special) {
-//             this.special.setText(internalHero.skills.special.name);
-//             this.specialBg.on("pointerdown", () => {
-//                 const content = this.createSpecialTextbox(internalHero.skills.special);
-//                 this.textbox.x = this.specialBg.getRightCenter().x;
-//                 this.textbox.y = this.specialBg.getBottomCenter().y + 10;
-//                 this.textbox.clearContent().setContent(content);
-//                 this.controlTextboxDisplay("special");
-//             });
-//         } else {
-//             this.special.setText("-");
-//         }
+    setHero(hero: Hero) {
+        this.textbox.clearContent().setVisible(false);
+        const internalHero = hero.getInternalHero();
+        const name = internalHero.components.find((c) => c.type === "Name").value
+        const stats = internalHero.components.find((c) => c.type === "Stats");
+        const weapon = internalHero.components.find((c) => c.type === "Weapon");
+        this.heroPortrait.setTexture(name, "portrait")
+        // this.specialBg.off("pointerdown");
+        // if (internalHero.skills.special) {
+        //     this.special.setText(internalHero.skills.special.name);
+        //     this.specialBg.on("pointerdown", () => {
+        //         const content = this.createSpecialTextbox(internalHero.skills.special);
+        //         this.textbox.x = this.specialBg.getRightCenter().x;
+        //         this.textbox.y = this.specialBg.getBottomCenter().y + 10;
+        //         this.textbox.clearContent().setContent(content);
+        //         this.controlTextboxDisplay("special");
+        //     });
+        // } else {
+        //     this.special.setText("-");
+        // }
         
 //         this.assistBg.off("pointerdown");
 //         if (internalHero.skills.assist) {
@@ -465,10 +468,10 @@
 //             this.weaponName.setText("-");
 //         }
         
-//         this.hpBackground.off("pointerdown").on("pointerdown", this.statDetailsCallback({
-//             statKey: "hp",
-//             hero: internalHero,
-//         }))
+        // this.hpBackground.off("pointerdown").on("pointerdown", this.statDetailsCallback({
+        //     statKey: "hp",
+        //     hero: internalHero,
+        // }))
 
 //         for (let statKey in this.stats) {
 //             const castKey = statKey as keyof Stats;
@@ -500,25 +503,27 @@
 //         this.heroPortrait.setTexture(internalHero.name, internalHero.stats.hp / internalHero.maxHP < 0.5 ? 'portrait-damage' : 'portrait');
 
 //         if (this.nameplate.heroName.text !== internalHero.name) {
-//             this.heroPortrait.x = -300;
-//             this.scene.tweens.add({
-//               targets: this.heroPortrait,
-//               x: -100,
-//               duration: 200
-//             });
+            this.heroPortrait.x = -300;
+            const t = this.scene.tweens.add({
+              targets: this.heroPortrait,
+              x: -100,
+              duration: 200
+            });
+
+            t.play();
 //         }
 
-//         this.nameplate.updateNameplate({
-//             name: internalHero.name,
-//             weaponType: weapon.type,
-//             weaponColor: weapon.color,
-//         });
-//         this.maxHP.setText(`/ ${internalHero.maxHP}`);
+        this.nameplate.updateNameplate({
+            name: name.split(":")[0],
+            weaponType: weapon.weaponType,
+            weaponColor: weapon.color,
+        });
+        this.maxHP.setText(`/ ${stats.maxHP}`);
 
 //         this.updatePassives(hero);
     
 //         return this;
-//     }
-// };
+    }
+};
 
-// export default UnitInfosBanner;
+export default UnitInfosBanner;

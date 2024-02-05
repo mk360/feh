@@ -1,8 +1,8 @@
-// import { GameObjects, Time, Tweens } from 'phaser';
-import { GameObjects } from 'phaser';
+import { GameObjects, Time, Tweens } from 'phaser';
 import Hero from '../objects/hero';
-// import UnitInfosBanner from '../objects/unit-infos-banner';
-// import { renderDamageText, renderText } from '../utils/text-renderer';
+import DEBUG_ENTITIES from '../../debug';
+import UnitInfosBanner from '../objects/unit-infos-banner';
+import { renderDamageText, renderText } from '../utils/text-renderer';
 // import CombatForecast from '../objects/combat-forecast';
 // import Coords from '../../interfaces/coords';
 // import battle from '../classes/battle';
@@ -68,14 +68,20 @@ export default class MainScene extends Phaser.Scene {
 
     private heroesLayer: GameObjects.Layer;
     private map: GameObjects.Image;
+    private unitInfosBanner: UnitInfosBanner;
 
     create() {
-        const entities = this.game.registry.list.world as JSONEntity[];
+        const entities = this.game.registry.list.world as JSONEntity[] || DEBUG_ENTITIES;
         this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
-        this.heroesLayer = this.add.layer();
+        this.heroesLayer = this.add.layer().setDepth(2);
+        this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
         for (let entity of entities) {
-            this.addHero(entity);
+            const hero = this.addHero(entity).setInteractive();
+            hero.on("pointerdown", () => {
+                this.unitInfosBanner.setVisible(true).setHero(hero);
+            });
         }
+        this.add.existing(this.unitInfosBanner);
     }
 
     addHero(entity: JSONEntity) {
@@ -88,7 +94,6 @@ export default class MainScene extends Phaser.Scene {
 }
 
 // export default class MainScene extends Phaser.Scene {
-//   unitInfosBanner: UnitInfosBanner;
 //   walkTiles: string[] = [];
 //   enemyRangeCoords: string[] = [];
 //   attackTiles: string[] = [];
