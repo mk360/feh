@@ -62,6 +62,11 @@ export function renderCritHPText(config: TextRenderingConfig) {
     return text;
 }
 
+export function renderSpecialText(config: TextRenderingConfig) {
+    const { text, gradient } = renderTextWith2DContext(config);
+    gradient.addColorStop(0, "white");
+}
+
 export function renderRegularHPText(config: TextRenderingConfig) {
     const { text, gradient } = renderTextWith2DContext(config);
     gradient.addColorStop(0, "white");

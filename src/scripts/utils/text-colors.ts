@@ -6,7 +6,8 @@ const TextColors = {
     healthyHP: "#F2C42A",
     effective: "#87F640",
     criticalHP: "#CA384D",
-    label: "#F5D04C"
+    label: "#F5D04C",
+    specialPink: "#F599FF"
 };
 
 export default TextColors;

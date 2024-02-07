@@ -1,6 +1,6 @@
 {
 	"frames": {
-		"forecast-bg.png": {
+		"forecast-bg": {
 			"frame": {
 				"x": 1,
 				"y": 1,
@@ -20,7 +20,7 @@
 				"h": 180
 			}
 		},
-		"hp plate.png": {
+		"hp plate": {
 			"frame": {
 				"x": 753,
 				"y": 1,
@@ -40,7 +40,7 @@
 				"h": 71
 			}
 		},
-		"nameplate.png": {
+		"nameplate": {
 			"frame": {
 				"x": 978,
 				"y": 1,
@@ -60,7 +60,7 @@
 				"h": 82
 			}
 		},
-		"stat-glowing-line.png": {
+		"stat-glowing-line": {
 			"frame": {
 				"x": 2375,
 				"y": 1,
@@ -80,7 +80,7 @@
 				"h": 25
 			}
 		},
-		"unit-banner-bg.png": {
+		"unit-banner-bg": {
 			"frame": {
 				"x": 3463,
 				"y": 1,
@@ -100,7 +100,7 @@
 				"h": 180
 			}
 		},
-		"unit-bg-test.png": {
+		"unit-bg-test": {
 			"frame": {
 				"x": 4215,
 				"y": 1,
@@ -120,7 +120,7 @@
 				"h": 149
 			}
 		},
-		"unitbg.png": {
+		"unitbg": {
 			"frame": {
 				"x": 5249,
 				"y": 1,
@@ -144,7 +144,7 @@
 	"meta": {
 		"app": "http://www.codeandweb.com/texturepacker",
 		"version": "1.0",
-		"image": "spritesheet.png",
+		"image": "spritesheet",
 		"format": "RGBA8888",
 		"size": {
 			"w": 5853,

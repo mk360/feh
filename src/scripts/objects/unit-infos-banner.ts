@@ -39,7 +39,7 @@ class UnitInfosBanner extends GameObjects.Container {
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
         const blockX = 310;
-        this.add(new GameObjects.Image(scene, 0, 0, "unit-banner-bg").setOrigin(0, 0));
+        this.add(new GameObjects.Image(scene, 0, 0, "top-banner", "unit-banner-bg").setOrigin(0, 0));
         this.heroPortrait = new GameObjects.Image(scene, -100, 0, "").setOrigin(0).setScale(0.6);
         this.add(this.heroPortrait);
         this.hpBackground = new GameObjects.Image(scene, blockX - 140, 70, "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5);
@@ -175,22 +175,26 @@ class UnitInfosBanner extends GameObjects.Container {
         const internalHero = hero.getInternalHero();
 
         const skills = Object.groupBy(internalHero.Skill.filter((i) => ["A", "B", "C"].includes(i.slot)) as { name: string, slot: "A" | "B" | "C" }[], (s) => s.slot);
-        if (internalHero.Skill) {
-            for (let skill in skills) {
-                const usedSkill = skills[skill as keyof typeof skills][0];
-                this[skill].setTexture("skills", usedSkill.name);
-                this[skill].setName(usedSkill.name);
-                // this[skill].off("pointerdown");
-                // this[skill].setInteractive().on("pointerdown", () => {
-                // this.textboxTarget = skill;
-                // this.textbox.clearContent();
-                // const skillInfosLines = this.createPassiveTextbox(skillData);
-                // this.textbox.x = this.S.getRightCenter().x;
-                // this.textbox.y = this.S.getBottomCenter().y + 5;
-                // this.textbox.setContent([skillInfosLines]);
-                // this.controlTextboxDisplay(skill);
-                // });
+        const skillSlots = ["A", "B", "C"] as const;
+
+        for (let skillSlot of skillSlots) {
+            const usedSkill = skills[skillSlot]?.[0];
+            const skillObject = this[skillSlot];
+            if (usedSkill) {
+                skillObject.setTexture("skills", usedSkill.name);
+            } else {
+                skillObject.setTexture("skills", "empty");
             }
+            // this[skill].off("pointerdown");
+            // this[skill].setInteractive().on("pointerdown", () => {
+            // this.textboxTarget = skill;
+            // this.textbox.clearContent();
+            // const skillInfosLines = this.createPassiveTextbox(skillData);
+            // this.textbox.x = this.S.getRightCenter().x;
+            // this.textbox.y = this.S.getBottomCenter().y + 5;
+            // this.textbox.setContent([skillInfosLines]);
+            // this.controlTextboxDisplay(skill);
+            // });
         }
     }
 
@@ -441,7 +445,9 @@ class UnitInfosBanner extends GameObjects.Container {
             skills = Object.groupBy(Skill as { slot: string }[], (skill) => skill.slot);
         }
 
-        this.heroPortrait.setTexture(name, "portrait");
+        const { maxHP, hp } = stats;
+
+        this.heroPortrait.setTexture(name, hp / maxHP < 0.5 ? "portrait-damage" : "portrait");
         // this.specialBg.off("pointerdown");
         if (skills.special) {
             this.special.setText(skills.special[0].name);

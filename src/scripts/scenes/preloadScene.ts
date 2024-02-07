@@ -39,11 +39,8 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("effective-against", "/assets/enemy-effective.png");
     this.load.image("buff", "/assets/buff-arrow.png");
     this.load.image("ui-button", "/assets/ui-button.png");
-    this.load.image("nameplate", "/assets/nameplate.png");
-    this.load.image("unit-banner-bg", "/assets/unit-banner-bg.png");
-    this.load.image("hp plate", "/assets/hp plate.png");
     this.load.atlas("paths", "/assets/path.png", "/assets/path.json");
-    this.load.atlas("banner-ui", "/assets/top-banner.png", "/assets/top-banner.json");
+    this.load.atlas("top-banner", "/assets/top-banner.webp", "/assets/top-banner.json");
     this.load.image("ui-button-pressed", "/assets/ui-button-pressed.png");
     this.load.image("debuff", "/assets/debuff-arrow.png");
     this.load.image("effect-shine", "/assets/effect.png");
