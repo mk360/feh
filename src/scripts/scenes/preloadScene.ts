@@ -24,7 +24,7 @@ export default class PreloadScene extends Phaser.Scene {
   async preload() {
     let { world } = this.game.registry.list as {
       id: string;
-      world: JSONEntity[];
+      world: any;
     };
     if (!world) world = DEBUG_ENTITIES;
     this.load.image("map", "/assets/maps/map.webp");
@@ -48,8 +48,9 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("debuff", "/assets/debuff-arrow.png");
     this.load.image("effect-shine", "/assets/effect.png");
     this.load.audio("bgm", "/assets/audio/bgm/leif's army in search of victory.ogg");
-    for (let hero of world) {
-      const heroName = hero.components.find((c) => c.type === "Name").value as string;
+    for (let heroId in world) {
+      const heroData = world[heroId];
+      const heroName = heroData.Name[0].value as string;
       const formatted = formatName(heroName);
       this.load.atlas(heroName, `/assets/battle/${formatted}.webp`, `/assets/battle/${formatted}.json`);
       this.load.audioSprite(`${heroName} quotes`, `/assets/audio/quotes/${formatted}.json`, `/assets/audio/quotes/${formatted}.m4a`);

@@ -75,7 +75,8 @@ export default class MainScene extends Phaser.Scene {
         this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
         this.heroesLayer = this.add.layer().setDepth(2);
         this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
-        for (let entity of entities) {
+        for (let entityId in entities) {
+            const entity = entities[entityId];
             const hero = this.addHero(entity).setInteractive();
             hero.on("pointerdown", () => {
                 this.unitInfosBanner.setVisible(true).setHero(hero);
@@ -84,8 +85,9 @@ export default class MainScene extends Phaser.Scene {
         this.add.existing(this.unitInfosBanner);
     }
 
-    addHero(entity: JSONEntity) {
-        const { x: gridX, y: gridY } = entity.components.find((c) => c.type === "Position");
+    addHero(entity) {
+        console.log({ entity });
+        const { x: gridX, y: gridY } = entity.Position[0];
         const { x, y } = gridToPixels(gridX, gridY);
         const heroObject = new Hero(this, x, y, entity).setInteractive();
         this.heroesLayer.add(heroObject);

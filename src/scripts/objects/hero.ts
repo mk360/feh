@@ -19,14 +19,16 @@ class Hero extends GameObjects.Container {
     statusesImage: IconsSwitcher;
     effectivenessImage: IconsSwitcher;
 
-    constructor(scene: Scene, x: number, y: number, data: JSONEntity) {
-        const name = data.components.find((c) => c.type === "Name").value;
-        const team = data.components.find((c) => c.type === "Side").value;
-        const stats = data.components.find((c) => c.type === "Stats");
-        const weapon = data.components.find((c) => c.type === "Weapon");
+    constructor(scene: Scene, x: number, y: number, data: any) {
+        console.log({ data });
+        const name = data.Name[0].value;
+        const team = data.Side[0].value;
+        const stats = data.Stats[0];
+        const weapon = data.Weapon[0];
         super(scene, x, y);
         this.setData("hero", data);
         this.statuses = [];
+        // this.special = the special icon or count
         this.setName(data.id);
         this.sprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.7).setDepth(1);
         this.glowingSprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.7).setDepth(2).setAlpha(0).setTintFill(0xFFFFFF);
@@ -35,7 +37,7 @@ class Hero extends GameObjects.Container {
         this.statusesImage = new IconsSwitcher(scene, 45, 45, []);
         this.effectivenessImage = new IconsSwitcher(scene, 0, 0, []);
         const hpBarHeight = this.statusesImage.getCenter().y;
-        this.hpText = renderText(scene, -15, hpBarHeight, stats.maxHP, {
+        this.hpText = renderText(scene, -15, hpBarHeight, stats.hp, {
             fontSize: "18px"
         }).setOrigin(1, 0.5);
         this.hpBar = new GameObjects.Rectangle(scene, this.hpText.getRightCenter().x, hpBarHeight, hpBarWidth, 5, team === "team1" ? 0x54DFF4 : 0xFA4D69).setOrigin(0, 0).setDepth(2);
@@ -54,6 +56,7 @@ class Hero extends GameObjects.Container {
         this.hpText.setFill(gradient);
         this.add(this.hpText);
         this.setSize(120, 120);
+        this.updateHP(stats.hp);
     }
 
     createFlashTween() {
@@ -69,15 +72,14 @@ class Hero extends GameObjects.Container {
     }
 
     getInternalHero() {
-        return this.data.get("hero") as JSONEntity;
+        return this.data.get("hero");
     }
 
     updateHP(newHP: number) {
-        const stats = this.getInternalHero().components.find((c) => c.type === "Stats");
-        const { maxHP, hp } = stats;
-        const usedHPValue = newHP ?? hp;
-        this.hpText.setText(usedHPValue.toString());
-        const hpRatio = usedHPValue / maxHP;
+        const stats = this.getInternalHero().Stats[0];
+        const { maxHP } = stats;
+        this.hpText.setText(newHP.toString());
+        const hpRatio = newHP / maxHP;
         this.hpBar.displayWidth = hpBarWidth * hpRatio;
     }
 

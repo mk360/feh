@@ -16,7 +16,8 @@
     "moduleResolution": "node",
     "lib": [
       "dom",
-      "esnext"
+      "esnext",
+      "ES2022"
     ]
   },
   "include": [
