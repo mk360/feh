@@ -37,18 +37,18 @@ function gridToPixels(x: number, y: number) {
 //   };
 // }
 
-// function createHeroQuoter(scene: MainScene) {
-//   let previousQuote = "";
+function createHeroQuoter(scene: MainScene) {
+  let previousQuote = "";
 
-//   return (hero: Hero) => {
-//     const internalHero = hero.getInternalHero();
-//     const n = scene.rng.integerInRange(1, 3);
-//     if (previousQuote) scene.sound.stopByKey(previousQuote);
-//     const soundFile = internalHero.name + " quotes";
-//     scene.sound.playAudioSprite(internalHero.name + " quotes", n.toString(), { volume: 0.2 });
-//     previousQuote = soundFile;
-//   };
-// }
+  return (hero: Hero) => {
+    const internalHero = hero.getInternalHero();
+    const n = scene.rng.integerInRange(1, 3);
+    if (previousQuote) scene.sound.stopByKey(previousQuote);
+    const soundFile = internalHero.name + " quotes";
+    scene.sound.playAudioSprite(internalHero.name + " quotes", n.toString(), { volume: 0.2 });
+    previousQuote = soundFile;
+  };
+}
 
 
 // function createDoubleTapHandler() {
@@ -66,15 +66,16 @@ export default class MainScene extends Phaser.Scene {
         super({ key: "MainScene" });
     }
 
+    rng = new Phaser.Math.RandomDataGenerator();
     private heroesLayer: GameObjects.Layer;
     private map: GameObjects.Image;
     private unitInfosBanner: UnitInfosBanner;
 
     create() {
-        const entities = this.game.registry.list.world as JSONEntity[] || DEBUG_ENTITIES;
+        const entities = this.game.registry.list.world || DEBUG_ENTITIES as typeof DEBUG_ENTITIES;
         this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
-        this.heroesLayer = this.add.layer().setDepth(2);
         this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
+        this.heroesLayer = this.add.layer().setDepth(2);
         for (let entityId in entities) {
             const entity = entities[entityId];
             const hero = this.addHero(entity).setInteractive();
@@ -86,9 +87,9 @@ export default class MainScene extends Phaser.Scene {
     }
 
     addHero(entity) {
-        console.log({ entity });
         const { x: gridX, y: gridY } = entity.Position[0];
         const { x, y } = gridToPixels(gridX, gridY);
+        console.log({ x, y });
         const heroObject = new Hero(this, x, y, entity).setInteractive();
         this.heroesLayer.add(heroObject);
         return heroObject;
@@ -105,7 +106,6 @@ export default class MainScene extends Phaser.Scene {
 //   enemyRangeLayer: GameObjects.Layer;
 //   movementRangeLayer: GameObjects.Layer;
 //   temporaryAssetsLayer: GameObjects.Layer;
-//   rng = new Phaser.Math.RandomDataGenerator();
 //   heroBackground: Phaser.GameObjects.Rectangle;
 //   movementArrows: GameObjects.Group;
 //   movementAllowedImages: Phaser.GameObjects.Group;
