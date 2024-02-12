@@ -5,7 +5,6 @@ import TextColors from "../utils/text-colors";
 import HeroNameplate from "./hero-nameplate";
 import Stats from "../../interfaces/stats";
 import Textbox from "./textbox";
-// import PassiveSkill from "feh-battles/dec/passive_skill";
 // import TextboxContent from "../../types/textbox-content";
 import renderHP from "../utils/render-hp";
 
@@ -42,7 +41,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(new GameObjects.Image(scene, 0, 0, "top-banner", "unit-banner-bg").setOrigin(0, 0));
         this.heroPortrait = new GameObjects.Image(scene, -100, 0, "").setOrigin(0).setScale(0.6);
         this.add(this.heroPortrait);
-        this.hpBackground = new GameObjects.Image(scene, blockX - 140, 70, "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5);
+        this.hpBackground = new GameObjects.Image(scene, blockX - 140, 70, "top-banner", "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5);
         this.add(this.hpBackground.setInteractive());
         this.maxHP = renderRegularHPText({
             scene: this.scene,
@@ -140,8 +139,8 @@ class UnitInfosBanner extends GameObjects.Container {
             const items = this.stats[statKey] as RenderedStat;
             this.add([items.label, items.value]);
         }
-        this.add(new GameObjects.Image(this.scene, blockX - 130, 125, "stat-line").setScale(0.2, 0.5).setOrigin(0));
-        this.add(new GameObjects.Image(this.scene, blockX - 130, 160, "stat-line").setScale(0.2, 0.5).setOrigin(0));
+        this.add(new GameObjects.Image(this.scene, blockX - 130, 125, "top-banner", "stat-glowing-line").setScale(0.2, 0.5).setOrigin(0));
+        this.add(new GameObjects.Image(this.scene, blockX - 130, 160, "top-banner", "stat-glowing-line").setScale(0.2, 0.5).setOrigin(0));
     }
 
     private createMainSkills() {
@@ -183,7 +182,7 @@ class UnitInfosBanner extends GameObjects.Container {
             if (usedSkill) {
                 skillObject.setTexture("skills", usedSkill.name);
             } else {
-                skillObject.setTexture("skills", "empty");
+                skillObject.setTexture("skills", "Empty Slot");
             }
             // this[skill].off("pointerdown");
             // this[skill].setInteractive().on("pointerdown", () => {
