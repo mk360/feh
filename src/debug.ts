@@ -22,8 +22,8 @@ const DEBUG_ENTITIES = {
         Side: [{ value: "team1" }],
         Weapon: [{ weaponType: "sword", color: "red" }],
         Position: [{ x: 3, y: 7 }],
-        Stats: [{ maxHP: 42, hp: 20, atk: 10, spd: 8, def: 1, res: 7 }],
-        Skill: [{ name: "Blazing Durandal", slot: "weapon" }, { name: "Obstruct 3", slot: "B" }, { name: "Armored Blow 1", slot: "A" }, { name: "Atk Smoke 3", slot: "C" }, { slot: "special", name: "Astra" }, { slot: "assist", name: "Shove" }]
+        Stats: [{ maxHP: 42, hp: 5, atk: 10, spd: 8, def: 1, res: 7 }],
+        Skill: [{ name: "Blazing Durandal", slot: "weapon" }, { name: "Armored Blow 1", slot: "A" }, { name: "Atk Smoke 3", slot: "C" }, { slot: "special", name: "Astra" }, { slot: "assist", name: "Shove" }]
     }
 }
 

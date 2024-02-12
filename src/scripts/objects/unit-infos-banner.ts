@@ -1,4 +1,4 @@
-import { renderRegularHPText, renderLabelText, renderText, renderBoonText, renderBaneText } from "../utils/text-renderer";
+import { renderRegularHPText, renderLabelText, renderText, renderBoonText, renderBaneText, getLowHPGradient, getHealthyHPGradient } from "../utils/text-renderer";
 import Hero from "./hero";
 import { GameObjects } from "phaser";
 import TextColors from "../utils/text-colors";
@@ -101,27 +101,27 @@ class UnitInfosBanner extends GameObjects.Container {
 
         this.stats = {
             atk: {
-                label: renderText(this.scene, blockX - 120, 100, "Atk", { fontSize: "18px" }),
+                label: renderText(this.scene, blockX - 120, 100, "Atk", { fontSize: "18px" }).setInteractive(),
                 description: "The higher a unit's Atk, the more damage it will inflict on foes.",
                 value: renderText(this.scene, blockX - 30, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
             },
             spd: {
-                label: renderText(this.scene, blockX - 10, 100, "Spd", { fontSize: "18px" }),
+                label: renderText(this.scene, blockX - 10, 100, "Spd", { fontSize: "18px" }).setInteractive(),
                 description: "A unit will attack twice if its Spd is at least 5 more than its foe.",
                 value: renderText(this.scene, blockX + 80, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
             },
             res: {
-                label: renderText(this.scene, blockX - 10, 135, "Res", { fontSize: "18px" }),
+                label: renderText(this.scene, blockX - 10, 135, "Res", { fontSize: "18px" }).setInteractive(),
                 description: "The higher a unit's Resistance is, the less damage it takes from magical attacks (spells, staves, breath effects, etc.).",
                 value: renderText(this.scene, blockX + 80, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
             },
             def: {
-                label: renderText(this.scene, blockX - 120, 135, "Def", { fontSize: "18px" }),
+                label: renderText(this.scene, blockX - 120, 135, "Def", { fontSize: "18px" }).setInteractive(),
                 description: "The higher a unit's Defense is, the less damage it takes from physical attacks (swords, axes, lances, etc.).",
                 value: renderText(this.scene, blockX - 30, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
             },
             hp: {
-                label: renderText(this.scene, blockX - 120, 54, "HP", { fontSize: "20px" }),
+                label: renderText(this.scene, blockX - 120, 54, "HP", { fontSize: "20px" }).setInteractive(),
                 description: "A unit is defeated if its Hit Points reach 0.",
                 value: renderRegularHPText({
                     scene: this.scene,
@@ -299,6 +299,8 @@ class UnitInfosBanner extends GameObjects.Container {
     //         lines.push(descLine);
     //         return lines;
     //     }
+
+    // TODO: migrate all these methods to the textbox class
 
     //     private controlTextboxDisplay(elementKey: string) {
     //         if (this.textboxTarget !== elementKey || !this.textbox.visible) {
@@ -504,17 +506,9 @@ class UnitInfosBanner extends GameObjects.Container {
             // const statChange = internalHero.mapBoosts[statKey] + internalHero.mapPenalties[statKey];
             // value.setColor(statChange > 0 ? TextColors.boon : statChange < 0 ? TextColors.bane : "white");
             if (statKey === "hp") {
-                this.remove(this.stats.hp.value, true);
-                this.stats.hp.value = renderHP({
-                    scene: this.scene,
-                    x: this.stats.hp.value.x,
-                    y: this.stats.hp.value.y,
-                    style: {
-                        fontSize: "26px",
-                    },
-                    value: Stats[0].hp,
-                });
-                this.add(this.stats.hp.value);
+                const applyGradient = Stats[0].hp <= 10 ? getLowHPGradient : getHealthyHPGradient;
+                const hpGradient = applyGradient(this.stats.hp.value);
+                this.stats.hp.value.setFill(hpGradient).setText(Stats[0].hp);
             }
         }
 

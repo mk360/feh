@@ -18,6 +18,20 @@ export function renderText(scene: Scene, x: number, y: number, content: string |
     });
 };
 
+export function getHealthyHPGradient(text: GameObjects.Text) {
+    const gradient = text.context.createLinearGradient(0, 0, 0, text.height);
+    gradient.addColorStop(0, "white");
+    gradient.addColorStop(1, TextColors.healthyHP);
+    return gradient;
+}
+
+export function getLowHPGradient(text: GameObjects.Text) {
+    const gradient = text.context.createLinearGradient(0, 0, 0, text.height);
+    gradient.addColorStop(0, "white");
+    gradient.addColorStop(1, TextColors.criticalHP);
+    return gradient;
+}
+
 export function renderDamageText(config: TextRenderingConfig) {
     const { text } = renderTextWith2DContext(config);
     text.style.stroke = "white";
