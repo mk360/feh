@@ -44,9 +44,10 @@ function createHeroQuoter(scene: MainScene) {
     const internalHero = hero.getInternalHero();
     const n = scene.rng.integerInRange(1, 3);
     if (previousQuote) scene.sound.stopByKey(previousQuote);
-    const soundFile = internalHero.name + " quotes";
-    scene.sound.playAudioSprite(internalHero.name + " quotes", n.toString(), { volume: 0.2 });
-    previousQuote = soundFile;
+    const heroName = internalHero.Name[0].value;
+    const heroSprite = heroName + " quotes";
+    scene.sound.playAudioSprite(heroSprite, n.toString(), { volume: 0.2 });
+    previousQuote = heroSprite;
   };
 }
 
@@ -70,26 +71,40 @@ export default class MainScene extends Phaser.Scene {
     private heroesLayer: GameObjects.Layer;
     private map: GameObjects.Image;
     private unitInfosBanner: UnitInfosBanner;
+    private playHeroQuote = createHeroQuoter(this);
 
     create() {
         const entities = this.game.registry.list.world || DEBUG_ENTITIES as typeof DEBUG_ENTITIES;
         this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
+        this.heroesLayer = this.add.layer();
         this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
-        this.heroesLayer = this.add.layer().setDepth(2);
         for (let entityId in entities) {
             const entity = entities[entityId];
             const hero = this.addHero(entity).setInteractive();
             hero.on("pointerdown", () => {
                 this.unitInfosBanner.setVisible(true).setHero(hero);
+                this.playHeroQuote(hero);
             });
         }
         this.add.existing(this.unitInfosBanner);
+        this.startBackgroundMusic(0.2);
     }
+
+    startBackgroundMusic(volume: number) {
+        const bgm = this.sound.add("bgm");
+        bgm.addMarker({
+        name: "loop",
+        start: 4.25
+        });
+        bgm.play({ volume });
+        bgm.on("complete", () => {
+        bgm.play("loop", { volume });
+        });
+    };
 
     addHero(entity) {
         const { x: gridX, y: gridY } = entity.Position[0];
         const { x, y } = gridToPixels(gridX, gridY);
-        console.log({ x, y });
         const heroObject = new Hero(this, x, y, entity).setInteractive();
         this.heroesLayer.add(heroObject);
         return heroObject;
@@ -194,7 +209,6 @@ export default class MainScene extends Phaser.Scene {
 //       const img = this.children.getByName(`movement-${hero.name}`) as GameObjects.Image;
 //       img.setVisible(true).setAlpha(1);
 //       this.movementAllowedTween.pause();
-//       this.playHeroQuote(hero);
 //       this.displayHeroInformations(hero);
 //     });
 //   }
@@ -519,7 +533,6 @@ export default class MainScene extends Phaser.Scene {
 //     }
 //   }
 
-//   playHeroQuote = createHeroQuoter(this);
 //   handleDoubleTap = createDoubleTapHandler();
 
 //   setTurn({ turn, turnCount }: { turn: Team, turnCount: number }) {
@@ -642,18 +655,6 @@ export default class MainScene extends Phaser.Scene {
 //     this.heroesLayer.add(heroObject);
 //     return heroObject;
 //   }
-
-//   startBackgroundMusic(volume: number) {
-//     const bgm = this.sound.add("bgm");
-//     bgm.addMarker({
-//       name: "loop",
-//       start: 4.25
-//     });
-//     bgm.play({ volume });
-//     bgm.on("complete", () => {
-//       bgm.play("loop", { volume });
-//     });
-//   };
 
 //   switchPositionsMode() {
 //     this.currentState = this.states.preparation;

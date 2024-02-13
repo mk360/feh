@@ -27,7 +27,9 @@ export default class PreloadScene extends Phaser.Scene {
       world: any;
     };
     if (!world) world = DEBUG_ENTITIES;
-    this.load.image("map", "/assets/maps/map.webp");
+    const randomMapRange = new Phaser.Math.RandomDataGenerator().between(1, 90);
+    const mapName = `Z${randomMapRange.toString().padStart(4, "0")}`;
+    this.load.image("map", `/assets/maps/${mapName}.webp`);
     this.load.atlas("skills", "/assets/sheets/skills.webp", "/assets/sheets/skills.json");
     this.load.atlas("weapons", "/assets/sheets/weapons.webp", "/assets/sheets/weapons.json");
     this.load.atlas("interactions", "/assets/sheets/interactions.webp", "/assets/sheets/interactions.json");

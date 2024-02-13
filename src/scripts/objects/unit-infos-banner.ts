@@ -21,6 +21,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private A: GameObjects.Image;
     private B: GameObjects.Image;
     private C: GameObjects.Image;
+    private displayedHero: Hero;
     //     private S: GameObjects.Image;
     //     private textboxTarget: string;
     private heroPortrait: GameObjects.Image;
@@ -54,12 +55,11 @@ class UnitInfosBanner extends GameObjects.Container {
         });
 
         this.textbox = new Textbox(scene, 0, 0).setVisible(false);
-
         this.nameplate = new HeroNameplate(scene, blockX - 150, 25, {
             name: "",
             weaponType: "",
             weaponColor: "",
-        });
+        }).setInteractive();
 
         this.createStats();
 
@@ -82,7 +82,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(this.special);
         this.add(this.assist);
         this.add(this.maxHP);
-        // this.add(this.textbox);
+        this.add(this.textbox);
         this.createPassives(lvText);
     }
 
@@ -103,22 +103,22 @@ class UnitInfosBanner extends GameObjects.Container {
             atk: {
                 label: renderText(this.scene, blockX - 120, 100, "Atk", { fontSize: "18px" }).setInteractive(),
                 description: "The higher a unit's Atk, the more damage it will inflict on foes.",
-                value: renderText(this.scene, blockX - 30, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
+                value: renderText(this.scene, blockX - 30, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             spd: {
                 label: renderText(this.scene, blockX - 10, 100, "Spd", { fontSize: "18px" }).setInteractive(),
                 description: "A unit will attack twice if its Spd is at least 5 more than its foe.",
-                value: renderText(this.scene, blockX + 80, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
+                value: renderText(this.scene, blockX + 80, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             res: {
                 label: renderText(this.scene, blockX - 10, 135, "Res", { fontSize: "18px" }).setInteractive(),
                 description: "The higher a unit's Resistance is, the less damage it takes from magical attacks (spells, staves, breath effects, etc.).",
-                value: renderText(this.scene, blockX + 80, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
+                value: renderText(this.scene, blockX + 80, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             def: {
                 label: renderText(this.scene, blockX - 120, 135, "Def", { fontSize: "18px" }).setInteractive(),
                 description: "The higher a unit's Defense is, the less damage it takes from physical attacks (swords, axes, lances, etc.).",
-                value: renderText(this.scene, blockX - 30, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers)
+                value: renderText(this.scene, blockX - 30, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             hp: {
                 label: renderText(this.scene, blockX - 120, 54, "HP", { fontSize: "20px" }).setInteractive(),
@@ -131,13 +131,38 @@ class UnitInfosBanner extends GameObjects.Container {
                     style: {
                         fontSize: "26px"
                     }
-                })
+                }).setInteractive()
             }
         };
 
         for (let statKey in this.stats) {
-            const items = this.stats[statKey] as RenderedStat;
-            this.add([items.label, items.value]);
+            const castKey = statKey as keyof typeof this.stats;
+            const { label, value, description } = this.stats[castKey];
+            const statDetailsCallback = () => {
+                const internalHero = this.displayedHero.getInternalHero();
+
+                const content = this.textbox.createStatTextbox({
+                    stat: castKey,
+                    baseValue: internalHero.Stats[0][statKey],
+                    boon: internalHero.Boon?.[0].value,
+                    bane: internalHero.Bane?.[0].value,
+                    // penalty: hero.mapPenalties[statKey],
+                    // buff: hero.mapBoosts[statKey],
+                    description
+                });
+
+
+                this.textbox.x = label.getRightCenter().x + 400;
+                this.textbox.y = label.getBottomLeft().y + 10;
+                this.textbox.setContent(content);
+                this.textbox.setVisible(true);
+                // this.controlTextboxDisplay(statKey);
+                // this.textboxTarget = statKey;
+            }
+
+            label.on("pointerdown", statDetailsCallback);
+            value.on("pointerdown", statDetailsCallback);
+            this.add([label, value]);
         }
         this.add(new GameObjects.Image(this.scene, blockX - 130, 125, "top-banner", "stat-glowing-line").setScale(0.2, 0.5).setOrigin(0));
         this.add(new GameObjects.Image(this.scene, blockX - 130, 160, "top-banner", "stat-glowing-line").setScale(0.2, 0.5).setOrigin(0));
@@ -156,23 +181,88 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(assistIcon);
         this.add(specialIcon);
         this.add(weaponIcon);
+        this.weaponBg.on("pointerdown", () => {
+            const internalHero = this.displayedHero.getInternalHero();
+            const weapon = internalHero.Skill?.find((s) => s.slot === "weapon");
+            if (weapon) {
+                const weaponIdentity = internalHero.Weapon[0];
+                const textboxLines = this.textbox.weaponTextbox({
+                    might: weapon.might,
+                    description: weapon.description,
+                    range: weaponIdentity.range
+                });
+
+                this.textbox.setContent(textboxLines);
+                this.textbox.x = this.weaponBg.getRightCenter().x;
+                this.textbox.y = this.weaponBg.getBottomCenter().y + 5;
+                this.textbox.setVisible(true);
+            }
+        });
+
+        this.assistBg.on("pointerdown", () => {
+            const internalHero = this.displayedHero.getInternalHero();
+            const assist = internalHero.Skill?.find((s) => s.slot === "assist");
+            if (assist) {
+                const lines = this.textbox.assistTextbox({
+                    description: assist.description,
+                    range: assist.range
+                });
+                this.textbox.x = this.assistBg.getRightCenter().x;
+                this.textbox.y = this.assistBg.getBottomCenter().y + 5;
+                this.textbox.setContent(lines);
+                this.textbox.setVisible(true);
+            }
+        });
+
+        this.specialBg.on("pointerdown", () => {
+            const internalHero = this.displayedHero.getInternalHero();
+            const special = internalHero.Skill?.find((s) => s.slot === "special");
+            if (special) {
+                const textboxLines = this.textbox.specialTextbox({
+                    cooldown: special.cooldown,
+                    description: special.description,
+                    baseCooldown: special.baseCooldown
+                });
+
+                this.textbox.setContent(textboxLines);
+                this.textbox.x = this.specialBg.getRightCenter().x;
+                this.textbox.y = this.specialBg.getBottomCenter().y + 5;
+                this.textbox.setVisible(true);
+            }
+        });
     }
 
     private createPassives(lvText: GameObjects.Text) {
-        this.A = new GameObjects.Image(this.scene, 650, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5);
-        this.B = new GameObjects.Image(this.scene, this.A.getRightCenter().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5);
+        this.A = new GameObjects.Image(this.scene, 650, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5).setInteractive();
+        this.B = new GameObjects.Image(this.scene, this.A.getRightCenter().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5).setInteractive();
         const A_Letter = new GameObjects.Image(this.scene, this.A.getBottomRight().x + 3, this.A.getBottomRight().y + 10, "skills-ui", "A").setOrigin(0, 1).setScale(0.5);
         const B_Letter = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 3, this.B.getBottomRight().y + 10, "skills-ui", "B").setOrigin(0, 1).setScale(0.5);
-        this.C = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5);
+        this.C = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5).setInteractive();
         const C_Letter = new GameObjects.Image(this.scene, this.C.getBottomRight().x + 3, this.C.getBottomRight().y + 10, "skills-ui", "C").setOrigin(0, 1).setScale(0.5);
         // this.S = new GameObjects.Image(this.scene, this.C.getRightCenter().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5);
         // const S_Letter = new GameObjects.Image(this.scene, this.S.getBottomRight().x + 3, this.S.getBottomRight().y + 10, "skills-ui", "S").setOrigin(0, 1).setScale(0.5);
         this.add([this.A, A_Letter, this.B, B_Letter, this.C, C_Letter/*, this.S, S_Letter*/]);
+
+        for (let skillSlot of ["A", "B", "C"] as const) {
+            this[skillSlot].on("pointerdown", () => {
+                const internalHero = this.displayedHero.getInternalHero();
+                const passive = internalHero.Skill?.find((s) => s.slot === skillSlot);
+                if (passive) {
+                    const passiveContent = this.textbox.createPassiveTextbox({
+                        name: passive.name,
+                        description: passive.description
+                    });
+                    this.textbox.setContent(passiveContent);
+                    this.textbox.x = this.C.getRightCenter().x;
+                    this.textbox.y = this.C.getBottomCenter().y + 5;
+                    this.textbox.setVisible(true);
+                }
+            });
+        }
     }
 
     private updatePassives(hero: Hero) {
         const internalHero = hero.getInternalHero();
-
         const skills = Object.groupBy(internalHero.Skill.filter((i) => ["A", "B", "C"].includes(i.slot)) as { name: string, slot: "A" | "B" | "C" }[], (s) => s.slot);
         const skillSlots = ["A", "B", "C"] as const;
 
@@ -184,121 +274,8 @@ class UnitInfosBanner extends GameObjects.Container {
             } else {
                 skillObject.setTexture("skills", "Empty Slot");
             }
-            // this[skill].off("pointerdown");
-            // this[skill].setInteractive().on("pointerdown", () => {
-            // this.textboxTarget = skill;
-            // this.textbox.clearContent();
-            // const skillInfosLines = this.createPassiveTextbox(skillData);
-            // this.textbox.x = this.S.getRightCenter().x;
-            // this.textbox.y = this.S.getBottomCenter().y + 5;
-            // this.textbox.setContent([skillInfosLines]);
-            // this.controlTextboxDisplay(skill);
-            // });
         }
     }
-
-    //     private createStatTextbox({
-    //         stat,
-    //         baseValue,
-    //         penalty,
-    //         buff,
-    //         boon,
-    //         bane
-    //     }: {
-    //         stat: keyof Stats,
-    //         baseValue: number,
-    //         penalty?: number,
-    //         buff?: number,
-    //         boon?: keyof Stats,
-    //         bane?: keyof Stats
-    //     }) {
-    //         const { description } = this.stats[stat];
-    //         const lines: GameObjects.Text[][] = [];
-    //         const valuesLines: GameObjects.Text[] = [];
-    //         const baseValueLabel = renderLabelText({
-    //             scene: this.scene,
-    //             x: 0,
-    //             y: 0,
-    //             content: "Base Value"
-    //         });
-    //         const baseValueText = renderText(this.scene, baseValueLabel.getRightCenter().x + 10, 0, baseValue, { 
-    //             fontSize: "18px"
-    //         });
-    //         valuesLines.push(baseValueLabel);
-    //         valuesLines.push(baseValueText);
-    //         if (buff > 0) {
-    //             const buffLabel = renderLabelText({
-    //                 scene: this.scene,
-    //                 x: baseValueText.getRightCenter().x + 10,
-    //                 y: 0,
-    //                 content: "Buff"
-    //             });
-    //             const buffValue = renderBoonText({
-    //                 scene: this.scene,
-    //                 x: buffLabel.getRightCenter().x + 10,
-    //                 y: 0,
-    //                 content: "+" + buff,
-    //                 style: { fontSize: "18px" }
-    //             });
-    //             valuesLines.push(buffLabel);
-    //             valuesLines.push(buffValue);
-    //         }
-
-    //         if (penalty < 0) {
-    //             const penaltyLabel = renderLabelText({
-    //                 scene: this.scene,
-    //                 x: valuesLines[valuesLines.length - 1].getRightCenter().x + 10,
-    //                 y: 0,
-    //                 content: "Penalty"
-    //             });
-    //             const penaltyValue = renderBaneText({
-    //                 scene: this.scene,
-    //                 x: penaltyLabel.getRightCenter().x + 10,
-    //                 y: 0,
-    //                 content: penalty,
-    //                 style: { fontSize: "18px" }
-    //             });
-    //             valuesLines.push(penaltyLabel);
-    //             valuesLines.push(penaltyValue);
-    //         }
-
-    //         lines.push(valuesLines);
-
-    //         const modifiersLine: GameObjects.Text[] = [];
-    //         if (bane === stat) {
-    //             const flawText = renderBaneText({
-    //                 scene: this.scene,
-    //                 x: 0,
-    //                 y: 30,
-    //                 content: "Flaw",
-    //                 style: {
-    //                     fontSize: "18px"
-    //                 }
-    //             });
-    //             modifiersLine.push(flawText);
-    //         }
-    //         if (boon === stat) {
-    //             const assetText = renderBoonText({
-    //                 scene: this.scene,
-    //                 x: 0,
-    //                 y: 30,
-    //                 content: "Asset",
-    //                 style: {
-    //                     fontSize: "18px"
-    //                 }
-    //             });
-    //             modifiersLine.push(assetText);
-    //         }
-    //         if (modifiersLine.length) lines.push(modifiersLine);
-
-    //         const descLine: GameObjects.Text[] = [];
-    //         const descriptionText = renderText(this.scene, 0, lines[lines.length - 1][0].y + 30, description, {
-    //             fontSize: "18px",
-    //         }).setWordWrapWidth(396);
-    //         descLine.push(descriptionText);
-    //         lines.push(descLine);
-    //         return lines;
-    //     }
 
     // TODO: migrate all these methods to the textbox class
 
@@ -308,19 +285,6 @@ class UnitInfosBanner extends GameObjects.Container {
     //             this.displayTextbox();
     //         }
     //         else this.hideTextbox();
-    //     }
-
-    //     private createPassiveTextbox(skillData: PassiveSkill) {
-    //         const skillInfosLines = [];
-    //         skillInfosLines.push(renderLabelText({
-    //             scene: this.scene,
-    //             x: 0,
-    //             y: 0,
-    //             content: skillData.name
-    //         }));
-    //         skillInfosLines.push(renderText(this.scene, 0, 40, skillData.description).setWordWrapWidth(390));
-
-    //         return skillInfosLines;
     //     }
 
     //     hideTextbox() {
@@ -333,53 +297,6 @@ class UnitInfosBanner extends GameObjects.Container {
     //                 this.textbox.clearContent().setVisible(false);
     //             }
     //         }).play();
-    //     }
-
-    //     private weaponTextbox({ might, range, description }: { might: number, range: number, description: string }) {
-    //         const firstLine = [
-    //             renderLabelText({
-    //                 scene: this.scene,
-    //                 content: "Mt",
-    //                 x: 0,
-    //                 y: 0
-    //             }),
-    //             renderText(this.scene, 30, 0, might).setFontSize(18),
-    //             renderLabelText({
-    //                 scene: this.scene,
-    //                 content: "Rng",
-    //                 x: 70,
-    //                 y: 0
-    //             }),
-    //             renderText(this.scene, 120, 0, range).setFontSize(18)
-    //         ];
-
-    //         const secondLine = [renderText(this.scene, 0, 30, description).setWordWrapWidth(440).setFontSize(18)];
-
-    //         return [firstLine, secondLine];
-    //     }
-
-    //     private createAssistTextbox({
-    //         description,
-    //         range,
-    //     }: { description: string, range: number }) {
-    //         const rangeLabel = renderLabelText({
-    //             scene: this.scene,
-    //             x: 0,
-    //             y: 0,
-    //             content: "Rng"
-    //         });
-
-    //         const rangeText = renderText(this.scene, rangeLabel.getRightCenter().x + 10, 0, range, {
-    //             fontSize: "18px"
-    //         });
-
-    //         const descText = renderText(this.scene, 0, 30, description, {
-    //             fontSize: "18px"
-    //         });
-
-    //         const lines: TextboxContent[][] = [[rangeLabel, rangeText], [descText]];
-
-    //         return lines;
     //     }
 
     //     private statDetailsCallback({ 
@@ -407,29 +324,8 @@ class UnitInfosBanner extends GameObjects.Container {
     //         }
     //     }
 
-    //     private createSpecialTextbox({ description, defaultCooldown, baseCooldown }) {
-    //         const textLines: TextboxContent[][] = [];
-    //         const firstLine: TextboxContent[] = [];
-    //         const secondLine: TextboxContent[] = [];
-    //         const specialIcon = new GameObjects.Image(this.scene, 0, 0, "skills-ui", "special-icon").setOrigin(0).setScale(0.5);
-    //         const cooldownText = renderText(this.scene, 30, 5, defaultCooldown, {
-    //             fontSize: "18px"
-    //         });
-    //         cooldownText.setColor(baseCooldown > defaultCooldown ? TextColors.boon : baseCooldown < defaultCooldown ? TextColors.bane : "white");
-    //         cooldownText.setColor(defaultCooldown < baseCooldown ? TextColors.boon : defaultCooldown > baseCooldown ? TextColors.bane : "white");
-    //         firstLine.push(specialIcon);
-    //         firstLine.push(cooldownText);
-
-    //         secondLine.push(renderText(this.scene, 0, 30, description, {
-    //             fontSize: "18px"
-    //         }));
-    //         textLines.push(firstLine);
-    //         textLines.push(secondLine);
-
-    //         return textLines;
-    //     };
-
     setHero(hero: Hero) {
+        this.displayedHero = hero;
         this.textbox.clearContent().setVisible(false);
         const internalHero = hero.getInternalHero();
         const { Name, Stats, Weapon, Skill } = internalHero;
@@ -442,6 +338,7 @@ class UnitInfosBanner extends GameObjects.Container {
                 description: string
             }>;
         }> = {};
+
         if (Skill) {
             skills = Object.groupBy(Skill as { slot: string }[], (skill) => skill.slot);
         }
@@ -449,48 +346,14 @@ class UnitInfosBanner extends GameObjects.Container {
         const { maxHP, hp } = stats;
 
         this.heroPortrait.setTexture(name, hp / maxHP < 0.5 ? "portrait-damage" : "portrait");
-        // this.specialBg.off("pointerdown");
-        if (skills.special) {
-            this.special.setText(skills.special[0].name);
-            // this.specialBg.on("pointerdown", () => {
-            //     const content = this.createSpecialTextbox(internalHero.skills.special);
-            //     this.textbox.x = this.specialBg.getRightCenter().x;
-            //     this.textbox.y = this.specialBg.getBottomCenter().y + 10;
-            //     this.textbox.clearContent().setContent(content);
-            //     this.controlTextboxDisplay("special");
-            // });
-        } else {
-            this.special.setText("-");
-        }
+        if (skills.special) this.special.setText(skills.special[0].name);
+        else this.special.setText("-");
 
-        //         this.assistBg.off("pointerdown");
-        if (skills.assist) {
-            this.assist.setText(skills.assist[0].name);
-            // this.assistBg.on("pointerdown", () => {
-            //     const content = this.createAssistTextbox(internalHero.skills.assist);
-            //     this.textbox.clearContent().setContent(content);
-            //     this.textbox.x = this.assistBg.getRightCenter().x;
-            //     this.textbox.y = this.assistBg.getBottomCenter().y + 10;
-            //     this.controlTextboxDisplay("assist");
-            // });
-        } else {
-            this.assist.setText("-");
-        }
-        //         const weapon = internalHero.getWeapon();
-        //         this.weaponBg.off("pointerdown");
-        if (skills.weapon) {
-            this.weaponName.setText(skills.weapon[0].name);
-            // this.weaponBg.on("pointerdown", () => {
-            //     this.textbox.clearContent();
-            //     this.textbox.setContent(this.weaponTextbox(weapon));
-            //     this.textbox.x = this.weaponBg.getRightCenter().x;
-            //     this.textbox.y = this.weaponBg.getBottomCenter().y + 5;
-            //     this.controlTextboxDisplay("weapon");
-            //     this.textboxTarget = "weapon";
-            // });
-        } else {
-            this.weaponName.setText("-");
-        }
+        if (skills.assist) this.assist.setText(skills.assist[0].name);
+        else this.assist.setText("-");
+
+        if (skills.weapon) this.weaponName.setText(skills.weapon[0].name);
+        else this.weaponName.setText("-");
 
         // this.hpBackground.off("pointerdown").on("pointerdown", this.statDetailsCallback({
         //     statKey: "hp",
@@ -500,15 +363,16 @@ class UnitInfosBanner extends GameObjects.Container {
         for (let statKey in this.stats) {
             const castKey = statKey as keyof Stats;
             const { label, value } = this.stats[castKey];
-            // label.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero })).setColor("white");
-
-            // value.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero })).setText(internalHero.getMapStats()[statKey]);
-            // const statChange = internalHero.mapBoosts[statKey] + internalHero.mapPenalties[statKey];
-            // value.setColor(statChange > 0 ? TextColors.boon : statChange < 0 ? TextColors.bane : "white");
             if (statKey === "hp") {
                 const applyGradient = Stats[0].hp <= 10 ? getLowHPGradient : getHealthyHPGradient;
                 const hpGradient = applyGradient(this.stats.hp.value);
                 this.stats.hp.value.setFill(hpGradient).setText(Stats[0].hp);
+            } else {
+                value.setText(Stats[0][statKey]);
+                // label.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero })).setColor("white");
+                // value.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero })).setText(internalHero.getMapStats()[statKey]);
+                // const statChange = internalHero.mapBoosts[statKey] + internalHero.mapPenalties[statKey];
+                // value.setColor(statChange > 0 ? TextColors.boon : statChange < 0 ? TextColors.bane : "white");
             }
         }
 
@@ -516,7 +380,7 @@ class UnitInfosBanner extends GameObjects.Container {
         //             this.stats[internalHero.boon].label.setColor(TextColors.boon);
         //             this.stats[internalHero.bane].label.setColor(TextColors.bane);
         //         }
-        //         this.heroPortrait.setTexture(internalHero.name, internalHero.stats.hp / internalHero.maxHP < 0.5 ? 'portrait-damage' : 'portrait');
+
 
         //         if (this.nameplate.heroName.text !== internalHero.name) {
         this.heroPortrait.x = -300;
