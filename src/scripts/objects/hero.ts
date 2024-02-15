@@ -1,5 +1,5 @@
 // import { GameObjects, Scene, Tweens } from "phaser";
-import { renderText } from "../utils/text-renderer";
+import { renderSpecialText, renderText } from "../utils/text-renderer";
 // import HeroData from "feh-battles/dec/hero";
 // import Team from "../../types/team";
 import IconsSwitcher from "./icons-switcher";
@@ -13,6 +13,7 @@ class Hero extends GameObjects.Container {
     hpBarBackground: GameObjects.Rectangle;
     weaponType: GameObjects.Image;
     sprite: GameObjects.Image;
+    private special: GameObjects.Text | GameObjects.Image;
     glowingSprite: GameObjects.Image;
     hpText: GameObjects.Text;
     statuses: string[];
@@ -20,15 +21,12 @@ class Hero extends GameObjects.Container {
     effectivenessImage: IconsSwitcher;
 
     constructor(scene: Scene, x: number, y: number, data: any) {
-        console.log({ data });
         const name = data.Name[0].value;
         const team = data.Side[0].value;
         const stats = data.Stats[0];
         const weapon = data.Weapon[0];
         super(scene, x, y);
         this.setData("hero", data);
-        this.statuses = [];
-        // this.special = the special icon or count
         this.setName(data.id);
         this.sprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.7).setDepth(1);
         this.glowingSprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.7).setDepth(2).setAlpha(0).setTintFill(0xFFFFFF);
@@ -41,7 +39,7 @@ class Hero extends GameObjects.Container {
             fontSize: "18px"
         }).setOrigin(1, 0.5);
         this.hpBar = new GameObjects.Rectangle(scene, this.hpText.getRightCenter().x, hpBarHeight, hpBarWidth, 5, team === "team1" ? 0x54DFF4 : 0xFA4D69).setOrigin(0, 0).setDepth(2);
-        this.weaponType = new GameObjects.Image(scene, team === "team1" ? -30 : 30, -40, "weapons", `${weapon.color}-${weapon.weaponType}`).setScale(1.2);
+        this.weaponType = new GameObjects.Image(scene, team === "team1" ? -30 : 30, -40, "weapons", `${weapon.color}-${weapon.weaponType}`).setScale(1.1);
         this.hpBarBackground = new GameObjects.Rectangle(scene, this.hpBar.getLeftCenter().x - 1, hpBarHeight - 1, hpBarWidth + 2, 7, 0x000000).setOrigin(0, 0);
         this.add(this.hpBarBackground);
         this.add(this.hpBar);
@@ -57,6 +55,24 @@ class Hero extends GameObjects.Container {
         this.add(this.hpText);
         this.setSize(120, 120);
         this.updateHP(stats.hp);
+        const existingSpecial = data.Skill?.find((s) => s.slot === "special");
+        if (existingSpecial) {
+            if (existingSpecial.cooldown === 0) {
+                this.special = new GameObjects.Image(this.scene, team === "team1" ? -30 : 30, -5, "skills-ui", "special-icon").setScale(0.5);
+            } else {
+                this.special = renderSpecialText({
+                    scene: this.scene,
+                    x: team === "team1" ? -40 : 20,
+                    y: -25,
+                    style: {
+                        fontSize: 26,
+                        shadowColor: "black",
+                    },
+                    content: existingSpecial.currentCooldown,
+                });
+            }
+            this.add(this.special);
+        }
     }
 
     createFlashTween() {
@@ -81,6 +97,26 @@ class Hero extends GameObjects.Container {
         this.hpText.setText(newHP.toString());
         const hpRatio = newHP / maxHP;
         this.hpBar.displayWidth = hpBarWidth * hpRatio;
+    }
+
+    updateSpecial(newCooldown: number) {
+        if (this.special) {
+            const { value: team } = this.getInternalHero().Team[0];
+            if (newCooldown === 0) {
+                this.special = new GameObjects.Image(this.scene, team === "team1" ? -40 : 20, -25, "skills-ui", "special-icon");
+            } else {
+                this.special = renderSpecialText({
+                    scene: this.scene,
+                    x: team === "team1" ? -40 : 20,
+                    y: -25,
+                    style: {
+                        fontSize: 26,
+                        shadowColor: "black",
+                    },
+                    content: newCooldown,
+                });
+            }
+        }
     }
 
     toggleStatuses() {
