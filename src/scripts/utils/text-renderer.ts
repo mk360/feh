@@ -80,7 +80,7 @@ export function renderSpecialText(config: TextRenderingConfig) {
     const { text, gradient } = renderTextWith2DContext(config);
     gradient.addColorStop(0, TextColors.specialPink);
     gradient.addColorStop(0.6, TextColors.specialPink);
-    gradient.addColorStop(0.85, "white");
+    gradient.addColorStop(0.8, "white");
     gradient.addColorStop(1, "white");
     text.setFill(gradient);
 
