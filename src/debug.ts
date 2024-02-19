@@ -66,7 +66,7 @@ const DEBUG_ENTITIES = {
         Skill: [{ name: "Blazing Durandal", slot: "weapon", might: 16, description: "Grants Atk+3. If unit's Atk > foe's Atk, grants Special cooldown charge +1 per unit's attack. (Only highest value applied. Does not stack.)" }, { name: "Armored Blow 1", slot: "A", description: "If unit initiates combat, grants Def+2 during combat." }, { name: "Atk Smoke 3", slot: "C", description: "Inflicts Atk-7 on foes within 2 spaces of target through their next actions after combat." }, { slot: "special", name: "Astra", baseCooldown: 5, currentCooldown: 5, cooldown: 0, description: "Boosts damage by 250%." }, { slot: "assist", name: "Shove", range: 1, description: "Pushes target ally 1 space away." }]
     },
     "test2": {
-        Name: [{ value: "Corrin: Fateful Prince", description: "A Hoshidan prince raised in Nohr. Fights on his chosen path with the divine blade Yato. Appears in Fire Emblem Fates." }],
+        Name: [{ value: "Corrin: Fateful Prince", description: "King of the Holy Kingdom of Faerghus. Although he lost himself for a time, he now walks the path of a great ruler. Appears in Fire Emblem: Three Houses." }],
         Side: [{ value: "team2" }],
         Weapon: [{ weaponType: "sword", color: "red", range: 1 }],
         Position: [{ x: 2, y: 1 }],

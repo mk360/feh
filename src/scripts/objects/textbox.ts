@@ -24,13 +24,21 @@ class Textbox extends GameObjects.Container {
             content: name
         })]);
 
-        skillInfosLines.push([renderText(this.scene, 0, 40, description).setWordWrapWidth(390)]);
+        skillInfosLines.push([renderText(this.scene, 0, 30, description).setWordWrapWidth(430)]);
 
         return skillInfosLines;
     }
 
     openingAnimation() {
 
+    }
+
+    createDescriptionTextbox(content: string) {
+        const lines: GameObjects.Text[][] = [];
+        const singleLine = [renderText(this.scene, 0, 0, content).setWordWrapWidth(430)];
+        lines.push(singleLine);
+
+        return lines;
     }
 
     setContent(contentLines: TextboxContent[][]) {

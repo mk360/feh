@@ -69,7 +69,6 @@ export default class MainScene extends Phaser.Scene {
 
     rng = new Phaser.Math.RandomDataGenerator();
     private heroesLayer: GameObjects.Layer;
-    private map: GameObjects.Image;
     private unitInfosBanner: UnitInfosBanner;
     private playHeroQuote = createHeroQuoter(this);
 

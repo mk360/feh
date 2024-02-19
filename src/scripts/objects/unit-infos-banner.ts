@@ -1,4 +1,4 @@
-import { renderRegularHPText, renderLabelText, renderText, renderBoonText, renderBaneText, getLowHPGradient, getHealthyHPGradient } from "../utils/text-renderer";
+import { renderRegularHPText, renderText, getLowHPGradient, getHealthyHPGradient } from "../utils/text-renderer";
 import Hero from "./hero";
 import { GameObjects } from "phaser";
 import TextColors from "../utils/text-colors";
@@ -6,13 +6,18 @@ import HeroNameplate from "./hero-nameplate";
 import Stats from "../../interfaces/stats";
 import Textbox from "./textbox";
 // import TextboxContent from "../../types/textbox-content";
-import renderHP from "../utils/render-hp";
+import { STATS, WEAPON_TYPES } from "../../ui-data";
 
 interface RenderedStat {
     label: GameObjects.Text;
     description: string;
     value: GameObjects.Text;
 };
+
+function replaceColorPlaceholder(placeholderData: string, replacingArgument: string) {
+    const pascalCase = replacingArgument.replace(replacingArgument[0], replacingArgument[0].toUpperCase());
+    return placeholderData.replace("%c", replacingArgument !== "colorless" ? pascalCase : "").trim();
+}
 
 class UnitInfosBanner extends GameObjects.Container {
     private nameplate: HeroNameplate;
@@ -59,6 +64,28 @@ class UnitInfosBanner extends GameObjects.Container {
             name: "",
             weaponType: "",
             weaponColor: "",
+            tapCallbacks: {
+                name: (boundObject) => {
+                    const internalHero = this.displayedHero.getInternalHero();
+                    const heroDescription = internalHero.Name[0].description;
+                    const descriptionLine = this.textbox.createDescriptionTextbox(heroDescription);
+                    this.textbox.setContent(descriptionLine);
+                    this.textbox.x = boundObject.getBottomCenter().x + 450;
+                    this.textbox.y = boundObject.getBottomLeft().y + 25;
+                    this.textbox.setVisible(true);
+                },
+                weaponType: (boundObject) => {
+                    const internalHero = this.displayedHero.getInternalHero();
+                    const weaponType = internalHero.Weapon[0].weaponType;
+                    const weaponColor = internalHero.Weapon[0].color;
+                    const weaponDescription = replaceColorPlaceholder(WEAPON_TYPES[weaponType], weaponColor);
+                    this.textbox.x = boundObject.getBottomRight().x + 450;
+                    this.textbox.y = boundObject.getBottomLeft().y + 25;
+                    const d = this.textbox.createDescriptionTextbox(weaponDescription);
+                    this.textbox.setContent(d);
+                    this.textbox.setVisible(true);
+                },
+            }
         }).setInteractive();
 
         this.createStats();
@@ -102,27 +129,27 @@ class UnitInfosBanner extends GameObjects.Container {
         this.stats = {
             atk: {
                 label: renderText(this.scene, blockX - 120, 100, "Atk", { fontSize: "18px" }).setInteractive(),
-                description: "The higher a unit's Atk, the more damage it will inflict on foes.",
+                description: STATS.atk,
                 value: renderText(this.scene, blockX - 30, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             spd: {
                 label: renderText(this.scene, blockX - 10, 100, "Spd", { fontSize: "18px" }).setInteractive(),
-                description: "A unit will attack twice if its Spd is at least 5 more than its foe.",
+                description: STATS.spd,
                 value: renderText(this.scene, blockX + 80, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             res: {
                 label: renderText(this.scene, blockX - 10, 135, "Res", { fontSize: "18px" }).setInteractive(),
-                description: "The higher a unit's Resistance is, the less damage it takes from magical attacks (spells, staves, breath effects, etc.).",
+                description: STATS.res,
                 value: renderText(this.scene, blockX + 80, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             def: {
                 label: renderText(this.scene, blockX - 120, 135, "Def", { fontSize: "18px" }).setInteractive(),
-                description: "The higher a unit's Defense is, the less damage it takes from physical attacks (swords, axes, lances, etc.).",
+                description: STATS.def,
                 value: renderText(this.scene, blockX - 30, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             hp: {
                 label: renderText(this.scene, blockX - 120, 54, "HP", { fontSize: "20px" }).setInteractive(),
-                description: "A unit is defeated if its Hit Points reach 0.",
+                description: STATS.hp,
                 value: renderRegularHPText({
                     scene: this.scene,
                     x: blockX - 60,
@@ -355,11 +382,6 @@ class UnitInfosBanner extends GameObjects.Container {
         if (skills.weapon) this.weaponName.setText(skills.weapon[0].name);
         else this.weaponName.setText("-");
 
-        // this.hpBackground.off("pointerdown").on("pointerdown", this.statDetailsCallback({
-        //     statKey: "hp",
-        //     hero: internalHero,
-        // }))
-
         for (let statKey in this.stats) {
             const castKey = statKey as keyof Stats;
             const { label, value } = this.stats[castKey];
@@ -369,8 +391,6 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.stats.hp.value.setFill(hpGradient).setText(Stats[0].hp);
             } else {
                 value.setText(Stats[0][statKey]);
-                // label.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero })).setColor("white");
-                // value.setInteractive().off("pointerdown").on("pointerdown", this.statDetailsCallback({ statKey: castKey, hero: internalHero })).setText(internalHero.getMapStats()[statKey]);
                 // const statChange = internalHero.mapBoosts[statKey] + internalHero.mapPenalties[statKey];
                 // value.setColor(statChange > 0 ? TextColors.boon : statChange < 0 ? TextColors.bane : "white");
             }
