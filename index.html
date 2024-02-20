@@ -36,7 +36,7 @@
   <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" />
 
   <title>
-    <%= htmlWebpackPlugin.options.gameName %>
+    Fire Emblem: Heroes
   </title>
   <style>
     html,
@@ -46,8 +46,6 @@
       background-color: #000000;
     }
   </style>
-
-  <noscript>Please enable javascript to continue using this application.</noscript>
 
   <!-- installs the serviceWorker -->
   <!-- <script>
@@ -60,7 +58,9 @@
 </head>
 
 <body>
+  <noscript>Please enable javascript to continue using this application.</noscript>
   <div id="game" style="font-family: 'FEH';"></div>
+  <script type="module" src="./src/scripts/game.ts"></script>
 </body>
 
 </html>

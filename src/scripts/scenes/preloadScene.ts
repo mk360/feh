@@ -1,4 +1,3 @@
-import "../../assets/test";
 import DEBUG_ENTITIES from "../../debug";
 
 interface Component {
@@ -37,7 +36,14 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audioSprite("sfx", "/assets/audio/sfx.json", "/assets/audio/sfx.ogg");
     this.load.audioSprite("battle-sfx", "/assets/audio/battle-sfx.json", "/assets/audio/battle-sfx.ogg");
     this.load.audio("confirm", "/assets/audio/confirm.mp3");
-    this.load.image("effective", "/assets/effective-against-enemy.png");
+    //@ts-ignore
+    console.log(import.meta);
+    //@ts-ignore
+    new URL(`/assets/effective-against-enemy.png`, import.meta.url).href
+    this.load.image("effective", "/assets/effective-against-enemy.png", {
+      overrideMimeType: "png",
+      responseType: "blob"
+    });
     this.load.image("effective-against", "/assets/enemy-effective.png");
     this.load.image("buff", "/assets/buff-arrow.png");
     this.load.image("ui-button", "/assets/ui-button.png");
