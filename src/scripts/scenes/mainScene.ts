@@ -2,6 +2,7 @@ import { GameObjects, Time, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import DEBUG_ENTITIES from '../../debug';
 import UnitInfosBanner from '../objects/unit-infos-banner';
+import socket from "../../default-socket";
 import { renderDamageText, renderText } from '../utils/text-renderer';
 // import CombatForecast from '../objects/combat-forecast';
 // import Coords from '../../interfaces/coords';
@@ -70,6 +71,7 @@ export default class MainScene extends Phaser.Scene {
     rng = new Phaser.Math.RandomDataGenerator();
     private heroesLayer: GameObjects.Layer;
     private unitInfosBanner: UnitInfosBanner;
+    private socket = socket;
     private playHeroQuote = createHeroQuoter(this);
 
     create() {
@@ -80,9 +82,13 @@ export default class MainScene extends Phaser.Scene {
         for (let entityId in entities) {
             const entity = entities[entityId];
             const hero = this.addHero(entity).setInteractive();
+            hero.setName(entityId);
             hero.on("pointerdown", () => {
                 this.unitInfosBanner.setVisible(true).setHero(hero);
                 this.playHeroQuote(hero);
+                this.socket.emit("movement request", {
+                    id: hero.name
+                })
             });
         }
         this.add.existing(this.unitInfosBanner);

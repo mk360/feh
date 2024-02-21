@@ -27,7 +27,6 @@ class Hero extends GameObjects.Container {
         const weapon = data.Weapon[0];
         super(scene, x, y);
         this.setData("hero", data);
-        this.setName(data.id);
         this.sprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.7).setDepth(1);
         this.glowingSprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.7).setDepth(2).setAlpha(0).setTintFill(0xFFFFFF);
         this.add(this.sprite);
