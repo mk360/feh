@@ -23,12 +23,13 @@ export default class PreloadScene extends Phaser.Scene {
   async preload() {
     let { world } = this.game.registry.list as {
       id: string;
-      world: any;
+      world: {
+        mapId: string,
+        heroes: typeof DEBUG_ENTITIES
+      };
     };
-    if (!world) world = DEBUG_ENTITIES;
-    const randomMapRange = new Phaser.Math.RandomDataGenerator().between(1, 90);
-    const mapName = `Z${randomMapRange.toString().padStart(4, "0")}`;
-    this.load.image("map", `/assets/maps/${mapName}.webp`);
+    // if (!world) world = DEBUG_ENTITIES;
+    this.load.image("map", `/assets/maps/${world.mapId}.webp`);
     this.load.atlas("skills", "/assets/sheets/skills.webp", "/assets/sheets/skills.json");
     this.load.atlas("weapons", "/assets/sheets/weapons.webp", "/assets/sheets/weapons.json");
     this.load.atlas("interactions", "/assets/sheets/interactions.webp", "/assets/sheets/interactions.json");
@@ -49,8 +50,9 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("debuff", "/assets/debuff-arrow.png");
     this.load.image("effect-shine", "/assets/effect.png");
     this.load.audio("bgm", "/assets/audio/bgm/leif's army in search of victory.ogg");
-    for (let heroId in world) {
-      const heroData = world[heroId];
+
+    for (let heroId in world.heroes) {
+      const heroData = world.heroes[heroId];
       const heroName = heroData.Name[0].value as string;
       const formatted = formatName(heroName);
       this.load.atlas(heroName, `/assets/battle/${formatted}.webp`, `/assets/battle/${formatted}.json`);

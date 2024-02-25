@@ -31,12 +31,12 @@ function gridToPixels(x: number, y: number) {
     }
 }
 
-// function pixelsToGrid(x: number, y: number) {
-//   return {
-//     x: Math.round((squaresOffset + x) / squareSize),
-//     y: Math.round((y - fixedY) / squareSize)
-//   };
-// }
+function pixelsToGrid(x: number, y: number) {
+  return {
+    x: Math.round((squaresOffset + x) / squareSize),
+    y: Math.round((y - fixedY) / squareSize)
+  };
+}
 
 function createHeroQuoter(scene: MainScene) {
   let previousQuote = "";
@@ -70,47 +70,88 @@ export default class MainScene extends Phaser.Scene {
 
     rng = new Phaser.Math.RandomDataGenerator();
     private heroesLayer: GameObjects.Layer;
+    private tilesLayer: GameObjects.Layer;
     private unitInfosBanner: UnitInfosBanner;
     private socket = socket;
     private playHeroQuote = createHeroQuoter(this);
 
     create() {
-        const entities = this.game.registry.list.world || DEBUG_ENTITIES as typeof DEBUG_ENTITIES;
+        const entities = this.game.registry.list.world;
         this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
+        this.tilesLayer = this.add.layer();
         this.heroesLayer = this.add.layer();
         this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
-        for (let entityId in entities) {
-            const entity = entities[entityId];
+        for (let entityId in entities.heroes) {
+            const entity = entities.heroes[entityId];
             const hero = this.addHero(entity).setInteractive();
             hero.setName(entityId);
             hero.on("pointerdown", () => {
                 this.unitInfosBanner.setVisible(true).setHero(hero);
                 this.playHeroQuote(hero);
-                this.socket.emit("movement request", {
-                    id: hero.name
-                })
+                this.socket.emit("request preview movement", {
+                    unitId: hero.name
+                });
+            });
+            this.input.setDraggable([hero], true);
+
+            hero.on("drag", (_, dragX: number, dragY: number) => {
+                hero.x = dragX;
+                hero.y = dragY;
+            });
+
+            hero.on("dragend", () => {
+                const gridCell = pixelsToGrid(hero.x, hero.y);
+                this.socket.emit("request confirm movement", {
+                    unitId: hero.name,
+                    ...gridCell,
+                });
             });
         }
         this.add.existing(this.unitInfosBanner);
         this.startBackgroundMusic(0.2);
+        this.socket.on("response preview movement", (response: number[]) => {
+            this.tilesLayer.removeAll(true);
+            for (let tile of response) {
+                const x = Math.floor(tile / 10);
+                const y = tile - Math.floor(tile / 10) * 10;
+                const pxPosition = gridToPixels(x, y);
+                this.tilesLayer.add(new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x0000FF, 0.5));
+            }
+        });
+
+        this.socket.on("response confirm movement", (response: { unitId: string, x: number, y: number, valid: boolean }) => {
+            const object = this.heroesLayer.getByName(response.unitId) as Hero;
+            const pxCell = gridToPixels(response.x, response.y);
+            this.tweens.add({
+                targets: [object],
+                x: pxCell.x,
+                y: pxCell.y,
+                duration: 100,
+            });
+            if (response.valid) {
+                // valid sfx
+            } else {
+                // do nothing
+            }
+        });
     }
 
     startBackgroundMusic(volume: number) {
         const bgm = this.sound.add("bgm");
         bgm.addMarker({
-        name: "loop",
-        start: 4.25
+            name: "loop",
+            start: 4.25
         });
         bgm.play({ volume });
-        bgm.on("complete", () => {
-        bgm.play("loop", { volume });
+            bgm.on("complete", () => {
+            bgm.play("loop", { volume });
         });
     };
 
     addHero(entity) {
         const { x: gridX, y: gridY } = entity.Position[0];
         const { x, y } = gridToPixels(gridX, gridY);
-        const heroObject = new Hero(this, x, y, entity).setInteractive();
+        const heroObject = new Hero(this, x, y, entity);
         this.heroesLayer.add(heroObject);
         return heroObject;
     }

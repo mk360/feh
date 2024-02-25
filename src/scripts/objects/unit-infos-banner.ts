@@ -81,8 +81,8 @@ class UnitInfosBanner extends GameObjects.Container {
                     const weaponDescription = replaceColorPlaceholder(WEAPON_TYPES[weaponType], weaponColor);
                     this.textbox.x = boundObject.getBottomRight().x + 450;
                     this.textbox.y = boundObject.getBottomLeft().y + 25;
-                    const d = this.textbox.createDescriptionTextbox(weaponDescription);
-                    this.textbox.setContent(d);
+                    const weaponTypeDescription = this.textbox.createDescriptionTextbox(weaponDescription);
+                    this.textbox.setContent(weaponTypeDescription);
                     this.textbox.setVisible(true);
                 },
             }
@@ -90,7 +90,7 @@ class UnitInfosBanner extends GameObjects.Container {
 
         this.createStats();
 
-        this.add([this.nameplate]);
+        this.add(this.nameplate);
         this.createMainSkills();
         const lvText = renderText(scene, 580, 15, "40", { fontSize: "20px" });
         this.add(renderText(scene, lvText.getLeftCenter().x + 5, lvText.getTopCenter().y - 15, "Lv.", { fontSize: "14px" }));
@@ -170,7 +170,7 @@ class UnitInfosBanner extends GameObjects.Container {
 
                 const content = this.textbox.createStatTextbox({
                     stat: castKey,
-                    baseValue: internalHero.Stats[0][statKey],
+                    baseValue: statKey === "hp" ? internalHero.Stats[0].maxHP : internalHero.Stats[0][statKey],
                     boon: internalHero.Boon?.[0].value,
                     bane: internalHero.Bane?.[0].value,
                     // penalty: hero.mapPenalties[statKey],

@@ -15,7 +15,6 @@ I did my best to create a UI (and game in general) that's as accurate as possibl
 <ul>
 <li>IntSys uses assets that don't match 100% with the way they're used in-game. There are a few elements I couldn't find or recreate.</li>
 <li>FEH stores animation files (characters in their idle stance, damaged, etc.) in a proprietary format, and I'm not really keen on implementing them. That might change in the future, but for now I'll stick with static images for the sake of simplicity.</li>
-<li>I wanted to be as vertical as possible with the game's code. A rewrite is planned, although I need to finish the "v1" first.</li>
 </ul>
 
 <h2>Want to lend a hand?</h2>

@@ -21,6 +21,9 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [PreloadScene, MainScene],
 }
 
-const game = new Phaser.Game(config);
+fetch("http://localhost:3600/worlds/df").then((s) => s.json()).then((data) => {
+  const game = new Phaser.Game(config);
+  game.registry.set("world", data);
+});
 
-export default game;
+// export default game;
