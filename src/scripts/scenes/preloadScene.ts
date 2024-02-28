@@ -1,5 +1,3 @@
-import DEBUG_ENTITIES from "../../debug";
-
 interface Component {
   type: string;
   [k: string]: any;
@@ -25,7 +23,9 @@ export default class PreloadScene extends Phaser.Scene {
       id: string;
       world: {
         mapId: string,
-        heroes: typeof DEBUG_ENTITIES
+        heroes: {
+          [k: string]: any
+        }
       };
     };
     // if (!world) world = DEBUG_ENTITIES;

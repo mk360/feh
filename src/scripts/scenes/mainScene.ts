@@ -1,14 +1,13 @@
 import { GameObjects, Time, Tweens } from 'phaser';
 import Hero from '../objects/hero';
-import DEBUG_ENTITIES from '../../debug';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import socket from "../../default-socket";
 import { renderDamageText, renderText } from '../utils/text-renderer';
+import InteractionIndicator from '../objects/interaction-indicator';
 // import CombatForecast from '../objects/combat-forecast';
 // import Coords from '../../interfaces/coords';
 // import battle from '../classes/battle';
 // import HeroData from "feh-battles/dec/hero";
-// import InteractionIndicator from '../objects/interaction-indicator';
 // import Team from '../../types/team';
 // import stringifyTile from '../utils/stringify-tile';
 // import toCoords from '../utils/to-coords';
@@ -73,6 +72,7 @@ export default class MainScene extends Phaser.Scene {
     private tilesLayer: GameObjects.Layer;
     private unitInfosBanner: UnitInfosBanner;
     private socket = socket;
+    private interactionsIndicator: InteractionIndicator;
     private playHeroQuote = createHeroQuoter(this);
 
     create() {
@@ -80,6 +80,7 @@ export default class MainScene extends Phaser.Scene {
         this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
         this.tilesLayer = this.add.layer();
         this.heroesLayer = this.add.layer();
+        this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
         this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
         for (let entityId in entities.heroes) {
             const entity = entities.heroes[entityId];
@@ -99,6 +100,10 @@ export default class MainScene extends Phaser.Scene {
                 hero.y = dragY;
             });
 
+            hero.on("dragenter", (target: GameObjects.Rectangle) => {
+                const { x, y } = target;
+            });
+
             hero.on("dragend", () => {
                 const gridCell = pixelsToGrid(hero.x, hero.y);
                 this.socket.emit("request confirm movement", {
@@ -115,7 +120,8 @@ export default class MainScene extends Phaser.Scene {
                 const x = Math.floor(tile / 10);
                 const y = tile - Math.floor(tile / 10) * 10;
                 const pxPosition = gridToPixels(x, y);
-                this.tilesLayer.add(new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x0000FF, 0.5));
+                const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x0000FF, 0.5).setInteractive(undefined, undefined, true);
+                this.tilesLayer.add(rec);
             }
         });
 
