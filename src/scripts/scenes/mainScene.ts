@@ -114,13 +114,21 @@ export default class MainScene extends Phaser.Scene {
         }
         this.add.existing(this.unitInfosBanner);
         this.startBackgroundMusic(0.2);
-        this.socket.on("response preview movement", (response: number[]) => {
+        this.socket.on("response preview movement", ({ movement = [], attack = [] }) => {
             this.tilesLayer.removeAll(true);
-            for (let tile of response) {
+            for (let tile of movement) {
                 const x = Math.floor(tile / 10);
                 const y = tile - Math.floor(tile / 10) * 10;
                 const pxPosition = gridToPixels(x, y);
                 const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x0000FF, 0.5).setInteractive(undefined, undefined, true);
+                this.tilesLayer.add(rec);
+            }
+
+            for (let tile of attack) {
+                const x = Math.floor(tile / 10);
+                const y = tile - Math.floor(tile / 10) * 10;
+                const pxPosition = gridToPixels(x, y);
+                const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.5).setInteractive(undefined, undefined, true);
                 this.tilesLayer.add(rec);
             }
         });
