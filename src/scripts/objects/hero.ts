@@ -1,7 +1,5 @@
-// import { GameObjects, Scene, Tweens } from "phaser";
+import TextColors from "../utils/text-colors";
 import { renderSpecialText, renderText } from "../utils/text-renderer";
-// import HeroData from "feh-battles/dec/hero";
-// import Team from "../../types/team";
 import IconsSwitcher from "./icons-switcher";
 
 import { GameObjects, Scene, Tweens } from "phaser";
@@ -37,7 +35,7 @@ class Hero extends GameObjects.Container {
         this.hpText = renderText(scene, -15, hpBarHeight, stats.hp, {
             fontSize: "18px"
         }).setOrigin(1, 0.5);
-        this.hpBar = new GameObjects.Rectangle(scene, this.hpText.getRightCenter().x, hpBarHeight, hpBarWidth, 5, team === "team1" ? 0x54DFF4 : 0xFA4D69).setOrigin(0, 0).setDepth(2);
+        this.hpBar = new GameObjects.Rectangle(scene, this.hpText.getRightCenter().x, hpBarHeight, hpBarWidth, 5, team === "team1" ? parseInt(TextColors.player.replace("#", ""), 16) : parseInt(TextColors.enemy.replace("#", ""), 16)).setOrigin(0, 0).setDepth(2);
         this.weaponType = new GameObjects.Image(scene, team === "team1" ? -30 : 30, -40, "weapons", `${weapon.color}-${weapon.weaponType}`).setScale(1.1);
         this.hpBarBackground = new GameObjects.Rectangle(scene, this.hpBar.getLeftCenter().x - 1, hpBarHeight - 1, hpBarWidth + 2, 7, 0x000000).setOrigin(0, 0);
         this.add(this.hpBarBackground);
@@ -47,7 +45,7 @@ class Hero extends GameObjects.Container {
         this.add(this.effectivenessImage);
         const gradient = this.hpText.context.createLinearGradient(0, 0, 0, this.hpText.height);
         gradient.addColorStop(0, "white");
-        gradient.addColorStop(0.7, team === "team1" ? "#54DFF4" : "#FA4D69");
+        gradient.addColorStop(0.7, team === "team1" ? TextColors.player : TextColors.enemy);
         this.sprite.setFlipX(team === "team2");
         this.glowingSprite.setFlipX(team === "team2");
         this.hpText.setFill(gradient);

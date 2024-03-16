@@ -7,7 +7,9 @@ const TextColors = {
     effective: "#87F640",
     criticalHP: "#CA384D",
     label: "#F5D04C",
-    specialPink: "#F599FF"
+    specialPink: "#F599FF",
+    player: "#54DFF4",
+    enemy: "#FA4D69"
 };
 
 export default TextColors;
