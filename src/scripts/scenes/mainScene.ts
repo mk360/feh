@@ -71,11 +71,13 @@ export default class MainScene extends Phaser.Scene {
     private heroesLayer: GameObjects.Layer;
     private tilesLayer: GameObjects.Layer;
     private unitInfosBanner: UnitInfosBanner;
+    private side: string;
     private socket = socket;
     private interactionsIndicator: InteractionIndicator;
     private playHeroQuote = createHeroQuoter(this);
 
     create() {
+        console.log(this.socket.id);
         const entities = this.game.registry.list.world;
         this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
         this.tilesLayer = this.add.layer();
@@ -114,8 +116,8 @@ export default class MainScene extends Phaser.Scene {
         }
         this.add.existing(this.unitInfosBanner);
         this.startBackgroundMusic(0.2);
-        this.socket.on("response preview movement", ({ movement = [], attack = [] }) => {
-            this.tilesLayer.removeAll(true);
+        this.socket.on("response preview movement", ({ movement = [], attack = [], warpTiles = [] }) => {
+            this.tilesLayer.removeAll();
             for (let tile of movement) {
                 const x = Math.floor(tile / 10);
                 const y = tile - Math.floor(tile / 10) * 10;
@@ -129,6 +131,14 @@ export default class MainScene extends Phaser.Scene {
                 const y = tile - Math.floor(tile / 10) * 10;
                 const pxPosition = gridToPixels(x, y);
                 const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.5).setInteractive(undefined, undefined, true);
+                this.tilesLayer.add(rec);
+            }
+
+            for (let tile of warpTiles) {
+                const x = Math.floor(tile / 10);
+                const y = tile - Math.floor(tile / 10) * 10;
+                const pxPosition = gridToPixels(x, y);
+                const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x00FFFF, 0.5).setInteractive(undefined, undefined, true);
                 this.tilesLayer.add(rec);
             }
         });
