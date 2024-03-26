@@ -14,7 +14,6 @@ class Hero extends GameObjects.Container {
     private special: GameObjects.Text | GameObjects.Image;
     glowingSprite: GameObjects.Image;
     hpText: GameObjects.Text;
-    statuses: string[];
     statusesImage: IconsSwitcher;
     effectivenessImage: IconsSwitcher;
 
@@ -29,7 +28,13 @@ class Hero extends GameObjects.Container {
         this.glowingSprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.7).setDepth(2).setAlpha(0).setTintFill(0xFFFFFF);
         this.add(this.sprite);
         this.add(this.glowingSprite);
-        this.statusesImage = new IconsSwitcher(scene, 45, 45, []);
+        this.statusesImage = new IconsSwitcher(scene, 55, 45, data.Status?.map((st) => ({
+            frame: st.value.toLowerCase(),
+            texture: "statuses"
+        })).concat([{
+            frame: "bonus",
+            texture: "statuses"
+        }]) || []).setScale(0.6);
         this.effectivenessImage = new IconsSwitcher(scene, 0, 0, []);
         const hpBarHeight = this.statusesImage.getCenter().y;
         this.hpText = renderText(scene, -15, hpBarHeight, stats.hp, {
@@ -117,7 +122,7 @@ class Hero extends GameObjects.Container {
     }
 
     toggleStatuses() {
-        this.statusesImage.setIcons(this.statuses).setVisible(!!this.statuses.length).toggleIcons();
+        this.statusesImage.setVisible(!!this.statusesImage.iconsList.length).toggleIcons();
     }
 };
 

@@ -1,7 +1,7 @@
 interface RotatingIconsImage {
     toggleIcons(): this;
-    setIcons(icons: string[]): this;
-    iconsList: string[];
+    setIcons(icons: IconData[]): this;
+    iconsList: IconData[];
 };
 
 export default RotatingIconsImage;

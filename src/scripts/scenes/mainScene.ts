@@ -1,3 +1,9 @@
+/**
+ * TODO:
+ * make warp tiles valid movement targets
+ * start implementing battle preview requests
+ */
+
 import { GameObjects, Time, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
@@ -61,6 +67,8 @@ function createHeroQuoter(scene: MainScene) {
 //     return isDoubleTap;
 //   };
 // }
+
+let de = 0;
 
 export default class MainScene extends Phaser.Scene {
     constructor() {
@@ -158,6 +166,17 @@ export default class MainScene extends Phaser.Scene {
                 // do nothing
             }
         });
+    }
+
+    update(_, delta) {
+        de += delta;
+        const ONE_SECOND = 1000;
+        if (de >= 1.5 * ONE_SECOND) {
+            de = 0;
+            this.heroesLayer.getChildren().forEach((hero: Hero) => {
+                hero.toggleStatuses();
+            })
+        }
     }
 
     startBackgroundMusic(volume: number) {
