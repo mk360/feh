@@ -16,7 +16,7 @@ class Textbox extends GameObjects.Container {
 
     createPassiveTextbox({ name, description }: { name: string, description: string }) {
         const skillInfosLines: GameObjects.Text[][] = [];
-        
+
         skillInfosLines.push([renderLabelText({
             scene: this.scene,
             x: 0,
@@ -92,93 +92,93 @@ class Textbox extends GameObjects.Container {
     }
 
     createStatTextbox({ stat, baseValue, penalty, buff, boon, bane, description }: { stat: keyof Stats, baseValue: number, penalty?: number, buff?: number, boon?: keyof Stats, bane?: keyof Stats, description: string }) {
-            // const { description } = this.stats[stat];
-            const lines: GameObjects.Text[][] = [];
-            const valuesLines: GameObjects.Text[] = [];
-            const baseValueLabel = renderLabelText({
+        // const { description } = this.stats[stat];
+        const lines: GameObjects.Text[][] = [];
+        const valuesLines: GameObjects.Text[] = [];
+        const baseValueLabel = renderLabelText({
+            scene: this.scene,
+            x: 0,
+            y: 0,
+            content: "Base Value"
+        });
+        const baseValueText = renderText(this.scene, baseValueLabel.getRightCenter().x + 10, 0, baseValue, {
+            fontSize: "18px"
+        });
+        valuesLines.push(baseValueLabel);
+        valuesLines.push(baseValueText);
+        if (buff > 0) {
+            const buffLabel = renderLabelText({
+                scene: this.scene,
+                x: baseValueText.getRightCenter().x + 10,
+                y: 0,
+                content: "Buff"
+            });
+            const buffValue = renderBoonText({
+                scene: this.scene,
+                x: buffLabel.getRightCenter().x + 10,
+                y: 0,
+                content: "+" + buff,
+                style: { fontSize: "18px" }
+            });
+            valuesLines.push(buffLabel);
+            valuesLines.push(buffValue);
+        }
+
+        if (penalty > 0) {
+            const penaltyLabel = renderLabelText({
+                scene: this.scene,
+                x: valuesLines[valuesLines.length - 1].getRightCenter().x + 10,
+                y: 0,
+                content: "Penalty"
+            });
+            const penaltyValue = renderBaneText({
+                scene: this.scene,
+                x: penaltyLabel.getRightCenter().x + 10,
+                y: 0,
+                content: penalty,
+                style: { fontSize: "18px" }
+            });
+            valuesLines.push(penaltyLabel);
+            valuesLines.push(penaltyValue);
+        }
+
+        lines.push(valuesLines);
+
+        const modifiersLine: GameObjects.Text[] = [];
+        if (bane === stat) {
+            const flawText = renderBaneText({
                 scene: this.scene,
                 x: 0,
-                y: 0,
-                content: "Base Value"
+                y: 30,
+                content: "Flaw",
+                style: {
+                    fontSize: "18px"
+                }
             });
-            const baseValueText = renderText(this.scene, baseValueLabel.getRightCenter().x + 10, 0, baseValue, { 
-                fontSize: "18px"
+            modifiersLine.push(flawText);
+        }
+        if (boon === stat) {
+            const assetText = renderBoonText({
+                scene: this.scene,
+                x: 0,
+                y: 30,
+                content: "Asset",
+                style: {
+                    fontSize: "18px"
+                }
             });
-            valuesLines.push(baseValueLabel);
-            valuesLines.push(baseValueText);
-            if (buff > 0) {
-                const buffLabel = renderLabelText({
-                    scene: this.scene,
-                    x: baseValueText.getRightCenter().x + 10,
-                    y: 0,
-                    content: "Buff"
-                });
-                const buffValue = renderBoonText({
-                    scene: this.scene,
-                    x: buffLabel.getRightCenter().x + 10,
-                    y: 0,
-                    content: "+" + buff,
-                    style: { fontSize: "18px" }
-                });
-                valuesLines.push(buffLabel);
-                valuesLines.push(buffValue);
-            }
+            modifiersLine.push(assetText);
+        }
+        if (modifiersLine.length) lines.push(modifiersLine);
 
-            if (penalty > 0) {
-                const penaltyLabel = renderLabelText({
-                    scene: this.scene,
-                    x: valuesLines[valuesLines.length - 1].getRightCenter().x + 10,
-                    y: 0,
-                    content: "Penalty"
-                });
-                const penaltyValue = renderBaneText({
-                    scene: this.scene,
-                    x: penaltyLabel.getRightCenter().x + 10,
-                    y: 0,
-                    content: penalty,
-                    style: { fontSize: "18px" }
-                });
-                valuesLines.push(penaltyLabel);
-                valuesLines.push(penaltyValue);
-            }
+        const descLine: GameObjects.Text[] = [];
+        const descriptionText = renderText(this.scene, 0, lines[lines.length - 1][0].y + 30, description, {
+            fontSize: "18px",
+        }).setWordWrapWidth(396);
+        descLine.push(descriptionText);
+        lines.push(descLine);
 
-            lines.push(valuesLines);
-
-            const modifiersLine: GameObjects.Text[] = [];
-            if (bane === stat) {
-                const flawText = renderBaneText({
-                    scene: this.scene,
-                    x: 0,
-                    y: 30,
-                    content: "Flaw",
-                    style: {
-                        fontSize: "18px"
-                    }
-                });
-                modifiersLine.push(flawText);
-            }
-            if (boon === stat) {
-                const assetText = renderBoonText({
-                    scene: this.scene,
-                    x: 0,
-                    y: 30,
-                    content: "Asset",
-                    style: {
-                        fontSize: "18px"
-                    }
-                });
-                modifiersLine.push(assetText);
-            }
-            if (modifiersLine.length) lines.push(modifiersLine);
-
-            const descLine: GameObjects.Text[] = [];
-            const descriptionText = renderText(this.scene, 0, lines[lines.length - 1][0].y + 30, description, {
-                fontSize: "18px",
-            }).setWordWrapWidth(396);
-            descLine.push(descriptionText);
-            lines.push(descLine);
-
-            return lines;
+        return lines;
     }
 
     specialTextbox({ cooldown, baseCooldown, description }: { cooldown: number, baseCooldown: number, description: string }) {
@@ -221,9 +221,15 @@ class Textbox extends GameObjects.Container {
             renderText(this.scene, 110, 0, range).setFontSize(18)
         ];
 
-        const secondLine = [renderText(this.scene, 0, 30, description).setWordWrapWidth(440).setFontSize(18)];
+        const linesArray = [firstLine];
 
-        return [firstLine, secondLine];
+        if (description) {
+            const secondLine = [renderText(this.scene, 0, 30, description).setWordWrapWidth(440).setFontSize(18)];
+            linesArray.push(secondLine);
+        }
+
+
+        return linesArray;
     }
 }
 
