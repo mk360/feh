@@ -35,18 +35,14 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.atlas("interactions", "/assets/sheets/interactions.webp", "/assets/sheets/interactions.json");
     this.load.atlas("skills-ui", "/assets/sheets/skills-ui.webp", "/assets/sheets/skills-ui.json");
     this.load.atlas("statuses", "/assets/statuses/statuses.webp", "/assets/statuses/statuses.json");
+    this.load.atlas("paths", "/assets/path.png", "/assets/path.json");
+    this.load.atlas("top-banner", "/assets/top-banner.webp", "/assets/top-banner.json");
     this.load.audioSprite("sfx", "/assets/audio/sfx.json", "/assets/audio/sfx.ogg");
     this.load.audioSprite("battle-sfx", "/assets/audio/battle-sfx.json", "/assets/audio/battle-sfx.ogg");
     this.load.audio("confirm", "/assets/audio/confirm.mp3");
-    this.load.image("effective", "/assets/effective-against-enemy.png", {
-      overrideMimeType: "png",
-      responseType: "blob"
-    });
+    this.load.image("effective", "/assets/effective-against-enemy.png");
     this.load.image("effective-against", "/assets/enemy-effective.png");
-    this.load.image("buff", "/assets/buff-arrow.png");
     this.load.image("ui-button", "/assets/ui-button.png");
-    this.load.atlas("paths", "/assets/path.png", "/assets/path.json");
-    this.load.atlas("top-banner", "/assets/top-banner.webp", "/assets/top-banner.json");
     this.load.image("ui-button-pressed", "/assets/ui-button-pressed.png");
     this.load.image("debuff", "/assets/debuff-arrow.png");
     this.load.image("effect-shine", "/assets/effect.png");
@@ -62,7 +58,7 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start('MainScene')
+    this.scene.start('MainScene');
 
     /**
      * This is how you would dynamically import the mainScene class (with code splitting),

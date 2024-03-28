@@ -1,7 +1,7 @@
 /**
  * TODO:
- * make warp tiles valid movement targets
  * start implementing battle preview requests
+ * implement bonuses
  */
 
 import { GameObjects, Time, Tweens } from 'phaser';
@@ -10,20 +10,6 @@ import UnitInfosBanner from '../objects/unit-infos-banner';
 import socket from "../../default-socket";
 import { renderDamageText, renderText } from '../utils/text-renderer';
 import InteractionIndicator from '../objects/interaction-indicator';
-// import CombatForecast from '../objects/combat-forecast';
-// import Coords from '../../interfaces/coords';
-// import battle from '../classes/battle';
-// import HeroData from "feh-battles/dec/hero";
-// import Team from '../../types/team';
-// import stringifyTile from '../utils/stringify-tile';
-// import toCoords from '../utils/to-coords';
-// import UIAction from '../../interfaces/ui-action';
-// import { CombatOutcome } from 'feh-battles/dec/combat';
-// import ActionsTray from '../objects/actions-tray';
-// import PreparationState from '../../states/preparation';
-// import FightingState from '../../states/fighting';
-// import State from '../../states/state';
-// import GameWorld from 'feh-battles/dec/world';
 
 const squareSize = 125;
 const squaresOffset = 63;
@@ -37,24 +23,24 @@ function gridToPixels(x: number, y: number) {
 }
 
 function pixelsToGrid(x: number, y: number) {
-  return {
-    x: Math.round((squaresOffset + x) / squareSize),
-    y: Math.round((y - fixedY) / squareSize)
-  };
+    return {
+        x: Math.round((squaresOffset + x) / squareSize),
+        y: Math.round((y - fixedY) / squareSize)
+    };
 }
 
 function createHeroQuoter(scene: MainScene) {
-  let previousQuote = "";
+    let previousQuote = "";
 
-  return (hero: Hero) => {
-    const internalHero = hero.getInternalHero();
-    const n = scene.rng.integerInRange(1, 3);
-    if (previousQuote) scene.sound.stopByKey(previousQuote);
-    const heroName = internalHero.Name[0].value;
-    const heroSprite = heroName + " quotes";
-    scene.sound.playAudioSprite(heroSprite, n.toString(), { volume: 0.2 });
-    previousQuote = heroSprite;
-  };
+    return (hero: Hero) => {
+        const internalHero = hero.getInternalHero();
+        const n = scene.rng.integerInRange(1, 3);
+        if (previousQuote) scene.sound.stopByKey(previousQuote);
+        const heroName = internalHero.Name[0].value;
+        const heroSprite = heroName + " quotes";
+        scene.sound.playAudioSprite(heroSprite, n.toString(), { volume: 0.2 });
+        previousQuote = heroSprite;
+    };
 }
 
 
@@ -83,15 +69,25 @@ export default class MainScene extends Phaser.Scene {
     private socket = socket;
     private interactionsIndicator: InteractionIndicator;
     private playHeroQuote = createHeroQuoter(this);
+    private movementUI: GameObjects.Layer;
+    private startRosary: GameObjects.Image;
+    private endRosary: GameObjects.Image;
+    private movementIndicator: GameObjects.Image;
 
     create() {
-        console.log(this.socket.id);
         const entities = this.game.registry.list.world;
         this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0);
-        this.tilesLayer = this.add.layer();
-        this.heroesLayer = this.add.layer();
         this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
         this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
+        this.tilesLayer = this.add.layer();
+        this.movementUI = this.add.layer();
+        this.startRosary = new GameObjects.Image(this, 0, 0, "paths", "rosary").setVisible(false);
+        this.endRosary = new GameObjects.Image(this, 0, 0, "paths", "rosary").setVisible(false);
+        this.movementIndicator = new GameObjects.Image(this, 0, 0, "paths", "movement-allowed").setScale(1.3).setVisible(false);
+        this.movementUI.add(this.movementIndicator);
+        this.movementUI.add(this.endRosary);
+        this.movementUI.add(this.startRosary);
+        this.heroesLayer = this.add.layer();
         for (let entityId in entities.heroes) {
             const entity = entities.heroes[entityId];
             const hero = this.addHero(entity).setInteractive();
@@ -111,11 +107,20 @@ export default class MainScene extends Phaser.Scene {
             });
 
             hero.on("dragenter", (target: GameObjects.Rectangle) => {
-                const { x, y } = target;
+                const gridCell = pixelsToGrid(target.x, target.y);
+                const { x, y } = gridToPixels(gridCell.x, gridCell.y);
+                this.movementIndicator.setX(x).setY(y);
+            });
+
+            hero.on("dragstart", () => {
+                this.startRosary.setVisible(true).setX(hero.x).setY(hero.y);
+                this.movementIndicator.setVisible(true).setX(hero.x).setY(hero.y);
             });
 
             hero.on("dragend", () => {
                 const gridCell = pixelsToGrid(hero.x, hero.y);
+                this.startRosary.setVisible(false);
+                this.movementIndicator.setVisible(false);
                 this.socket.emit("request confirm movement", {
                     unitId: hero.name,
                     ...gridCell,
@@ -175,7 +180,7 @@ export default class MainScene extends Phaser.Scene {
             de = 0;
             this.heroesLayer.getChildren().forEach((hero: Hero) => {
                 hero.toggleStatuses();
-            })
+            });
         }
     }
 
@@ -186,7 +191,7 @@ export default class MainScene extends Phaser.Scene {
             start: 4.25
         });
         bgm.play({ volume });
-            bgm.on("complete", () => {
+        bgm.on("complete", () => {
             bgm.play("loop", { volume });
         });
     };
@@ -219,7 +224,6 @@ export default class MainScene extends Phaser.Scene {
 //   interactionIndicatorTween: Tweens.Tween;
 //   fpsText: GameObjects.Text;
 //   actionsTray = new ActionsTray(this);
-//   rosary: GameObjects.Image;
 //   endArrow: GameObjects.Image;
 //   tileHighlight: GameObjects.Image;
 //   updateDelta = 0;
