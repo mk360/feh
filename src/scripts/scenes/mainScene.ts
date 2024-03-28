@@ -83,7 +83,7 @@ export default class MainScene extends Phaser.Scene {
         this.movementUI = this.add.layer();
         this.startRosary = new GameObjects.Image(this, 0, 0, "paths", "rosary").setVisible(false);
         this.endRosary = new GameObjects.Image(this, 0, 0, "paths", "rosary").setVisible(false);
-        this.movementIndicator = new GameObjects.Image(this, 0, 0, "paths", "movement-allowed").setScale(1.3).setVisible(false);
+        this.movementIndicator = new GameObjects.Image(this, 0, 0, "paths", "movement-allowed").setScale(1.5).setVisible(false);
         this.movementUI.add(this.movementIndicator);
         this.movementUI.add(this.endRosary);
         this.movementUI.add(this.startRosary);
@@ -115,9 +115,11 @@ export default class MainScene extends Phaser.Scene {
             hero.on("dragstart", () => {
                 this.startRosary.setVisible(true).setX(hero.x).setY(hero.y);
                 this.movementIndicator.setVisible(true).setX(hero.x).setY(hero.y);
+                hero.setDepth(hero.depth + 1);
             });
 
             hero.on("dragend", () => {
+                hero.setDepth(hero.depth - 1);
                 const gridCell = pixelsToGrid(hero.x, hero.y);
                 this.startRosary.setVisible(false);
                 this.movementIndicator.setVisible(false);
@@ -129,7 +131,7 @@ export default class MainScene extends Phaser.Scene {
         }
         this.add.existing(this.unitInfosBanner);
         this.startBackgroundMusic(0.2);
-        this.socket.on("response preview movement", ({ movement = [], attack = [], warpTiles = [] }) => {
+        this.socket.on("response preview movement", ({ movement = [], attack = [], warpTiles = [], targetableTiles = [] }) => {
             this.tilesLayer.removeAll();
             for (let tile of movement) {
                 const x = Math.floor(tile / 10);
@@ -143,7 +145,15 @@ export default class MainScene extends Phaser.Scene {
                 const x = Math.floor(tile / 10);
                 const y = tile - Math.floor(tile / 10) * 10;
                 const pxPosition = gridToPixels(x, y);
-                const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.5).setInteractive(undefined, undefined, true);
+                const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.3);
+                this.tilesLayer.add(rec);
+            }
+
+            for (let tile of targetableTiles) {
+                const x = Math.floor(tile / 10);
+                const y = tile - Math.floor(tile / 10) * 10;
+                const pxPosition = gridToPixels(x, y);
+                const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.7).setInteractive(undefined, undefined, true);
                 this.tilesLayer.add(rec);
             }
 
