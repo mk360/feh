@@ -108,8 +108,10 @@ export default class MainScene extends Phaser.Scene {
 
             hero.on("dragenter", (target: GameObjects.Rectangle) => {
                 const gridCell = pixelsToGrid(target.x, target.y);
+                const savedPosition = hero.getInternalHero().Position[0].value;
                 const { x, y } = gridToPixels(gridCell.x, gridCell.y);
                 this.movementIndicator.setX(x).setY(y);
+                this.endRosary.setVisible(savedPosition.x === gridCell.x && savedPosition.y === gridCell.y);
             });
 
             hero.on("dragstart", () => {
@@ -122,6 +124,7 @@ export default class MainScene extends Phaser.Scene {
                 hero.setDepth(hero.depth - 1);
                 const gridCell = pixelsToGrid(hero.x, hero.y);
                 this.startRosary.setVisible(false);
+                this.endRosary.setVisible(false);
                 this.movementIndicator.setVisible(false);
                 this.socket.emit("request confirm movement", {
                     unitId: hero.name,
