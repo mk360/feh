@@ -242,25 +242,13 @@ export default class MainScene extends Phaser.Scene {
 }
 
 // export default class MainScene extends Phaser.Scene {
-//   walkTiles: string[] = [];
-//   enemyRangeCoords: string[] = [];
-//   attackTiles: string[] = [];
-//   positionTiles: string[] = [];
-//   heroesWhoMoved: Hero[] = [];
-//   turn: Team = "team1";
-//   enemyRangeLayer: GameObjects.Layer;
-//   movementRangeLayer: GameObjects.Layer;
-//   temporaryAssetsLayer: GameObjects.Layer;
 //   heroBackground: Phaser.GameObjects.Rectangle;
-//   movementArrows: GameObjects.Group;
-//   movementAllowedImages: Phaser.GameObjects.Group;
 //   movementAllowedTween: Phaser.Tweens.Tween;
 //   combatForecast: CombatForecast;
 //   interactionIndicator: InteractionIndicator;
 //   interactionIndicatorTween: Tweens.Tween;
 //   fpsText: GameObjects.Text;
 //   actionsTray = new ActionsTray(this);
-//   endArrow: GameObjects.Image;
 //   tileHighlight: GameObjects.Image;
 //   updateDelta = 0;
 //   timeline: Time.Timeline;
@@ -272,8 +260,6 @@ export default class MainScene extends Phaser.Scene {
 
 //   constructor() {
 //     super({ key: 'MainScene' });
-//     this.walkTiles = [];
-//     this.attackTiles = [];
 //     this.states = {
 //       preparation: new PreparationState(this),
 //       fighting: new FightingState(this)
@@ -443,13 +429,6 @@ export default class MainScene extends Phaser.Scene {
 //         break;
 //       }
 //     }
-//   }
-
-//   getHeroCoordinates(hero: Hero) {
-//     const coordinatesVector = new Phaser.Math.Vector2(hero.x, hero.y);
-//     coordinatesVector.add(hero.image.getCenter());
-
-//     return coordinatesVector;
 //   }
 
 //   createDamageText(turn: CombatOutcome["turns"][number]) {
@@ -715,10 +694,6 @@ export default class MainScene extends Phaser.Scene {
 //     }
 //   }
 
-//   getByName<T extends GameObjects.GameObject>(name: string): T {
-//     return this.heroesLayer.getByName(name) as T;
-//   }
-
 //   renderPath(path: { start: string, end: string, tilesInBetween: string[] }) {
 //     this.movementArrows.setVisible(true).clear(true, true);
 //     const { start, end, tilesInBetween } = path;
@@ -766,14 +741,6 @@ export default class MainScene extends Phaser.Scene {
 //         }
 //       }
 //     }
-//   }
-
-//   // todo: simplify signature
-//   addHero(heroData: HeroData, team: Team) {
-//     const { x, y } = gridToPixels(heroData.coordinates.x, heroData.coordinates.y);
-//     const heroObject = new Hero(this, x, y, heroData, team).setInteractive();
-//     this.heroesLayer.add(heroObject);
-//     return heroObject;
 //   }
 
 //   displayEnemyRange(enabled: boolean) {
@@ -825,45 +792,6 @@ export default class MainScene extends Phaser.Scene {
 //     // });
 //     this.processAction(battle.initiateBattle());
 //   }
-
-//   displayRanges(hero: HeroData) {
-//     this.clearTiles(this.walkTiles.concat(this.attackTiles));
-//     const walkTiles = battle.getMovementTiles(hero);
-//     const weaponTiles = battle.getAttackTiles(hero, walkTiles);
-
-//     const stringWalkTiles = walkTiles.map(stringifyTile);
-
-//     for (let tile of weaponTiles) {
-//       const { x, y } = gridToPixels(+tile[0], +tile[2]);
-//       const img = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0xFF0000, 0.2);
-//       this.movementRangeLayer.add(img);
-//     }
-
-//     for (let tile of walkTiles) {
-//       const { x, y } = gridToPixels(tile.x, tile.y);
-//       const img = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0x0000FF, 0.2);
-//       this.movementRangeLayer.add(img);
-//     }
-
-//     this.walkTiles = walkTiles.map(stringifyTile);
-//     this.attackTiles = weaponTiles;
-//   }
-
-//   getTile(name: string) {
-//     return this.children.getByName(name) as Phaser.GameObjects.Rectangle;
-//   }
-
-//   update(_, delta: number) {
-//     this.updateDelta += delta;
-//     if (this.updateDelta >= 16.67 * 60) {
-//       this.updateDelta = 0;
-//       for (let heroId in battle.getHeroes()) {
-//         const hero = this.getByName<Hero>(heroId);
-//         hero.toggleStatuses();
-//       }
-//     }
-//   }
-// }
 
 // function getTilesDirection(tile1: Coords, tile2: Coords) {
 //   if (tile1.y !== tile2.y) {

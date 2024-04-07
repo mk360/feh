@@ -1,6 +1,9 @@
 import 'phaser'
 import PreloadScene from './scenes/preloadScene'
-import MainScene from './scenes/mainScene'
+import MainScene from './scenes/mainScene';
+import shortid from "shortid";
+
+if (!localStorage.getItem("id")) localStorage.setItem("id", shortid());
 
 const DEFAULT_WIDTH = 750
 const DEFAULT_HEIGHT = 1200
