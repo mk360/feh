@@ -4,7 +4,7 @@
  * implement bonuses
  */
 
-import { GameObjects, Time, Tweens } from 'phaser';
+import { GameObjects } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import socket from "../../default-socket";
@@ -74,6 +74,10 @@ export default class MainScene extends Phaser.Scene {
     private background: GameObjects.Image;
     private movementIndicator: GameObjects.Image;
 
+    previewBattle() {
+
+    }
+
     create() {
         const entities = this.game.registry.list.world;
         this.background = this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setInteractive();
@@ -111,7 +115,7 @@ export default class MainScene extends Phaser.Scene {
                 const savedPosition = hero.getInternalHero().Position[0];
                 const { x, y } = gridToPixels(gridCell.x, gridCell.y);
                 this.movementIndicator.setX(x).setY(y);
-                this.endRosary.setVisible(savedPosition.x === gridCell.x && savedPosition.y === gridCell.y);
+                this.endRosary.setVisible(savedPosition.x !== gridCell.x || savedPosition.y !== gridCell.y).setX(x).setY(y);
             });
 
             hero.on("dragstart", () => {
