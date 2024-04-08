@@ -97,6 +97,7 @@ export default class MainScene extends Phaser.Scene {
             const hero = this.addHero(entity).setInteractive();
             hero.setName(entityId);
             hero.on("pointerdown", () => {
+                this.sound.playAudioSprite("sfx", "tap");
                 this.unitInfosBanner.setVisible(true).setHero(hero);
                 this.playHeroQuote(hero);
                 this.socket.emit("request preview movement", {
@@ -115,6 +116,7 @@ export default class MainScene extends Phaser.Scene {
                 const savedPosition = hero.getInternalHero().Position[0];
                 const { x, y } = gridToPixels(gridCell.x, gridCell.y);
                 this.movementIndicator.setX(x).setY(y);
+                this.sound.playAudioSprite("sfx", "hover");
                 this.endRosary.setVisible(savedPosition.x !== gridCell.x || savedPosition.y !== gridCell.y).setX(x).setY(y);
             });
 
@@ -209,7 +211,9 @@ export default class MainScene extends Phaser.Scene {
             }
         });
 
-        this.background.on("pointerdown", console.log);
+        this.background.on("pointerdown", () => {
+            this.sound.playAudioSprite("sfx", "cancel");
+        });
     }
 
     update(_, delta) {

@@ -7,6 +7,7 @@ import Stats from "../../interfaces/stats";
 import Textbox from "./textbox";
 // import TextboxContent from "../../types/textbox-content";
 import { STATS, WEAPON_TYPES } from "../../ui-data";
+import HighlightRectangle from "./highlight-rectangle";
 
 interface RenderedStat {
     label: GameObjects.Text;
@@ -27,6 +28,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private B: GameObjects.Image;
     private C: GameObjects.Image;
     private displayedHero: Hero;
+    private highlighter = new HighlightRectangle(this.scene)
     //     private S: GameObjects.Image;
     //     private textboxTarget: string;
     private heroPortrait: GameObjects.Image;
@@ -111,6 +113,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(this.maxHP);
         this.add(this.textbox);
         this.createPassives(lvText);
+        this.add(this.highlighter);
     }
 
     //     private displayTextbox() {
@@ -187,8 +190,16 @@ class UnitInfosBanner extends GameObjects.Container {
                 // this.textboxTarget = statKey;
             }
 
-            label.on("pointerdown", statDetailsCallback);
-            value.on("pointerdown", statDetailsCallback);
+            label.on("pointerdown", () => {
+                this.scene.sound.playAudioSprite("sfx", "tap");
+                statDetailsCallback();
+
+            });
+            value.on("pointerdown", () => {
+                this.scene.sound.playAudioSprite("sfx", "tap");
+                statDetailsCallback();
+                this.highlighter.highlightElement(value);
+            });
             this.add([label, value]);
         }
         this.add(new GameObjects.Image(this.scene, blockX - 130, 125, "top-banner", "stat-glowing-line").setScale(0.2, 0.5).setOrigin(0));
@@ -210,6 +221,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(weaponIcon);
         this.weaponBg.on("pointerdown", () => {
             const internalHero = this.displayedHero.getInternalHero();
+            this.scene.sound.playAudioSprite("sfx", "tap");
             const weapon = internalHero.Skill?.find((s) => s.slot === "weapon");
             if (weapon) {
                 const weaponIdentity = internalHero.Weapon[0];
@@ -227,6 +239,7 @@ class UnitInfosBanner extends GameObjects.Container {
         });
 
         this.assistBg.on("pointerdown", () => {
+            this.scene.sound.playAudioSprite("sfx", "tap");
             const internalHero = this.displayedHero.getInternalHero();
             const assist = internalHero.Skill?.find((s) => s.slot === "assist");
             if (assist) {
@@ -242,6 +255,7 @@ class UnitInfosBanner extends GameObjects.Container {
         });
 
         this.specialBg.on("pointerdown", () => {
+            this.scene.sound.playAudioSprite("sfx", "tap");
             const internalHero = this.displayedHero.getInternalHero();
             const special = internalHero.Skill?.find((s) => s.slot === "special");
             if (special) {
@@ -272,6 +286,7 @@ class UnitInfosBanner extends GameObjects.Container {
 
         for (let skillSlot of ["A", "B", "C"] as const) {
             this[skillSlot].on("pointerdown", () => {
+                this.scene.sound.playAudioSprite("sfx", "tap");
                 const internalHero = this.displayedHero.getInternalHero();
                 const passive = internalHero.Skill?.find((s) => s.slot === skillSlot);
                 if (passive) {
@@ -326,31 +341,6 @@ class UnitInfosBanner extends GameObjects.Container {
     //         }).play();
     //     }
 
-    //     private statDetailsCallback({ 
-    //         statKey,
-    //         hero
-    //     }: {
-    //         statKey: keyof Stats,
-    //         hero: HeroData
-    //     }) {
-    //         return () => {
-    //             this.textbox.clearContent();
-    //             const content = this.createStatTextbox({
-    //                 stat: statKey,
-    //                 baseValue: hero.stats[statKey],
-    //                 boon: hero.boon,
-    //                 bane: hero.bane,
-    //                 penalty: hero.mapPenalties[statKey],
-    //                 buff: hero.mapBoosts[statKey]
-    //             });
-    //             this.textbox.x = this.stats[statKey].label.getRightCenter().x + 400;
-    //             this.textbox.y = this.stats[statKey].label.getBottomLeft().y + 10;
-    //             this.textbox.setContent(content)
-    //             this.controlTextboxDisplay(statKey);
-    //             this.textboxTarget = statKey;
-    //         }
-    //     }
-
     setHero(hero: Hero) {
         this.displayedHero = hero;
         this.textbox.clearContent().setVisible(false);
@@ -385,6 +375,12 @@ class UnitInfosBanner extends GameObjects.Container {
         for (let statKey in this.stats) {
             const castKey = statKey as keyof Stats;
             const { label, value } = this.stats[castKey];
+            if (castKey === internalHero.Boon[0]?.value) {
+                label.setColor(TextColors.boon);
+            } else if (castKey === internalHero.Bane[0]?.value) {
+                label.setColor(TextColors.bane);
+            }
+
             if (statKey === "hp") {
                 const applyGradient = Stats[0].hp <= 10 ? getLowHPGradient : getHealthyHPGradient;
                 const hpGradient = applyGradient(this.stats.hp.value);
@@ -395,12 +391,6 @@ class UnitInfosBanner extends GameObjects.Container {
                 // value.setColor(statChange > 0 ? TextColors.boon : statChange < 0 ? TextColors.bane : "white");
             }
         }
-
-        //         if (internalHero.boon && internalHero.bane) {
-        //             this.stats[internalHero.boon].label.setColor(TextColors.boon);
-        //             this.stats[internalHero.bane].label.setColor(TextColors.bane);
-        //         }
-
 
         //         if (this.nameplate.heroName.text !== internalHero.name) {
         this.heroPortrait.x = -300;
@@ -421,8 +411,6 @@ class UnitInfosBanner extends GameObjects.Container {
         this.maxHP.setText(`/ ${stats.maxHP}`);
 
         this.updatePassives(hero);
-
-        //         return this;
     }
 };
 
