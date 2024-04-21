@@ -379,6 +379,8 @@ class UnitInfosBanner extends GameObjects.Container {
                 label.setColor(TextColors.boon);
             } else if (castKey === internalHero.Bane[0]?.value) {
                 label.setColor(TextColors.bane);
+            } else {
+                label.setColor(TextColors.white);
             }
 
             if (statKey === "hp") {
