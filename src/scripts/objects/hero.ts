@@ -8,6 +8,10 @@ const hpBarWidth = 60;
 
 class Hero extends GameObjects.Container {
     hpBar: GameObjects.Rectangle;
+    temporaryPosition = {
+        x: 0,
+        y: 0
+    };
     hpBarBackground: GameObjects.Rectangle;
     weaponType: GameObjects.Image;
     sprite: GameObjects.Image;

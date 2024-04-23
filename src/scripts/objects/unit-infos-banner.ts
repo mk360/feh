@@ -28,7 +28,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private B: GameObjects.Image;
     private C: GameObjects.Image;
     private displayedHero: Hero;
-    private highlighter = new HighlightRectangle(this.scene)
+    private highlighter = new HighlightRectangle(this.scene);
     //     private S: GameObjects.Image;
     //     private textboxTarget: string;
     private heroPortrait: GameObjects.Image;
@@ -116,16 +116,6 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(this.highlighter);
     }
 
-    //     private displayTextbox() {
-    //         this.textbox.setVisible(true).setScale(0);
-    //         this.scene.sound.playAudioSprite("sfx", "tap");
-    //         this.scene.tweens.add({
-    //             targets: [this.textbox],
-    //             scale: 1,
-    //             duration: 50
-    //         }).play();
-    //     }
-
     private createStats() {
         const blockX = 310;
 
@@ -185,15 +175,16 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.textbox.x = label.getRightCenter().x + 400;
                 this.textbox.y = label.getBottomLeft().y + 10;
                 this.textbox.setContent(content);
-                this.textbox.setVisible(true);
+                this.textbox.display();
                 // this.controlTextboxDisplay(statKey);
                 // this.textboxTarget = statKey;
             }
 
             label.on("pointerdown", () => {
                 this.scene.sound.playAudioSprite("sfx", "tap");
+                this.highlighter.highlightElement(value);
                 statDetailsCallback();
-
+                this.highlighter.highlightElement(label);
             });
             value.on("pointerdown", () => {
                 this.scene.sound.playAudioSprite("sfx", "tap");
@@ -224,6 +215,7 @@ class UnitInfosBanner extends GameObjects.Container {
             this.scene.sound.playAudioSprite("sfx", "tap");
             const weapon = internalHero.Skill?.find((s) => s.slot === "weapon");
             if (weapon) {
+                this.highlighter.highlightElement(this.weaponBg);
                 const weaponIdentity = internalHero.Weapon[0];
                 const textboxLines = this.textbox.weaponTextbox({
                     might: weapon.might,
@@ -239,6 +231,7 @@ class UnitInfosBanner extends GameObjects.Container {
         });
 
         this.assistBg.on("pointerdown", () => {
+            this.highlighter.highlightElement(this.assistBg);
             this.scene.sound.playAudioSprite("sfx", "tap");
             const internalHero = this.displayedHero.getInternalHero();
             const assist = internalHero.Skill?.find((s) => s.slot === "assist");
@@ -259,6 +252,7 @@ class UnitInfosBanner extends GameObjects.Container {
             const internalHero = this.displayedHero.getInternalHero();
             const special = internalHero.Skill?.find((s) => s.slot === "special");
             if (special) {
+                this.highlighter.highlightElement(this.specialBg);
                 const textboxLines = this.textbox.specialTextbox({
                     cooldown: special.cooldown,
                     description: special.description,
@@ -286,6 +280,7 @@ class UnitInfosBanner extends GameObjects.Container {
 
         for (let skillSlot of ["A", "B", "C"] as const) {
             this[skillSlot].on("pointerdown", () => {
+                this.highlighter.highlightElement(this[skillSlot]);
                 this.scene.sound.playAudioSprite("sfx", "tap");
                 const internalHero = this.displayedHero.getInternalHero();
                 const passive = internalHero.Skill?.find((s) => s.slot === skillSlot);
@@ -329,20 +324,7 @@ class UnitInfosBanner extends GameObjects.Container {
     //         else this.hideTextbox();
     //     }
 
-    //     hideTextbox() {
-    //         this.scene.sound.playAudioSprite("sfx", "tap");
-    //         this.scene.tweens.add({
-    //             targets: [this.textbox],
-    //             scale: 0,
-    //             duration: 50,
-    //             onComplete: () => {
-    //                 this.textbox.clearContent().setVisible(false);
-    //             }
-    //         }).play();
-    //     }
-
     setHero(hero: Hero) {
-        this.displayedHero = hero;
         this.textbox.clearContent().setVisible(false);
         const internalHero = hero.getInternalHero();
         const { Name, Stats, Weapon, Skill } = internalHero;
@@ -394,25 +376,28 @@ class UnitInfosBanner extends GameObjects.Container {
             }
         }
 
-        //         if (this.nameplate.heroName.text !== internalHero.name) {
-        this.heroPortrait.x = -300;
-        const heroPortraitIntroduction = this.scene.tweens.add({
-            targets: this.heroPortrait,
-            x: -100,
-            duration: 200
-        });
+        if (this.displayedHero?.name !== hero.name) {
+            this.heroPortrait.x = -300;
+            const heroPortraitIntroduction = this.scene.tweens.add({
+                targets: this.heroPortrait,
+                x: -100,
+                duration: 200
+            });
 
-        heroPortraitIntroduction.play();
-        //         }
+            heroPortraitIntroduction.play();
 
-        this.nameplate.updateNameplate({
-            name: name.split(":")[0],
-            weaponType: weapon.weaponType,
-            weaponColor: weapon.color,
-        });
-        this.maxHP.setText(`/ ${stats.maxHP}`);
+            this.nameplate.updateNameplate({
+                name: name.split(":")[0],
+                weaponType: weapon.weaponType,
+                weaponColor: weapon.color,
+            });
 
-        this.updatePassives(hero);
+            this.maxHP.setText(`/ ${stats.maxHP}`);
+
+            this.updatePassives(hero);
+        }
+
+        this.displayedHero = hero;
     }
 };
 

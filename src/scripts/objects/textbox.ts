@@ -14,6 +14,28 @@ class Textbox extends GameObjects.Container {
         this.add(this.contentContainer);
     }
 
+    display() {
+        this.setVisible(true).setScale(0);
+        this.scene.sound.playAudioSprite("sfx", "tap");
+        this.scene.tweens.add({
+            targets: [this],
+            scale: 1,
+            duration: 50
+        }).play();
+    }
+
+    hide() {
+        this.scene.sound.playAudioSprite("sfx", "tap");
+        this.scene.tweens.add({
+            targets: [this],
+            scale: 0,
+            duration: 50,
+            onComplete: () => {
+                this.clearContent().setVisible(false);
+            }
+        }).play();
+    }
+
     createPassiveTextbox({ name, description }: { name: string, description: string }) {
         const skillInfosLines: GameObjects.Text[][] = [];
 
