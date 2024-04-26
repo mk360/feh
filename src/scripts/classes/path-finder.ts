@@ -2,6 +2,13 @@ import Coords from "../../interfaces/coords";
 import PF from "pathfinding";
 
 const grid = new PF.Grid(7, 9); // expanded the grid by 1 because i'm too lazy to convert UI coordinates to pathfinder coordinates
+
+for (let i = 0; i < 7; i++) {
+    for (let j = 0; j < 9; j++) {
+        grid.setWalkableAt(i, j, false);
+    }
+}
+
 const finder = new PF.DijkstraFinder({
     heuristic: PF.Heuristic.manhattan
 });
@@ -18,7 +25,9 @@ class Pathfinder {
     }
 
     findPath(from: Coords, to: Coords) {
-        return finder.findPath(from.x, from.y, to.x, to.y, this.grid.clone()) as [number, number][];
+        const path = finder.findPath(from.x, from.y, to.x, to.y, this.grid) as [number, number][];
+        this.grid = this.grid.clone();
+        return path;
     }
 };
 

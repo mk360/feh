@@ -44,15 +44,21 @@ function createHeroQuoter(scene: MainScene) {
 }
 
 
-// function createDoubleTapHandler() {
-//   const dblClickMargin = 300;
-//   let previousTimeStamp = 0;
-//   return (timeStamp: number) => {
-//     const isDoubleTap = timeStamp - previousTimeStamp <= dblClickMargin;
-//     previousTimeStamp = timeStamp;
-//     return isDoubleTap;
-//   };
-// }
+function createDoubleTapHandler() {
+    const dblClickMargin = 300;
+    let previousTimeStamp = 0;
+    return (timeStamp: number) => {
+        const isDoubleTap = timeStamp - previousTimeStamp <= dblClickMargin;
+        previousTimeStamp = timeStamp;
+        return isDoubleTap;
+    };
+}
+
+interface HeroUpdatePayload {
+    unitId: string;
+    type: string;
+    [k: string]: any
+}
 
 let timer = 0;
 
@@ -81,11 +87,66 @@ export default class MainScene extends Phaser.Scene {
     }
 
     drawPath(path: [number, number][]) {
+        const layerChildren = this.movementUI.getChildren().filter((child) => !([this.endRosary, this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
+        for (let child of layerChildren) {
+            child.destroy(true);
+        }
+
+        const enteredAnotherTile = path.length > 1;
+        const lastTile = path[path.length - 1];
+
+        if (lastTile) {
+            this.endRosary.setVisible(enteredAnotherTile).setX(lastTile[0]).setY(lastTile[1]);
+            this.startRosary.setFrame(enteredAnotherTile ? "rosary-arrow" : "rosary");
+        }
+
         const [start, ...remainder] = path;
-
         if (remainder.length) {
-            const end = remainder.pop();
+            const startCoordinates = gridToPixels(start[0], start[1]);
+            this.startRosary.x = startCoordinates.x;
+            this.startRosary.y = startCoordinates.y;
+            this.startRosary.setVisible(true);
+        }
 
+        if (path[1]) {
+            const rosaryDirection = getTilesDirection(start, path[1]);
+            const verticalAngle = rosaryDirection === "down" ? 0 : rosaryDirection === "up" ? 180 : null;
+            const horizontalAngle = rosaryDirection === "left" ? 90 : rosaryDirection === "right" ? -90 : null;
+            const finalAngle = verticalAngle ?? horizontalAngle;
+            this.startRosary.setAngle(finalAngle);
+        }
+
+        const end = path[path.length - 1];
+
+        for (let i = 1; i < path.length - 1; i++) {
+            const tile = path[i];
+            const previousTile = i === 0 ? start : path[i - 1];
+            const nextTile = i === path.length - 1 ? end : path[i + 1];
+            const fromPreviousTile = getTilesDirection(previousTile, path[i]);
+            const toNextTile = getTilesDirection(path[i], nextTile);
+
+            const gridCoordinates = gridToPixels(tile[0], tile[1]);
+            if (fromPreviousTile === toNextTile) {
+                const straightPath = new GameObjects.Image(this, gridCoordinates.x, gridCoordinates.y, "path", "vertical-fixed");
+                if (["right", "left"].includes(fromPreviousTile)) {
+                    straightPath.setRotation(Math.PI / 2);
+                }
+                this.movementUI.add(straightPath, true);
+            } else {
+                const elbow = new GameObjects.Image(this, gridCoordinates.x, gridCoordinates.y, "path", `path-down-left`);
+                this.movementUI.add(elbow, true);
+            }
+        }
+
+        if (path.length > 1) {
+            const endArrowDirection = getTilesDirection(path[path.length - 2], end);
+            const endPixels = gridToPixels(end[0], end[1]);
+            const endArrow = new GameObjects.Image(this, endPixels.x, endPixels.y, "path", "end-arrow-fixed");
+            const verticalAngle = endArrowDirection === "down" ? 90 : endArrowDirection === "up" ? -90 : null;
+            const horizontalAngle = endArrowDirection === "left" ? 180 : endArrowDirection === "right" ? 0 : null;
+            const finalAngle = verticalAngle ?? horizontalAngle;
+            endArrow.setAngle(finalAngle);
+            this.movementUI.add(endArrow);
         }
     }
 
@@ -97,9 +158,9 @@ export default class MainScene extends Phaser.Scene {
         this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
         this.tilesLayer = this.add.layer();
         this.movementUI = this.add.layer();
-        this.startRosary = new GameObjects.Image(this, 0, 0, "paths", "rosary").setVisible(false);
-        this.endRosary = new GameObjects.Image(this, 0, 0, "paths", "rosary").setVisible(false);
-        this.movementIndicator = new GameObjects.Image(this, 0, 0, "paths", "movement-allowed").setScale(1.5).setVisible(false);
+        this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false);
+        this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false);
+        this.movementIndicator = new GameObjects.Image(this, 0, 0, "path", "movement-allowed").setScale(1.5).setVisible(false);
         this.movementUI.add(this.movementIndicator);
         this.movementUI.add(this.endRosary);
         this.movementUI.add(this.startRosary);
@@ -134,7 +195,6 @@ export default class MainScene extends Phaser.Scene {
                     this.drawPath(pathCopy);
                     this.movementIndicator.setX(x).setY(y);
                     this.sound.playAudioSprite("sfx", "hover");
-                    this.endRosary.setVisible(savedPosition.x !== gridCell.x || savedPosition.y !== gridCell.y).setX(x).setY(y);
                 } else {
                     this.socket.emit("request preview battle", {
                         target: target.name,
@@ -244,6 +304,12 @@ export default class MainScene extends Phaser.Scene {
             }
         });
 
+        this.socket.on("update entity", ({ unitId, type, ...data }: HeroUpdatePayload) => {
+            const hero = this.heroesLayer.getByName(unitId) as Hero;
+            const internalHero = hero.getInternalHero();
+            internalHero[type] = [data];
+        });
+
         this.background.on("pointerdown", () => {
             this.sound.playAudioSprite("sfx", "cancel");
             const tiles = this.tilesLayer.getChildren();
@@ -289,6 +355,16 @@ export default class MainScene extends Phaser.Scene {
     }
 }
 
+function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
+    if (tile1[1] !== tile2[1]) {
+        return tile1[1] < tile2[1] ? "down" : "up";
+    }
+
+    if (tile1[0] !== tile2[0]) {
+        return tile1[0] < tile2[0] ? "right" : "left";
+    }
+};
+
 // export default class MainScene extends Phaser.Scene {
 //   heroBackground: Phaser.GameObjects.Rectangle;
 //   movementAllowedTween: Phaser.Tweens.Tween;
@@ -325,15 +401,6 @@ export default class MainScene extends Phaser.Scene {
 //       this.combatForecast.disable();
 //       this.interactionIndicatorTween?.stop();
 //       this.interactionIndicator.setVisible(false);
-//       if (target instanceof GameObjects.Rectangle && this.walkTiles.includes(target.name)) {
-//         const movementImage = this.children.getByName(`movement-${hero.name}`) as GameObjects.Image;
-//         movementImage.x = target.x;
-//         movementImage.y = target.y;
-//         movementImage.setVisible(true);
-//         const path = battle.crossTile(hero.getInternalHero(), target.name, this.walkTiles);
-//         this.renderPath(path);
-//         this.sound.playAudioSprite("sfx", "hover");
-//       }
 
 //       const actions = battle.decideDragAction(target.name, hero.getInternalHero(), this.walkTiles, this.attackTiles);
 //       if (actions) {
@@ -597,21 +664,6 @@ export default class MainScene extends Phaser.Scene {
 //     this.unitInfosBanner.setVisible(false);
 //   }
 
-//   clearTiles(tiles: string[]) {
-//     this.movementRangeLayer.removeAll();
-//     for (let tileName of tiles) {
-//       this.getTile(tileName).setFillStyle(0x0).off("pointerdown").on("pointerdown", () => {
-//         this.resetView();
-//       });
-//     }
-//   }
-
-//   displayHeroInformations(hero: Hero) {
-//     this.displayRanges(hero.getInternalHero());
-//     this.sound.playAudioSprite("sfx", "tap");
-//     this.unitInfosBanner.setVisible(true).setHero(hero);
-//   }
-
 //   endAction(hero: Hero) {
 //     hero.off("drag");
 //     hero.off("dragover");
@@ -660,26 +712,6 @@ export default class MainScene extends Phaser.Scene {
 //         hero = null;
 //       }
 //     }) as Tweens.Tween;
-//   }
-
-//   createTiles() {
-//     for (let y = 1; y < 9; y++) {
-//       for (let x = 1; x < 7; x++) {
-//         const { x: screenX, y: screenY } = gridToPixels(x, y);
-//         const name = x + "-" + y;
-//         const tile = this.add.rectangle(screenX, screenY, squareSize, squareSize, 0x0).setAlpha(0.2).setName(name).setInteractive(undefined, undefined, true);
-//         tile.on("pointerdown", () => {
-//           if (!this.walkTiles.includes(name) && this.unitInfosBanner.visible) {
-//             this.sound.playAudioSprite("sfx", "cancel");
-//             this.resetView();
-//           }
-//         });
-//         // uncomment if you need to check tile coordinates
-//         this.add.text(tile.getCenter().x, tile.getCenter().y, name, {
-//           fontSize: "18px"
-//         });
-//       }
-//     }
 //   }
 
 //   setTurn({ turn, turnCount }: { turn: Team, turnCount: number }) {
@@ -742,55 +774,6 @@ export default class MainScene extends Phaser.Scene {
 //     }
 //   }
 
-//   renderPath(path: { start: string, end: string, tilesInBetween: string[] }) {
-//     this.movementArrows.setVisible(true).clear(true, true);
-//     const { start, end, tilesInBetween } = path;
-//     const fullPath = [start].concat(tilesInBetween).concat(end);
-//     const startTile = this.getTile(start);
-//     const endTile = this.getTile(end);
-//     const { x: startX, y: startY } = startTile.getCenter();
-//     this.rosary.x = startX;
-//     this.rosary.y = startY;
-//     this.rosary.setVisible(true);
-//     this.endArrow.x = endTile.x;
-//     this.endArrow.y = endTile.y;
-//     this.endArrow.setVisible(end !== start);
-//     console.log({ fullPath });
-//     const endArrowDirection = getTilesDirection(toCoords(fullPath[fullPath.length - 2]), toCoords(end));
-//     const verticalAngle = endArrowDirection === "down" ? 90 : endArrowDirection === "up" ? -90 : null;
-//     const horizontalAngle = endArrowDirection === "left" ? 180 : endArrowDirection === "right" ? 0 : null;
-//     const finalAngle = verticalAngle ?? horizontalAngle;
-//     this.endArrow.setAngle(finalAngle);
-
-//     if (start !== end) {
-//       this.rosary.setTexture("rosary-arrow");
-//       const rosaryDirection = getTilesDirection(toCoords(start), toCoords(fullPath[1]));
-//       const verticalAngle = rosaryDirection === "down" ? 0 : rosaryDirection === "up" ? 180 : null;
-//       const horizontalAngle = rosaryDirection === "left" ? 90 : rosaryDirection === "right" ? -90 : null;
-//       const finalAngle = verticalAngle ?? horizontalAngle;
-//       this.rosary.setAngle(finalAngle);
-//     }
-
-//     if (tilesInBetween) {
-//       for (let i = 0; i < tilesInBetween.length; i++) {
-//         const tile = tilesInBetween[i];
-//         const previousTile = i === 0 ? start : tilesInBetween[i - 1];
-//         const nextTile = i === tilesInBetween.length - 1 ? end : tilesInBetween[i + 1];
-//         const gameTile = this.getTile(tile);
-//         const fromPreviousTile = getTilesDirection(toCoords(previousTile), toCoords(tilesInBetween[i]));
-//         const toNextTile = getTilesDirection(toCoords(tilesInBetween[i]), toCoords(nextTile));
-//         const tileCenter = gameTile.getCenter();
-//         if (fromPreviousTile === toNextTile) {
-//           const straightPath = new GameObjects.Image(this, tileCenter.x, tileCenter.y, `path-${fromPreviousTile}`);
-//           this.movementArrows.add(straightPath, true);
-//         } else {
-//           const elbow = new GameObjects.Image(this, tileCenter.x, tileCenter.y, `path-${fromPreviousTile}-${toNextTile}`);
-//           this.movementArrows.add(elbow, true);
-//         }
-//       }
-//     }
-//   }
-
 //   displayEnemyRange(enabled: boolean) {
 //     const otherTeam = this.turn === "team1" ? "team2" : "team1";
 //     const enemyRangeTiles = battle.getEnemyRange(otherTeam);
@@ -807,15 +790,6 @@ export default class MainScene extends Phaser.Scene {
 //   }
 
 //   create() {
-//     this.heroesLayer = this.add.layer();
-//     this.enemyRangeLayer = this.add.layer();
-//     this.movementRangeLayer = this.add.layer();
-//     this.temporaryAssetsLayer = this.add.layer();
-//     this.movementRangeLayer.setDepth(1);
-//     this.enemyRangeLayer.setDepth(2);
-//     this.heroesLayer.setDepth(3);
-//     this.temporaryAssetsLayer.setDepth(4);
-//     this.unitInfosBanner = this.add.existing(new UnitInfosBanner(this).setVisible(false)).setDepth(5);
 //     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false)).setDepth(5);
 //     this.movementAllowedImages = this.add.group();
 //     this.movementArrows = this.add.group();
@@ -823,13 +797,9 @@ export default class MainScene extends Phaser.Scene {
 //     const banner = this.add.image(-90, 0, "background").setOrigin(0).setTint(0x0F343D);
 //     this.startBackgroundMusic(0.13);
 //     banner.setDisplaySize(banner.displayWidth, 180);
-//     this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setDepth(0);
-//     this.createTiles();
 
 //     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(6));
 //     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
-//     this.rosary = this.add.image(0, 0, "rosary").setVisible(false);
-//     this.endArrow = this.add.image(0, 0, "end-arrow").setVisible(false);
 //     // const shine = this.add.particles(0, 0, "effect-shine", {
 //     //   scale: {
 //     //     start: 1,
@@ -840,13 +810,3 @@ export default class MainScene extends Phaser.Scene {
 //     // });
 //     this.processAction(battle.initiateBattle());
 //   }
-
-// function getTilesDirection(tile1: Coords, tile2: Coords) {
-//   if (tile1.y !== tile2.y) {
-//     return tile1.y < tile2.y ? "down" : "up";
-//   }
-
-//   if (tile1.x !== tile2.x) {
-//     return tile1.x < tile2.x ? "right" : "left";
-//   }
-// };
