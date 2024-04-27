@@ -307,9 +307,9 @@ class UnitInfosBanner extends GameObjects.Container {
             const usedSkill = skills[skillSlot]?.[0];
             const skillObject = this[skillSlot];
             if (usedSkill) {
-                skillObject.setTexture("skills", usedSkill.name);
+                skillObject.setTexture("skills").setFrame(usedSkill.name);
             } else {
-                skillObject.setTexture("skills", "Empty Slot");
+                skillObject.setTexture("skills").setFrame("Empty Slot");
             }
         }
     }
@@ -357,9 +357,9 @@ class UnitInfosBanner extends GameObjects.Container {
         for (let statKey in this.stats) {
             const castKey = statKey as keyof Stats;
             const { label, value } = this.stats[castKey];
-            if (castKey === internalHero.Boon[0]?.value) {
+            if (castKey === internalHero.Boon?.[0].value) {
                 label.setColor(TextColors.boon);
-            } else if (castKey === internalHero.Bane[0]?.value) {
+            } else if (castKey === internalHero.Bane?.[0].value) {
                 label.setColor(TextColors.bane);
             } else {
                 label.setColor(TextColors.white);

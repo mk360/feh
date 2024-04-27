@@ -88,7 +88,7 @@ export default class MainScene extends Phaser.Scene {
     private doubleClick = createDoubleTapHandler();
 
     drawPath(path: [number, number][]) {
-        const layerChildren = this.movementUI.getChildren().filter((child) => !([this.endRosary, this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
+        const layerChildren = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
         for (let child of layerChildren) {
             child.destroy(true);
         }
@@ -96,10 +96,10 @@ export default class MainScene extends Phaser.Scene {
         const enteredAnotherTile = path.length > 1;
         const lastTile = path[path.length - 1];
 
-        if (lastTile) {
-            this.endRosary.setVisible(enteredAnotherTile).setX(lastTile[0]).setY(lastTile[1]);
-            this.startRosary.setFrame(enteredAnotherTile ? "rosary-arrow" : "rosary");
-        }
+        // if (lastTile) {
+        //     this.endRosary.setVisible(enteredAnotherTile).setX(lastTile[0]).setY(lastTile[1]);
+        //     this.startRosary.setFrame(enteredAnotherTile ? "rosary-arrow" : "rosary");
+        // }
 
         const [start, ...remainder] = path;
         if (remainder.length) {
@@ -198,9 +198,9 @@ export default class MainScene extends Phaser.Scene {
                     const savedPosition = hero.getInternalHero().Position[0];
                     const { x, y } = gridToPixels(gridCell.x, gridCell.y);
                     hero.temporaryPosition = gridCell;
-                    const path = this.pathfinder.findPath(savedPosition, gridCell);
-                    const pathCopy = [...path];
-                    this.drawPath(pathCopy);
+                    // const path = this.pathfinder.findPath(savedPosition, gridCell);
+                    // const pathCopy = [...path];
+                    // this.drawPath(pathCopy);
                     this.movementIndicator.setX(x).setY(y);
                     this.sound.playAudioSprite("sfx", "hover");
                 } else {
@@ -231,7 +231,7 @@ export default class MainScene extends Phaser.Scene {
             });
         }
         this.add.existing(this.unitInfosBanner);
-        this.startBackgroundMusic(0.2);
+        this.startBackgroundMusic(0.13);
         this.socket.on("response preview movement", ({ movement = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, targetableEnemies }) => {
             const childrenTiles = this.tilesLayer.getChildren();
             while (childrenTiles.length) childrenTiles.pop().destroy();
@@ -306,9 +306,7 @@ export default class MainScene extends Phaser.Scene {
                 duration: 100,
             });
             if (response.valid) {
-                // valid sfx
-            } else {
-                // do nothing
+                this.sound.play("confirm");
             }
         });
 
