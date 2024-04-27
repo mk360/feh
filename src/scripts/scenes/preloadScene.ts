@@ -36,6 +36,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.atlas("skills-ui", "/assets/sheets/skills-ui.webp", "/assets/sheets/skills-ui.json");
     this.load.atlas("statuses", "/assets/statuses/statuses.webp", "/assets/statuses/statuses.json");
     this.load.atlas("path", "/assets/ss.png", "/assets/ss.json");
+    // this.load.image("elbow", "/assets/paths/path-up-left.png");
     this.load.atlas("top-banner", "/assets/top-banner.webp", "/assets/top-banner.json");
     this.load.audioSprite("sfx", "/assets/audio/sfx.json", "/assets/audio/sfx.ogg");
     this.load.audioSprite("battle-sfx", "/assets/audio/battle-sfx.json", "/assets/audio/battle-sfx.ogg");
@@ -44,7 +45,6 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("enemy-effective", "/assets/enemy-effective.png");
     this.load.image("ui-button", "/assets/ui-button.png");
     this.load.image("ui-button-pressed", "/assets/ui-button-pressed.png");
-    this.load.image("debuff", "/assets/debuff-arrow.png");
     this.load.image("effect-shine", "/assets/effect.png");
     this.load.audio("bgm", "/assets/audio/bgm/leif's army in search of victory.ogg");
 

@@ -60,6 +60,10 @@ interface HeroUpdatePayload {
     [k: string]: any
 }
 
+function matchDirectionToAssetName(direction: ReturnType<typeof getTilesDirection>) {
+
+}
+
 let timer = 0;
 
 export default class MainScene extends Phaser.Scene {
@@ -81,10 +85,7 @@ export default class MainScene extends Phaser.Scene {
     private background: GameObjects.Image;
     private movementIndicator: GameObjects.Image;
     private pathfinder = new Pathfinder();
-
-    previewBattle() {
-
-    }
+    private doubleClick = createDoubleTapHandler();
 
     drawPath(path: [number, number][]) {
         const layerChildren = this.movementUI.getChildren().filter((child) => !([this.endRosary, this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
@@ -125,16 +126,19 @@ export default class MainScene extends Phaser.Scene {
             const fromPreviousTile = getTilesDirection(previousTile, path[i]);
             const toNextTile = getTilesDirection(path[i], nextTile);
 
-            const gridCoordinates = gridToPixels(tile[0], tile[1]);
+            // const gridCoordinates = gridToPixels(tile[0], tile[1]);
             if (fromPreviousTile === toNextTile) {
-                const straightPath = new GameObjects.Image(this, gridCoordinates.x, gridCoordinates.y, "path", "vertical-fixed");
-                if (["right", "left"].includes(fromPreviousTile)) {
-                    straightPath.setRotation(Math.PI / 2);
-                }
-                this.movementUI.add(straightPath, true);
+                // const straightPath = new GameObjects.Image(this, gridCoordinates.x, gridCoordinates.y, "path", "vertical-fixed");
+                // if (["right", "left"].includes(fromPreviousTile)) {
+                //     straightPath.setRotation(Math.PI / 2);
+                // }
+                // this.movementUI.add(straightPath, true);
             } else {
-                const elbow = new GameObjects.Image(this, gridCoordinates.x, gridCoordinates.y, "path", `path-down-left`);
-                this.movementUI.add(elbow, true);
+                // const elbow = new GameObjects.Image(this, gridCoordinates.x, gridCoordinates.y, "elbow");
+                // elbow.flipX = true;
+                // elbow.flipY = true;
+                // elbow.setRotation(-Math.PI / 2);
+                // this.movementUI.add(elbow, true);
             }
         }
 
@@ -176,6 +180,10 @@ export default class MainScene extends Phaser.Scene {
                 this.socket.emit("request preview movement", {
                     unitId: hero.name
                 });
+                const isDoubleTap = this.doubleClick(this.time.now);
+                if (isDoubleTap) {
+
+                }
             });
             this.input.setDraggable([hero], true);
 
