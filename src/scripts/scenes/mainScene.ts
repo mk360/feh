@@ -324,6 +324,7 @@ export default class MainScene extends Phaser.Scene {
                 child.effectivenessImage.iconsList = [];
                 child.setInteractive(undefined, undefined, false);
             });
+            this.unitInfosBanner.closeTextbox();
         });
     }
 

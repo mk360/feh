@@ -116,6 +116,11 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(this.highlighter);
     }
 
+    closeTextbox() {
+        this.highlighter.setVisible(false);
+        this.textbox.close();
+    }
+
     private createStats() {
         const blockX = 310;
 
@@ -199,8 +204,11 @@ class UnitInfosBanner extends GameObjects.Container {
 
     private createMainSkills() {
         this.weaponBg = new GameObjects.Image(this.scene, 490, 50, "skills-ui", "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25).setInteractive();
+        this.weaponBg.setSize(this.weaponBg.displayWidth, this.weaponBg.displayHeight);
         this.assistBg = new GameObjects.Image(this.scene, 490, 90, "skills-ui", "assist-bg").setOrigin(0, 0).setScale(0.23, 0.25).setInteractive();
-        this.specialBg = new GameObjects.Image(this.scene, 490, 130, "skills-ui", "special-bg").setOrigin(0).setDisplaySize(this.assistBg.displayWidth, this.assistBg.displayHeight).setInteractive();
+        this.assistBg.setSize(this.assistBg.displayWidth, this.assistBg.displayHeight);
+        this.specialBg = new GameObjects.Image(this.scene, 490, 130, "skills-ui", "special-bg").setOrigin(0).setScale(0.23, 0.25).setInteractive();
+        this.specialBg.setSize(this.specialBg.displayWidth, this.specialBg.displayHeight);
         const assistIcon = new GameObjects.Image(this.scene, this.assistBg.getLeftCenter().x, this.assistBg.getLeftCenter().y, "skills-ui", "assist-icon").setScale(0.45).setOrigin(0.25, 0.5);
         const specialIcon = new GameObjects.Image(this.scene, this.specialBg.getLeftCenter().x, this.specialBg.getLeftCenter().y, "skills-ui", "special-icon").setScale(0.45).setOrigin(0.25, 0.5);
         const weaponIcon = new GameObjects.Image(this.scene, 490, this.weaponBg.getLeftCenter().y, "skills-ui", "weapon-icon").setScale(0.45).setOrigin(0.25, 0.5);
@@ -226,16 +234,16 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.textbox.setContent(textboxLines);
                 this.textbox.x = this.weaponBg.getRightCenter().x;
                 this.textbox.y = this.weaponBg.getBottomCenter().y + 5;
-                this.textbox.setVisible(true);
+                this.textbox.open();
             }
         });
 
         this.assistBg.on("pointerdown", () => {
-            this.highlighter.highlightElement(this.assistBg);
             this.scene.sound.playAudioSprite("sfx", "tap");
             const internalHero = this.displayedHero.getInternalHero();
-            const assist = internalHero.Skill?.find((s) => s.slot === "assist");
+            const assist = internalHero.Assist?.[0];
             if (assist) {
+                this.highlighter.highlightElement(this.assistBg);
                 const lines = this.textbox.assistTextbox({
                     description: assist.description,
                     range: assist.range
@@ -243,26 +251,28 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.textbox.x = this.assistBg.getRightCenter().x;
                 this.textbox.y = this.assistBg.getBottomCenter().y + 5;
                 this.textbox.setContent(lines);
-                this.textbox.setVisible(true);
+                this.textbox.open();
             }
         });
 
         this.specialBg.on("pointerdown", () => {
             this.scene.sound.playAudioSprite("sfx", "tap");
             const internalHero = this.displayedHero.getInternalHero();
-            const special = internalHero.Skill?.find((s) => s.slot === "special");
+            const special = internalHero.Special;
+
             if (special) {
+                const specialData = special[0];
                 this.highlighter.highlightElement(this.specialBg);
                 const textboxLines = this.textbox.specialTextbox({
-                    cooldown: special.cooldown,
-                    description: special.description,
-                    baseCooldown: special.baseCooldown
+                    cooldown: specialData.cooldown,
+                    description: specialData.description,
+                    baseCooldown: specialData.baseCooldown
                 });
 
                 this.textbox.setContent(textboxLines);
                 this.textbox.x = this.specialBg.getRightCenter().x;
                 this.textbox.y = this.specialBg.getBottomCenter().y + 5;
-                this.textbox.setVisible(true);
+                this.textbox.open();
             }
         });
     }
@@ -270,9 +280,12 @@ class UnitInfosBanner extends GameObjects.Container {
     private createPassives(lvText: GameObjects.Text) {
         this.A = new GameObjects.Image(this.scene, 650, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5).setInteractive();
         this.B = new GameObjects.Image(this.scene, this.A.getRightCenter().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5).setInteractive();
+        this.C = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5).setInteractive();
+        this.A.setSize(this.A.displayWidth, this.A.displayHeight);
+        this.B.setSize(this.B.displayWidth, this.B.displayHeight);
+        this.C.setSize(this.C.displayWidth, this.C.displayHeight);
         const A_Letter = new GameObjects.Image(this.scene, this.A.getBottomRight().x + 3, this.A.getBottomRight().y + 10, "skills-ui", "A").setOrigin(0, 1).setScale(0.5);
         const B_Letter = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 3, this.B.getBottomRight().y + 10, "skills-ui", "B").setOrigin(0, 1).setScale(0.5);
-        this.C = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5).setInteractive();
         const C_Letter = new GameObjects.Image(this.scene, this.C.getBottomRight().x + 3, this.C.getBottomRight().y + 10, "skills-ui", "C").setOrigin(0, 1).setScale(0.5);
         // this.S = new GameObjects.Image(this.scene, this.C.getRightCenter().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5);
         // const S_Letter = new GameObjects.Image(this.scene, this.S.getBottomRight().x + 3, this.S.getBottomRight().y + 10, "skills-ui", "S").setOrigin(0, 1).setScale(0.5);
@@ -280,7 +293,7 @@ class UnitInfosBanner extends GameObjects.Container {
 
         for (let skillSlot of ["A", "B", "C"] as const) {
             this[skillSlot].on("pointerdown", () => {
-                this.highlighter.highlightElement(this[skillSlot]);
+                // this.highlighter.highlightElement(this[skillSlot]);
                 this.scene.sound.playAudioSprite("sfx", "tap");
                 const internalHero = this.displayedHero.getInternalHero();
                 const passive = internalHero.Skill?.find((s) => s.slot === skillSlot);
@@ -292,7 +305,7 @@ class UnitInfosBanner extends GameObjects.Container {
                     this.textbox.setContent(passiveContent);
                     this.textbox.x = this.C.getRightCenter().x;
                     this.textbox.y = this.C.getBottomCenter().y + 5;
-                    this.textbox.setVisible(true);
+                    this.textbox.open();
                 }
             });
         }
@@ -314,20 +327,10 @@ class UnitInfosBanner extends GameObjects.Container {
         }
     }
 
-    // TODO: migrate all these methods to the textbox class
-
-    //     private controlTextboxDisplay(elementKey: string) {
-    //         if (this.textboxTarget !== elementKey || !this.textbox.visible) {
-    //             this.textboxTarget = elementKey;
-    //             this.displayTextbox();
-    //         }
-    //         else this.hideTextbox();
-    //     }
-
     setHero(hero: Hero) {
         this.textbox.clearContent().setVisible(false);
         const internalHero = hero.getInternalHero();
-        const { Name, Stats, Weapon, Skill } = internalHero;
+        const { Name, Stats, Weapon, Skill, Special, Assist } = internalHero;
         const name = Name[0].value
         const stats = Stats[0];
         const weapon = Weapon[0];
@@ -345,10 +348,10 @@ class UnitInfosBanner extends GameObjects.Container {
         const { maxHP, hp } = stats;
 
         this.heroPortrait.setTexture(name, hp / maxHP < 0.5 ? "portrait-damage" : "portrait");
-        if (skills.special) this.special.setText(skills.special[0].name);
+        if (Special) this.special.setText(Special[0].name);
         else this.special.setText("-");
 
-        if (skills.assist) this.assist.setText(skills.assist[0].name);
+        if (Assist) this.assist.setText(Assist[0].name);
         else this.assist.setText("-");
 
         if (skills.weapon) this.weaponName.setText(skills.weapon[0].name);
@@ -377,6 +380,7 @@ class UnitInfosBanner extends GameObjects.Container {
         }
 
         if (this.displayedHero?.name !== hero.name) {
+            this.closeTextbox();
             this.heroPortrait.x = -300;
             const heroPortraitIntroduction = this.scene.tweens.add({
                 targets: this.heroPortrait,

@@ -60,9 +60,9 @@ class Hero extends GameObjects.Container {
         this.add(this.hpText);
         this.setSize(120, 120);
         this.updateHP(stats.hp);
-        const existingSpecial = data.Skill?.find((s) => s.slot === "special");
+        const existingSpecial = data.Special;
         if (existingSpecial) {
-            if (existingSpecial.cooldown === 0) {
+            if (existingSpecial[0].cooldown === 0) {
                 this.special = new GameObjects.Image(this.scene, team === "team1" ? -30 : 30, -5, "skills-ui", "special-icon").setScale(0.5);
             } else {
                 this.special = renderSpecialText({
@@ -73,7 +73,7 @@ class Hero extends GameObjects.Container {
                         fontSize: 26,
                         shadowColor: "black",
                     },
-                    content: existingSpecial.currentCooldown,
+                    content: existingSpecial[0].cooldown,
                 });
             }
             this.add(this.special);

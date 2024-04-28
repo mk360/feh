@@ -24,8 +24,7 @@ class Textbox extends GameObjects.Container {
         }).play();
     }
 
-    hide() {
-        this.scene.sound.playAudioSprite("sfx", "tap");
+    close() {
         this.scene.tweens.add({
             targets: [this],
             scale: 0,
@@ -51,8 +50,16 @@ class Textbox extends GameObjects.Container {
         return skillInfosLines;
     }
 
-    openingAnimation() {
-
+    open() {
+        this.scene.sound.playAudioSprite("sfx", "tap");
+        this.scene.tweens.add({
+            targets: [this],
+            scale: 1,
+            duration: 50,
+            onStart: () => {
+                this.setVisible(true);
+            }
+        }).play();
     }
 
     createDescriptionTextbox(content: string) {
@@ -114,7 +121,6 @@ class Textbox extends GameObjects.Container {
     }
 
     createStatTextbox({ stat, baseValue, penalty, buff, boon, bane, description }: { stat: keyof Stats, baseValue: number, penalty?: number, buff?: number, boon?: keyof Stats, bane?: keyof Stats, description: string }) {
-        // const { description } = this.stats[stat];
         const lines: GameObjects.Text[][] = [];
         const valuesLines: GameObjects.Text[] = [];
         const baseValueLabel = renderLabelText({
@@ -216,9 +222,9 @@ class Textbox extends GameObjects.Container {
         firstLine.push(specialIcon);
         firstLine.push(cooldownText);
 
-        secondLine.push(renderText(this.scene, 0, 30, description, {
+        secondLine.push(renderText(this.scene, 0, 32, description, {
             fontSize: "18px"
-        }));
+        }).setWordWrapWidth(this.contentContainer.displayWidth - 4));
         textLines.push(firstLine);
         textLines.push(secondLine);
 
