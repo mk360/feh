@@ -1,9 +1,6 @@
 import 'phaser'
 import PreloadScene from './scenes/preloadScene'
 import MainScene from './scenes/mainScene';
-import shortid from "shortid";
-
-if (!localStorage.getItem("id")) localStorage.setItem("id", shortid());
 
 const DEFAULT_WIDTH = 750
 const DEFAULT_HEIGHT = 1200
@@ -20,6 +17,11 @@ const config: Phaser.Types.Core.GameConfig = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: DEFAULT_WIDTH,
     height: DEFAULT_HEIGHT
+  },
+  input: {
+    mouse: {
+      preventDefaultWheel: false
+    }
   },
   scene: [PreloadScene, MainScene],
 }

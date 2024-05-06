@@ -87,6 +87,53 @@ export default class MainScene extends Phaser.Scene {
     private pathfinder = new Pathfinder();
     private doubleClick = createDoubleTapHandler();
 
+    startTurn() {
+        const background = this.add.rectangle(0, 0, 6 * squareSize, 8 * squareSize, 0, 0.6).setOrigin(0);
+        const playerPhase = this.add.image(background.getCenter().x, background.getCenter().y, "player-phase").setScale(1, 0.8);
+        const chains1 = this.add.image(-400, 120, "chains");
+        const chains2 = this.add.image(400, 760, "chains");
+        const textGleam = this.add.image(background.getCenter().x, background.getCenter().y, "player-phase-gleam").setScale(0);
+        const baseTextBrightness = this.add.image(-360, background.getCenter().y, "player-phase-base").setScale(1, 0.4);
+        const timeline = this.add.timeline({});
+        this.add.tween({
+            targets: [chains1],
+            x: 1100,
+            duration: 1000
+        });
+
+        this.add.tween({
+            targets: [textGleam],
+            scale: 1,
+            duration: 500
+        });
+
+        this.add.tween({
+            targets: [chains2],
+            x: -400,
+            duration: 1000
+        });
+
+        this.add.tween({
+            targets: [baseTextBrightness],
+            scaleY: 1,
+            x: background.getCenter().x - 100,
+            duration: 500 // initial slide
+        }).on("complete", () => {
+            this.add.tween({
+                targets: [baseTextBrightness],
+                x: "+=200",
+                duration: 1000
+            }).on("complete", () => {
+                this.add.tween({
+                    targets: [baseTextBrightness],
+                    x: "+=1000",
+                    scaleY: 0.4,
+                    duration: 1000
+                });
+            });
+        });
+    }
+
     drawPath(path: [number, number][]) {
         const layerChildren = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
         for (let child of layerChildren) {
@@ -123,8 +170,8 @@ export default class MainScene extends Phaser.Scene {
             const tile = path[i];
             const previousTile = i === 0 ? start : path[i - 1];
             const nextTile = i === path.length - 1 ? end : path[i + 1];
-            const fromPreviousTile = getTilesDirection(previousTile, path[i]);
-            const toNextTile = getTilesDirection(path[i], nextTile);
+            const fromPreviousTile = getTilesDirection(previousTile, tile);
+            const toNextTile = getTilesDirection(tile, nextTile);
 
             // const gridCoordinates = gridToPixels(tile[0], tile[1]);
             if (fromPreviousTile === toNextTile) {
@@ -326,6 +373,8 @@ export default class MainScene extends Phaser.Scene {
             });
             this.unitInfosBanner.closeTextbox();
         });
+
+        this.startTurn();
     }
 
     update(_, delta) {
