@@ -10,6 +10,7 @@ import UnitInfosBanner from '../objects/unit-infos-banner';
 import socket from "../../default-socket";
 import InteractionIndicator from '../objects/interaction-indicator';
 import Pathfinder from '../classes/path-finder';
+import { renderText } from '../utils/text-renderer';
 
 const squareSize = 125;
 const squaresOffset = 63;
@@ -87,51 +88,101 @@ export default class MainScene extends Phaser.Scene {
     private pathfinder = new Pathfinder();
     private doubleClick = createDoubleTapHandler();
 
-    startTurn() {
-        const background = this.add.rectangle(0, 0, 6 * squareSize, 8 * squareSize, 0, 0.6).setOrigin(0);
-        const playerPhase = this.add.image(background.getCenter().x, background.getCenter().y, "player-phase").setScale(1, 0.8);
-        const chains1 = this.add.image(-400, 120, "chains");
-        const chains2 = this.add.image(400, 760, "chains");
-        const textGleam = this.add.image(background.getCenter().x, background.getCenter().y, "player-phase-gleam").setScale(0);
-        const baseTextBrightness = this.add.image(-360, background.getCenter().y, "player-phase-base").setScale(1, 0.4);
-        const timeline = this.add.timeline({});
-        this.add.tween({
-            targets: [chains1],
-            x: 1100,
-            duration: 1000
-        });
-
-        this.add.tween({
-            targets: [textGleam],
-            scale: 1,
-            duration: 500
-        });
-
-        this.add.tween({
-            targets: [chains2],
-            x: -400,
-            duration: 1000
-        });
-
-        this.add.tween({
-            targets: [baseTextBrightness],
-            scaleY: 1,
-            x: background.getCenter().x - 100,
-            duration: 500 // initial slide
-        }).on("complete", () => {
-            this.add.tween({
-                targets: [baseTextBrightness],
+    startTurn(turnCount: number) {
+        const background = this.add.rectangle(0, 0, 6 * squareSize, this.game.canvas.height, 0, 0.6).setOrigin(0);
+        const phaseGleam = this.add.image(0, this.game.canvas.height / 2, "player-phase-gleam").setScale(1.4, 0.8);
+        const playerPhaseText = this.add.image(-360, phaseGleam.y, "player-phase-base").setScale(1, 0.4);
+        const glowingPlayerPhaseText = this.add.image(20, phaseGleam.y, "player-phase-glow").setScale(1, 0.4).setAlpha(0);
+        const chains1 = this.add.image(-400, playerPhaseText.getCenter().y - 200, "chains").setAlpha(0.1, 1, 0.1, 1);
+        const chains2 = this.add.image(-400, playerPhaseText.getCenter().y + 200, "chains").setAlpha(0.1, 1, 0.1, 1);
+        const turnText = renderText(this, playerPhaseText.getCenter().x, playerPhaseText.getCenter().y + 100, `Turn ${turnCount}`, {
+            fontSize: 40
+        }).setOrigin(0.5);
+        this.add.existing(turnText);
+        this.sound.play("player-phase");
+        const turnChangeTimeline = this.add.timeline([{
+            tween: {
+                targets: [chains1, chains2],
+                scaleY: 1,
+                x: background.getCenter().x - 100,
+                duration: 300 // initial slide
+            }
+        }, {
+            tween: {
+                targets: [playerPhaseText, glowingPlayerPhaseText, turnText],
+                scaleY: 1,
+                x: background.getCenter().x - 100,
+                duration: 300 // initial slide
+            }
+        }, {
+            from: 100,
+            tween: {
+                targets: [phaseGleam],
+                x: "+=1100",
+                duration: 2000
+            }
+        }, {
+            from: 400,
+            tween: {
+                targets: [chains1, chains2],
                 x: "+=200",
-                duration: 1000
-            }).on("complete", () => {
-                this.add.tween({
-                    targets: [baseTextBrightness],
-                    x: "+=1000",
-                    scaleY: 0.4,
-                    duration: 1000
-                });
-            });
-        });
+                duration: 1000 // slowdown
+            },
+        }, {
+            from: 0,
+            tween: {
+                targets: [playerPhaseText, glowingPlayerPhaseText, turnText],
+                x: "+=200",
+                duration: 900 // slowdown
+            },
+        }, {
+            from: 200,
+            tween: {
+                targets: [glowingPlayerPhaseText],
+                alpha: 1,
+                yoyo: true,
+                duration: 200
+            }
+        }, {
+            from: 700,
+            tween: {
+                targets: [chains1, chains2],
+                x: "+=1000",
+                scaleY: 0.4,
+                duration: 300
+            }
+        }, {
+            from: 0,
+            tween: {
+                targets: [playerPhaseText, glowingPlayerPhaseText, turnText],
+                x: "+=1000",
+                scaleY: 0.4,
+                duration: 300
+            }
+        }, {
+            from: 500,
+            tween: {
+                targets: [glowingPlayerPhaseText],
+                alpha: 0,
+                duration: 500
+            }
+        }, {
+            from: 100,
+            tween: {
+                targets: [playerPhaseText],
+                alpha: 1,
+                duration: 400
+            }
+        }, {
+            from: 0,
+            tween: {
+                targets: [playerPhaseText, chains1, chains2, background],
+                alpha: 0,
+                duration: 100
+            }
+        }]);
+
+        return turnChangeTimeline;
     }
 
     drawPath(path: [number, number][]) {
@@ -278,7 +329,6 @@ export default class MainScene extends Phaser.Scene {
             });
         }
         this.add.existing(this.unitInfosBanner);
-        this.startBackgroundMusic(0.13);
         this.socket.on("response preview movement", ({ movement = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, targetableEnemies }) => {
             const childrenTiles = this.tilesLayer.getChildren();
             while (childrenTiles.length) childrenTiles.pop().destroy();
@@ -374,7 +424,19 @@ export default class MainScene extends Phaser.Scene {
             this.unitInfosBanner.closeTextbox();
         });
 
-        this.startTurn();
+        let turn = 1;
+
+        const startTurnTimeline = this.startTurn(turn);
+        if (turn === 1) {
+            startTurnTimeline.add({
+                from: -300,
+                run: () => {
+                    this.startBackgroundMusic(0.13);
+                }
+            });
+        }
+
+        startTurnTimeline.play();
     }
 
     update(_, delta) {

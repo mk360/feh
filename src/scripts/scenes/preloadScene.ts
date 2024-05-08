@@ -40,6 +40,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("player-phase-glow", "/assets/player-phase-glow.png");
     this.load.image("player-phase-gleam", "/assets/player-phase-gleam.png");
     this.load.image("player-phase-base", "/assets/player-phase-title.png");
+    this.load.audio("player-phase", "/assets/player-phase.mp3");
     // this.load.image("elbow", "/assets/paths/path-up-left.png");
     this.load.atlas("top-banner", "/assets/top-banner.webp", "/assets/top-banner.json");
     this.load.audioSprite("sfx", "/assets/audio/sfx.json", "/assets/audio/sfx.ogg");
@@ -50,7 +51,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("ui-button", "/assets/ui-button.png");
     this.load.image("ui-button-pressed", "/assets/ui-button-pressed.png");
     this.load.image("effect-shine", "/assets/effect.png");
-    this.load.audio("bgm", "/assets/audio/bgm/leif's army in search of victory.ogg");
+    this.load.audio("bgm", "/assets/audio/bgm/roy's departure.m4a");
 
     for (let heroId in world.heroes) {
       const heroData = world.heroes[heroId];

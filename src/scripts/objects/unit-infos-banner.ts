@@ -36,6 +36,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private specialBg: GameObjects.Image;
     private special: GameObjects.Text;
     private textbox: Textbox;
+    private bannerBg: GameObjects.Image;
     private stats: {
         [k in keyof Stats]: RenderedStat;
     };
@@ -46,7 +47,8 @@ class UnitInfosBanner extends GameObjects.Container {
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
         const blockX = 310;
-        this.add(new GameObjects.Image(scene, 0, 0, "top-banner", "unit-banner-bg").setOrigin(0, 0));
+        this.bannerBg = new GameObjects.Image(scene, 0, 0, "top-banner", "unit-banner-bg").setOrigin(0, 0);
+        this.add(this.bannerBg);
         this.heroPortrait = new GameObjects.Image(scene, -100, 0, "").setOrigin(0).setScale(0.6);
         this.add(this.heroPortrait);
         this.hpBackground = new GameObjects.Image(scene, blockX - 140, 70, "top-banner", "hp plate").setScale(1.15, 0.6).setOrigin(0, 0.5);
@@ -330,7 +332,7 @@ class UnitInfosBanner extends GameObjects.Container {
     setHero(hero: Hero) {
         this.textbox.clearContent().setVisible(false);
         const internalHero = hero.getInternalHero();
-        const { Name, Stats, Weapon, Skill, Special, Assist } = internalHero;
+        const { Name, Stats, Weapon, Skill, Special, Assist, Side } = internalHero;
         const name = Name[0].value
         const stats = Stats[0];
         const weapon = Weapon[0];
@@ -400,6 +402,10 @@ class UnitInfosBanner extends GameObjects.Container {
 
             this.updatePassives(hero);
         }
+
+        // if (Side[0].value === "team1") {
+        //     this.bannerBg.setFrame("")
+        // }
 
         this.displayedHero = hero;
     }
