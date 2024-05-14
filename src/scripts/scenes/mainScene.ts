@@ -278,6 +278,7 @@ export default class MainScene extends Phaser.Scene {
         this.socket.emit("request preview movement", {
           unitId: hero.name
         });
+        this.socket.sendBuffer = [];
         const isDoubleTap = this.doubleClick(this.time.now);
         if (isDoubleTap) {
 
@@ -307,6 +308,7 @@ export default class MainScene extends Phaser.Scene {
             unit: hero.name,
             position: hero.temporaryPosition
           });
+          this.socket.sendBuffer = [];
         }
       });
 
@@ -326,6 +328,7 @@ export default class MainScene extends Phaser.Scene {
           unitId: hero.name,
           ...gridCell,
         });
+        this.socket.sendBuffer = [];
       });
     }
     this.add.existing(this.unitInfosBanner);
@@ -404,6 +407,10 @@ export default class MainScene extends Phaser.Scene {
       });
       if (response.valid) {
         this.sound.play("confirm");
+        const tiles = this.tilesLayer.getChildren();
+        while (tiles.length) tiles.pop().destroy();
+        const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
+        while (ui.length) ui.pop().destroy();
       }
     });
 
