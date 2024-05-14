@@ -26,7 +26,7 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [PreloadScene, MainScene],
 }
 
-fetch("http://localhost:3600/worlds/df").then((s) => s.json()).then((data) => {
+fetch(`${import.meta.env.VITE_API_URL}/worlds/df`).then((s) => s.json()).then((data) => {
   const game = new Phaser.Game(config);
   game.registry.set("world", data);
 });

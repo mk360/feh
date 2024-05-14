@@ -1,4 +1,5 @@
 /.cache
 /dist
 /lib
+.env
 /node_modules
