@@ -213,6 +213,9 @@ export default class MainScene extends Phaser.Scene {
       const horizontalAngle = rosaryDirection === "left" ? 90 : rosaryDirection === "right" ? -90 : null;
       const finalAngle = verticalAngle ?? horizontalAngle;
       this.startRosary.setAngle(finalAngle);
+      this.startRosary.setFrame("rosary-arrow");
+    } else {
+      this.startRosary.setFrame("rosary");
     }
 
     const end = path[path.length - 1];

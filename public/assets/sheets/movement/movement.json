@@ -60,6 +60,26 @@
 				"h": 125
 			}
 		},
+		"path-right-up": {
+			"frame": {
+				"x": 340,
+				"y": 0,
+				"w": 125,
+				"h": 125
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 125,
+				"h": 125
+			},
+			"sourceSize": {
+				"w": 125,
+				"h": 125
+			}
+		},
 		"path-down-right": {
 			"frame": {
 				"x": 125,
@@ -102,8 +122,8 @@
 		},
 		"path-up-left": {
 			"frame": {
-				"x": 125,
-				"y": 125,
+				"x": 215,
+				"y": 0,
 				"w": 125,
 				"h": 125
 			},
