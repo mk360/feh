@@ -2,8 +2,8 @@
 	"frames": {
 		"end-arrow-fixed": {
 			"frame": {
-				"x": 1,
-				"y": 1,
+				"x": 0,
+				"y": 0,
 				"w": 125,
 				"h": 125
 			},
@@ -22,8 +22,8 @@
 		},
 		"movement-allowed": {
 			"frame": {
-				"x": 128,
-				"y": 1,
+				"x": 125,
+				"y": 0,
 				"w": 90,
 				"h": 89
 			},
@@ -42,8 +42,8 @@
 		},
 		"path-down-left": {
 			"frame": {
-				"x": 220,
-				"y": 1,
+				"x": 215,
+				"y": 0,
 				"w": 125,
 				"h": 125
 			},
@@ -62,8 +62,28 @@
 		},
 		"path-down-right": {
 			"frame": {
-				"x": 347,
-				"y": 1,
+				"x": 125,
+				"y": 125,
+				"w": 125,
+				"h": 125
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 125,
+				"h": 125
+			},
+			"sourceSize": {
+				"w": 125,
+				"h": 125
+			}
+		},
+		"path-right-down": {
+			"frame": {
+				"x": 213,
+				"y": 0,
 				"w": 125,
 				"h": 125
 			},
@@ -82,8 +102,8 @@
 		},
 		"path-up-left": {
 			"frame": {
-				"x": 474,
-				"y": 1,
+				"x": 125,
+				"y": 125,
 				"w": 125,
 				"h": 125
 			},
@@ -102,8 +122,8 @@
 		},
 		"path-up-right": {
 			"frame": {
-				"x": 601,
-				"y": 1,
+				"x": 0,
+				"y": 125,
 				"w": 125,
 				"h": 125
 			},
@@ -122,8 +142,8 @@
 		},
 		"rosary-arrow": {
 			"frame": {
-				"x": 728,
-				"y": 1,
+				"x": 250,
+				"y": 125,
 				"w": 125,
 				"h": 125
 			},
@@ -142,28 +162,28 @@
 		},
 		"rosary": {
 			"frame": {
-				"x": 855,
-				"y": 1,
-				"w": 87,
-				"h": 87
+				"x": 0,
+				"y": 250,
+				"w": 125,
+				"h": 125
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 87,
-				"h": 87
+				"w": 125,
+				"h": 125
 			},
 			"sourceSize": {
-				"w": 87,
-				"h": 87
+				"w": 125,
+				"h": 125
 			}
 		},
 		"vertical-fixed": {
 			"frame": {
-				"x": 944,
-				"y": 1,
+				"x": 126,
+				"y": 251,
 				"w": 125,
 				"h": 125
 			},
@@ -187,8 +207,8 @@
 		"image": "spritesheet",
 		"format": "RGBA8888",
 		"size": {
-			"w": 1070,
-			"h": 127
+			"w": 465,
+			"h": 377
 		},
 		"scale": "1"
 	}
