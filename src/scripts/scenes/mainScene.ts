@@ -11,6 +11,7 @@ import socket from "../../default-socket";
 import InteractionIndicator from '../objects/interaction-indicator';
 import Pathfinder from '../classes/path-finder';
 import { renderText } from '../utils/text-renderer';
+import CombatForecast from '../objects/combat-forecast';
 
 const squareSize = 125;
 const squaresOffset = 63;
@@ -79,6 +80,7 @@ export default class MainScene extends Phaser.Scene {
   private side: string;
   private socket = socket;
   private interactionsIndicator: InteractionIndicator;
+  private combatForecast: CombatForecast;
   private playHeroQuote = createHeroQuoter(this);
   private movementUI: GameObjects.Layer;
   private startRosary: GameObjects.Image;
@@ -191,14 +193,6 @@ export default class MainScene extends Phaser.Scene {
       child.destroy(true);
     }
 
-    const enteredAnotherTile = path.length > 1;
-    const lastTile = path[path.length - 1];
-
-    // if (lastTile) {
-    //     this.endRosary.setVisible(enteredAnotherTile).setX(lastTile[0]).setY(lastTile[1]);
-    //     this.startRosary.setFrame(enteredAnotherTile ? "rosary-arrow" : "rosary");
-    // }
-
     const [start, ...remainder] = path;
     if (remainder.length) {
       const startCoordinates = gridToPixels(start[0], start[1]);
@@ -254,6 +248,7 @@ export default class MainScene extends Phaser.Scene {
 
   create() {
     this.sound.pauseOnBlur = false;
+    this.combatForecast = new CombatForecast(this);
     const entities = this.game.registry.list.world;
     this.background = this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setInteractive();
     this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
@@ -274,14 +269,20 @@ export default class MainScene extends Phaser.Scene {
       hero.on("pointerdown", () => {
         this.sound.playAudioSprite("sfx", "tap");
         this.unitInfosBanner.setVisible(true).setHero(hero);
-        this.playHeroQuote(hero);
+
         this.socket.emit("request preview movement", {
           unitId: hero.name
         });
         this.socket.sendBuffer = [];
         const isDoubleTap = this.doubleClick(this.time.now);
         if (isDoubleTap) {
-
+          const internal = hero.getInternalHero();
+          this.socket.emit("request freeze unit", {
+            unitId: hero.name,
+            ...internal.Position[0]
+          });
+        } else {
+          this.playHeroQuote(hero);
         }
       });
       this.input.setDraggable([hero], true);
@@ -412,6 +413,16 @@ export default class MainScene extends Phaser.Scene {
         const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
         while (ui.length) ui.pop().destroy();
       }
+    });
+
+    this.socket.on("response preview battle", (preview) => {
+      const { attacker: { id: attackerId }, defender: { id: defenderId } } = preview;
+      const attacker = this.heroesLayer.getByName(attackerId);
+      const defender = this.heroesLayer.getByName(defenderId);
+      this.combatForecast.setForecastData({
+        attacker: {
+        }
+      })
     });
 
     this.socket.on("update entity", ({ unitId, type, ...data }: HeroUpdatePayload) => {
