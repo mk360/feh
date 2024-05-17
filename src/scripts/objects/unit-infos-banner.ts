@@ -203,8 +203,8 @@ class UnitInfosBanner extends GameObjects.Container {
             });
             this.add([label, value]);
         }
-        this.add(new GameObjects.Image(this.scene, blockX - 130, 125, "top-banner", "stat-glowing-line").setScale(0.2, 0.5).setOrigin(0));
-        this.add(new GameObjects.Image(this.scene, blockX - 130, 160, "top-banner", "stat-glowing-line").setScale(0.2, 0.5).setOrigin(0));
+        this.add(new GameObjects.Image(this.scene, blockX - 130, 125, "top-banner", "separator").setScale(0.2, 0.5).setOrigin(0));
+        this.add(new GameObjects.Image(this.scene, blockX - 130, 160, "top-banner", "separator").setScale(0.2, 0.5).setOrigin(0));
     }
 
     private createMainSkills() {

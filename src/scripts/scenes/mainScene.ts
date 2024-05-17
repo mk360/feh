@@ -248,7 +248,6 @@ export default class MainScene extends Phaser.Scene {
 
   create() {
     this.sound.pauseOnBlur = false;
-    this.combatForecast = new CombatForecast(this);
     const entities = this.game.registry.list.world;
     this.background = this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setInteractive();
     this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
@@ -313,6 +312,12 @@ export default class MainScene extends Phaser.Scene {
         }
       });
 
+      hero.on("dragleave", (_, target) => {
+        if (target instanceof Hero) {
+          this.combatForecast.setVisible(false);
+        }
+      })
+
       hero.on("dragstart", () => {
         this.startRosary.setVisible(true).setX(hero.x).setY(hero.y);
         this.movementIndicator.setVisible(true).setX(hero.x).setY(hero.y);
@@ -333,6 +338,8 @@ export default class MainScene extends Phaser.Scene {
       });
     }
     this.add.existing(this.unitInfosBanner);
+    this.combatForecast = new CombatForecast(this).setVisible(false);
+    this.add.existing(this.combatForecast);
     this.socket.on("response preview movement", ({ movement = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, targetableEnemies }) => {
       const childrenTiles = this.tilesLayer.getChildren();
       while (childrenTiles.length) childrenTiles.pop().destroy();
@@ -416,13 +423,30 @@ export default class MainScene extends Phaser.Scene {
     });
 
     this.socket.on("response preview battle", (preview) => {
-      const { attacker: { id: attackerId }, defender: { id: defenderId } } = preview;
-      const attacker = this.heroesLayer.getByName(attackerId);
-      const defender = this.heroesLayer.getByName(defenderId);
+      const { attacker: previewAttacker, defender: previewDefender } = preview;
+      const attacker = this.heroesLayer.getByName(previewAttacker.id) as Hero;
+      const defender = this.heroesLayer.getByName(previewDefender.id) as Hero;
       this.combatForecast.setForecastData({
         attacker: {
+          entity: attacker,
+          damage: previewAttacker.damagePerTurn,
+          turns: previewAttacker.turns,
+          startHP: previewAttacker.previousHP,
+          effective: false,
+          remainingHP: previewAttacker.newHP,
+          statMods: previewAttacker.combatBuffs
+        },
+        defender: {
+          entity: defender,
+          damage: previewDefender.damagePerTurn,
+          turns: previewDefender.turns,
+          startHP: previewDefender.previousHP,
+          effective: false,
+          remainingHP: previewDefender.newHP,
+          statMods: previewDefender.combatBuffs
         }
-      })
+      });
+      this.combatForecast.setVisible(true);
     });
 
     this.socket.on("update entity", ({ unitId, type, ...data }: HeroUpdatePayload) => {
