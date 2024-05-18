@@ -2,7 +2,7 @@ import 'phaser'
 import PreloadScene from './scenes/preloadScene'
 import MainScene from './scenes/mainScene';
 
-const DEFAULT_WIDTH = 750
+const DEFAULT_WIDTH = 680
 const DEFAULT_HEIGHT = 1200
 
 const config: Phaser.Types.Core.GameConfig = {

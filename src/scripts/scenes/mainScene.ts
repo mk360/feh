@@ -13,14 +13,15 @@ import Pathfinder from '../classes/path-finder';
 import { renderText } from '../utils/text-renderer';
 import CombatForecast from '../objects/combat-forecast';
 
-const squareSize = 125;
-const squaresOffset = 63;
-const fixedY = 120;
+const squareSize = 113;
+const squaresOffset = 0;
+const fixedY = 250;
 
 function gridToPixels(x: number, y: number) {
+  console.log({ x, y });
   return {
-    x: x * squareSize - squaresOffset,
-    y: y * squareSize + fixedY,
+    x: (x - 1) * squareSize - squaresOffset,
+    y: (y - 1) * squareSize + fixedY,
   }
 }
 
@@ -62,10 +63,6 @@ interface HeroUpdatePayload {
   [k: string]: any
 }
 
-function matchDirectionToAssetName(direction: ReturnType<typeof getTilesDirection>) {
-
-}
-
 let timer = 0;
 
 export default class MainScene extends Phaser.Scene {
@@ -100,12 +97,14 @@ export default class MainScene extends Phaser.Scene {
     const turnText = renderText(this, playerPhaseText.getCenter().x, playerPhaseText.getCenter().y + 100, `Turn ${turnCount}`, {
       fontSize: 40
     }).setOrigin(0.5);
-    this.add.existing(turnText);
-    this.sound.play("player-phase");
     const turnChangeTimeline = this.add.timeline([{
       tween: {
         targets: [chains1, chains2],
         scaleY: 1,
+        onStart: () => {
+          this.add.existing(turnText);
+          this.sound.play("player-phase");
+        },
         x: background.getCenter().x - 100,
         duration: 300 // initial slide
       }
@@ -249,7 +248,7 @@ export default class MainScene extends Phaser.Scene {
   create() {
     this.sound.pauseOnBlur = false;
     const entities = this.game.registry.list.world;
-    this.background = this.add.image(0, 180, "map").setDisplaySize(750, 1000).setOrigin(0, 0).setInteractive();
+    this.background = this.add.image(0, 180, "map").setDisplaySize(+this.game.config.width, 1000).setOrigin(0, 0).setInteractive();
     this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
     this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
     this.tilesLayer = this.add.layer();
@@ -478,6 +477,7 @@ export default class MainScene extends Phaser.Scene {
       });
     }
 
+    // if (!this.sound.locked) startTurnTimeline.play();
     startTurnTimeline.play();
   }
 
