@@ -20,6 +20,7 @@ function replaceColorPlaceholder(placeholderData: string, replacingArgument: str
 }
 
 class UnitInfosBanner extends GameObjects.Container {
+    bannerBg: GameObjects.Image;
     private nameplate: HeroNameplate;
     private maxHP: GameObjects.Text;
     private weaponName: GameObjects.Text;
@@ -35,7 +36,6 @@ class UnitInfosBanner extends GameObjects.Container {
     private specialBg: GameObjects.Image;
     private special: GameObjects.Text;
     private textbox: Textbox;
-    private bannerBg: GameObjects.Image;
     private stats: {
         [k in keyof Stats]: RenderedStat;
     };
@@ -53,20 +53,10 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(this.bannerBg);
         this.heroPortrait = new GameObjects.Image(scene, -100, 0, "").setOrigin(0).setScale(0.6);
         this.add(this.heroPortrait);
-        this.hpBackground = new GameObjects.Image(scene, blockX - 140, 70, "top-banner", "hp plate").setScale(1, 0.7).setOrigin(0, 0.5);
-        this.add(this.hpBackground.setInteractive());
-        this.maxHP = renderRegularHPText({
-            scene: this.scene,
-            x: blockX - 10,
-            y: 56,
-            content: "",
-            style: {
-                fontSize: "20px"
-            }
-        });
+        this.createStats();
 
         this.textbox = new Textbox(scene, 0, 0).setVisible(false);
-        this.nameplate = new HeroNameplate(scene, blockX - 150, 25, {
+        this.nameplate = new HeroNameplate(scene, blockX - 170, 25, {
             name: "",
             weaponType: "",
             weaponColor: "",
@@ -94,8 +84,6 @@ class UnitInfosBanner extends GameObjects.Container {
             }
         }).setInteractive();
 
-        this.createStats();
-
         this.add(this.nameplate);
         this.createMainSkills();
         const lvText = renderText(scene, this.weaponBg.getLeftCenter().x + 25, this.weaponBg.getTopCenter().y - 39, "LV.", { fontSize: "18px" }).setOrigin(0, 0.5);
@@ -103,19 +91,18 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(lvText);
         this.add(levelCount);
 
-        this.weaponName = renderText(this.scene, this.weaponBg.getLeftCenter().x + 30, this.weaponBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
+        this.weaponName = renderText(this.scene, this.weaponBg.getLeftCenter().x + 20, this.weaponBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
+            fontSize: "16px"
+        });
+        this.assist = renderText(this.scene, this.assistBg.getLeftCenter().x + 20, this.assistBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
             fontSize: "19px"
         });
-        this.assist = renderText(this.scene, this.assistBg.getLeftCenter().x + 30, this.assistBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
-            fontSize: "19px"
-        });
-        this.special = renderText(this.scene, this.specialBg.getLeftCenter().x + 30, this.specialBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
+        this.special = renderText(this.scene, this.specialBg.getLeftCenter().x + 20, this.specialBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
             fontSize: "19px"
         });
         this.add(this.weaponName);
         this.add(this.special);
         this.add(this.assist);
-        this.add(this.maxHP);
         this.add(this.textbox);
         this.createPassives(levelCount);
         this.add(this.highlighter);
@@ -127,35 +114,41 @@ class UnitInfosBanner extends GameObjects.Container {
     }
 
     private createStats() {
-        const blockX = 310;
+        const statsBlockX = 130;
+
+        this.hpBackground = new GameObjects.Image(this.scene, statsBlockX, 70, "top-banner", "hp plate").setScale(0.85, 0.7).setOrigin(0, 0.5);
+
+        this.add(this.hpBackground.setInteractive());
+
+        const atkStatLabel = renderText(this.scene, statsBlockX + 10, 100, "Atk", { fontSize: "18px" }).setInteractive();
 
         this.stats = {
             atk: {
-                label: renderText(this.scene, blockX - 150, 100, "Atk", { fontSize: "18px" }).setInteractive(),
+                label: atkStatLabel,
                 description: STATS.atk,
-                value: renderText(this.scene, blockX - 70, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
+                value: renderText(this.scene, atkStatLabel.getRightCenter().x + 40, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             spd: {
-                label: renderText(this.scene, blockX - 45, 100, "Spd", { fontSize: "18px" }).setInteractive(),
+                label: renderText(this.scene, statsBlockX + 100, 100, "Spd", { fontSize: "18px" }).setInteractive(),
                 description: STATS.spd,
-                value: renderText(this.scene, blockX + 45, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
+                value: renderText(this.scene, statsBlockX + 175, 100, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             res: {
-                label: renderText(this.scene, blockX - 45, 135, "Res", { fontSize: "18px" }).setInteractive(),
+                label: renderText(this.scene, statsBlockX + 100, 135, "Res", { fontSize: "18px" }).setInteractive(),
                 description: STATS.res,
-                value: renderText(this.scene, blockX + 45, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
+                value: renderText(this.scene, statsBlockX + 175, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             def: {
-                label: renderText(this.scene, blockX - 150, 135, "Def", { fontSize: "18px" }).setInteractive(),
+                label: renderText(this.scene, statsBlockX + 10, 135, "Def", { fontSize: "18px" }).setInteractive(),
                 description: STATS.def,
-                value: renderText(this.scene, blockX - 70, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
+                value: renderText(this.scene, statsBlockX + 85, 135, "", { fontSize: "18px" }).setOrigin(1, 0).setColor(TextColors.numbers).setInteractive()
             },
             hp: {
-                label: renderText(this.scene, blockX - 150, 55, "HP", { fontSize: "20px" }).setInteractive(),
+                label: renderText(this.scene, statsBlockX + 10, 55, "HP", { fontSize: "20px" }).setInteractive(),
                 description: STATS.hp,
                 value: renderRegularHPText({
                     scene: this.scene,
-                    x: blockX - 85,
+                    x: statsBlockX + 60,
                     y: 52,
                     content: 0,
                     style: {
@@ -164,6 +157,18 @@ class UnitInfosBanner extends GameObjects.Container {
                 }).setInteractive()
             }
         };
+
+        this.maxHP = renderRegularHPText({
+            scene: this.scene,
+            x: statsBlockX + 120,
+            y: 56,
+            content: "",
+            style: {
+                fontSize: "20px"
+            }
+        });
+
+        this.add(this.maxHP);
 
         for (let statKey in this.stats) {
             const castKey = statKey as keyof typeof this.stats;
@@ -203,16 +208,17 @@ class UnitInfosBanner extends GameObjects.Container {
             });
             this.add([label, value]);
         }
-        this.add(new GameObjects.Image(this.scene, blockX - 160, 125, "top-banner", "separator").setScale(0.2, 0.5).setOrigin(0));
-        this.add(new GameObjects.Image(this.scene, blockX - 160, 160, "top-banner", "separator").setScale(0.2, 0.5).setOrigin(0));
+        this.add(new GameObjects.Image(this.scene, statsBlockX, 125, "top-banner", "separator").setScale(0.17, 0.5).setOrigin(0));
+        this.add(new GameObjects.Image(this.scene, statsBlockX, 160, "top-banner", "separator").setScale(0.17, 0.5).setOrigin(0));
     }
 
     private createMainSkills() {
-        this.weaponBg = new GameObjects.Image(this.scene, 400, 50, "skills-ui", "weapon-bg").setOrigin(0, 0).setScale(0.23, 0.25).setInteractive();
+        const skillsBlockX = 335;
+        this.weaponBg = new GameObjects.Image(this.scene, skillsBlockX, 50, "skills-ui", "weapon-bg").setOrigin(0, 0).setScale(0.18, 0.25).setInteractive();
         this.weaponBg.setSize(this.weaponBg.displayWidth, this.weaponBg.displayHeight);
-        this.assistBg = new GameObjects.Image(this.scene, 400, 90, "skills-ui", "assist-bg").setOrigin(0, 0).setScale(0.23, 0.25).setInteractive();
+        this.assistBg = new GameObjects.Image(this.scene, skillsBlockX, 90, "skills-ui", "assist-bg").setOrigin(0, 0).setScale(0.18, 0.25).setInteractive();
         this.assistBg.setSize(this.assistBg.displayWidth, this.assistBg.displayHeight);
-        this.specialBg = new GameObjects.Image(this.scene, 400, 130, "skills-ui", "special-bg").setOrigin(0).setScale(0.23, 0.25).setInteractive();
+        this.specialBg = new GameObjects.Image(this.scene, skillsBlockX, 130, "skills-ui", "special-bg").setOrigin(0).setScale(0.18, 0.25).setInteractive();
         this.specialBg.setSize(this.specialBg.displayWidth, this.specialBg.displayHeight);
         const assistIcon = new GameObjects.Image(this.scene, this.assistBg.getLeftCenter().x, this.assistBg.getLeftCenter().y, "skills-ui", "assist-icon").setScale(0.45).setOrigin(0.25, 0.5);
         const specialIcon = new GameObjects.Image(this.scene, this.specialBg.getLeftCenter().x, this.specialBg.getLeftCenter().y, "skills-ui", "special-icon").setScale(0.45).setOrigin(0.25, 0.5);

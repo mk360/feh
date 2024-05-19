@@ -13,15 +13,14 @@ import Pathfinder from '../classes/path-finder';
 import { renderText } from '../utils/text-renderer';
 import CombatForecast from '../objects/combat-forecast';
 
-const squareSize = 113;
-const squaresOffset = 0;
-const fixedY = 250;
+const squareSize = 90;
+const squaresOffset = 45;
+const fixedY = 135;
 
 function gridToPixels(x: number, y: number) {
-  console.log({ x, y });
   return {
-    x: (x - 1) * squareSize - squaresOffset,
-    y: (y - 1) * squareSize + fixedY,
+    x: (x - 1) * squareSize + squaresOffset,
+    y: y * squareSize + fixedY,
   }
 }
 
@@ -80,6 +79,7 @@ export default class MainScene extends Phaser.Scene {
   private combatForecast: CombatForecast;
   private playHeroQuote = createHeroQuoter(this);
   private movementUI: GameObjects.Layer;
+  private miscUIElements: GameObjects.Layer;
   private startRosary: GameObjects.Image;
   private endRosary: GameObjects.Image;
   private background: GameObjects.Image;
@@ -222,13 +222,13 @@ export default class MainScene extends Phaser.Scene {
 
       const gridCoordinates = gridToPixels(tile[0], tile[1]);
       if (fromPreviousTile === toNextTile) {
-        const straightPath = new GameObjects.Image(this, gridCoordinates.x, gridCoordinates.y, "path", "vertical-fixed");
+        const straightPath = new GameObjects.Image(this, gridCoordinates.x, gridCoordinates.y, "path", "vertical-fixed").setDisplaySize(squareSize, squareSize);
         if (["right", "left"].includes(fromPreviousTile)) {
           straightPath.setRotation(Math.PI / 2);
         }
         this.movementUI.add(straightPath, true);
       } else {
-        const elbow = new GameObjects.Image(this, gridCoordinates.x, gridCoordinates.y, "path", `path-${fromPreviousTile}-${toNextTile}`);
+        const elbow = new GameObjects.Image(this, gridCoordinates.x, gridCoordinates.y, "path", `path-${fromPreviousTile}-${toNextTile}`).setDisplaySize(squareSize, squareSize);
         this.movementUI.add(elbow, true);
       }
     }
@@ -236,7 +236,7 @@ export default class MainScene extends Phaser.Scene {
     if (path.length > 1) {
       const endArrowDirection = getTilesDirection(path[path.length - 2], end);
       const endPixels = gridToPixels(end[0], end[1]);
-      const endArrow = new GameObjects.Image(this, endPixels.x, endPixels.y, "path", "end-arrow-fixed");
+      const endArrow = new GameObjects.Image(this, endPixels.x, endPixels.y, "path", "end-arrow-fixed").setDisplaySize(squareSize, squareSize);
       const verticalAngle = endArrowDirection === "down" ? 90 : endArrowDirection === "up" ? -90 : null;
       const horizontalAngle = endArrowDirection === "left" ? 180 : endArrowDirection === "right" ? 0 : null;
       const finalAngle = verticalAngle ?? horizontalAngle;
@@ -248,18 +248,29 @@ export default class MainScene extends Phaser.Scene {
   create() {
     this.sound.pauseOnBlur = false;
     const entities = this.game.registry.list.world;
-    this.background = this.add.image(0, 180, "map").setDisplaySize(+this.game.config.width, 1000).setOrigin(0, 0).setInteractive();
+    this.background = this.add.image(0, 180, "map").setOrigin(0, 0).setInteractive();
     this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
     this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
     this.tilesLayer = this.add.layer();
     this.movementUI = this.add.layer();
-    this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false);
-    this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false);
-    this.movementIndicator = new GameObjects.Image(this, 0, 0, "path", "movement-allowed").setScale(1.5).setVisible(false);
+    this.heroesLayer = this.add.layer();
+    this.miscUIElements = this.add.layer();
+    this.miscUIElements.add(this.interactionsIndicator);
+    this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
+    this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
+    this.movementIndicator = new GameObjects.Image(this, 0, 0, "path", "movement-allowed").setVisible(false);
     this.movementUI.add(this.movementIndicator);
     this.movementUI.add(this.endRosary);
     this.movementUI.add(this.startRosary);
-    this.heroesLayer = this.add.layer();
+
+    // for (let i = 1; i <= 6; i++) {
+    //   for (let j = 1; j <= 8; j++) {
+    //     const rng = new Phaser.Math.RandomDataGenerator().between(0, 0xffffff);
+    //     const rec = new GameObjects.Rectangle(this, (i - 1) * squareSize, j * squareSize + fixedY, squareSize, squareSize, rng, 0.5).setOrigin(0);
+    //     this.movementUI.add(rec);
+    //   }
+    // }
+
     for (let entityId in entities.heroes) {
       const entity = entities.heroes[entityId];
       const hero = this.addHero(entity).setInteractive();
@@ -336,6 +347,7 @@ export default class MainScene extends Phaser.Scene {
         this.socket.sendBuffer = [];
       });
     }
+
     this.add.existing(this.unitInfosBanner);
     this.combatForecast = new CombatForecast(this).setVisible(false);
     this.add.existing(this.combatForecast);

@@ -4,7 +4,7 @@ import IconsSwitcher from "./icons-switcher";
 
 import { GameObjects, Scene, Tweens } from "phaser";
 
-const hpBarWidth = 60;
+const hpBarWidth = 50;
 
 class Hero extends GameObjects.Container {
     hpBar: GameObjects.Rectangle;
@@ -28,23 +28,23 @@ class Hero extends GameObjects.Container {
         const weapon = data.Weapon[0];
         super(scene, x, y);
         this.setData("hero", data);
-        this.sprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.7).setDepth(1);
-        this.glowingSprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.7).setDepth(2).setAlpha(0).setTintFill(0xFFFFFF);
+        this.sprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.5);
+        this.glowingSprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.5).setDepth(1).setAlpha(0).setTintFill(0xFFFFFF);
         this.add(this.sprite);
         this.add(this.glowingSprite);
-        this.statusesImage = new IconsSwitcher(scene, 55, 45, data.tags.map((tag) => {
+        this.statusesImage = new IconsSwitcher(scene, 50, 35, data.tags.map((tag) => {
             return {
                 frame: tag.toLowerCase(),
                 texture: "statuses"
             }
-        })).setScale(0.6);
+        })).setScale(0.4);
         this.effectivenessImage = new IconsSwitcher(scene, 0, 0, []);
         const hpBarHeight = this.statusesImage.getCenter().y;
-        this.hpText = renderText(scene, -15, hpBarHeight, stats.hp, {
-            fontSize: "18px"
+        this.hpText = renderText(scene, -25, hpBarHeight, stats.hp, {
+            fontSize: "14px"
         }).setOrigin(1, 0.5);
         this.hpBar = new GameObjects.Rectangle(scene, this.hpText.getRightCenter().x, hpBarHeight, hpBarWidth, 5, team === "team1" ? parseInt(TextColors.player.replace("#", ""), 16) : parseInt(TextColors.enemy.replace("#", ""), 16)).setOrigin(0, 0).setDepth(2);
-        this.weaponType = new GameObjects.Image(scene, team === "team1" ? -30 : 30, -40, "weapons", `${weapon.color}-${weapon.weaponType}`).setScale(1.1);
+        this.weaponType = new GameObjects.Image(scene, team === "team1" ? -30 : 30, -30, "weapons", `${weapon.color}-${weapon.weaponType}`).setScale(1);
         this.hpBarBackground = new GameObjects.Rectangle(scene, this.hpBar.getLeftCenter().x - 1, hpBarHeight - 1, hpBarWidth + 2, 7, 0x000000).setOrigin(0, 0);
         this.add(this.hpBarBackground);
         this.add(this.hpBar);
@@ -68,9 +68,9 @@ class Hero extends GameObjects.Container {
                 this.special = renderSpecialText({
                     scene: this.scene,
                     x: team === "team1" ? -40 : 20,
-                    y: -25,
+                    y: -20,
                     style: {
-                        fontSize: 26,
+                        fontSize: 22,
                         shadowColor: "black",
                     },
                     content: existingSpecial[0].cooldown,
