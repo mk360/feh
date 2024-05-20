@@ -30,7 +30,7 @@ class InteractionIndicator extends GameObjects.Container {
 
     disable() {
         this.setVisible(false);
-        this.currentTween.stop();
+        this.currentTween?.stop();
     }
 
     tween() {
@@ -41,7 +41,7 @@ class InteractionIndicator extends GameObjects.Container {
             y: baseY - 10,
             yoyo: true,
             loop: -1,
-            duration: 200,
+            duration: 450,
             paused: true,
         }) as Tweens.Tween;
 

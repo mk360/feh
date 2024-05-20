@@ -303,6 +303,8 @@ export default class MainScene extends Phaser.Scene {
 
       hero.on("dragenter", (_, target) => {
         if (target.type === "Rectangle") {
+          this.combatForecast.setVisible(false);
+          this.interactionsIndicator.disable();
           const gridCell = pixelsToGrid(target.x, target.y);
           const savedPosition = hero.getInternalHero().Position[0];
           const { x, y } = gridToPixels(gridCell.x, gridCell.y);
@@ -321,12 +323,6 @@ export default class MainScene extends Phaser.Scene {
           this.socket.sendBuffer = [];
         }
       });
-
-      hero.on("dragleave", (_, target) => {
-        if (target instanceof Hero) {
-          this.combatForecast.setVisible(false);
-        }
-      })
 
       hero.on("dragstart", () => {
         this.startRosary.setVisible(true).setX(hero.x).setY(hero.y);

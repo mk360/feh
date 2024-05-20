@@ -46,7 +46,7 @@ interface RenderedSide {
     arrow: GameObjects.Text;
 };
 
-const hpTextHeight = 45;
+const hpTextHeight = 60;
 const hpLineHeight = 70;
 
 class CombatForecast extends GameObjects.Container {
@@ -54,23 +54,23 @@ class CombatForecast extends GameObjects.Container {
     private forecastBackground: GameObjects.Image;
 
     private firstHero: RenderedSide = {
+        portrait: null,
         previousHP: null,
         statMods: null,
         damageLine: null,
         remainingHP: null,
-        portrait: null,
         nameplate: null,
         roundCount: null,
         damage: null,
         arrow: null,
     };
     private secondHero: RenderedSide = {
+        portrait: null,
         previousHP: null,
         statMods: null,
         remainingHP: null,
         arrow: null,
         damageLine: null,
-        portrait: null,
         nameplate: null,
         roundCount: null,
         damage: null,
@@ -80,8 +80,8 @@ class CombatForecast extends GameObjects.Container {
 
     private createFirstHero() {
         this.firstHero.statMods = new GameObjects.Group(this.scene);
-        this.firstHero.portrait = new HeroPortrait(this.scene, "").setScale(0.6);
-        this.firstHero.nameplate = new HeroNameplate(this.scene, 100, 20, {
+        this.firstHero.portrait = new HeroPortrait(this.scene, -100, "").setOrigin(0).setScale(0.6);
+        this.firstHero.nameplate = new HeroNameplate(this.scene, 70, 20, {
             name: "",
             weaponColor: "",
             weaponType: "",
@@ -92,28 +92,28 @@ class CombatForecast extends GameObjects.Container {
         });
         this.firstHero.previousHP = renderRegularHPText({
             scene: this.scene,
-            x: 160,
+            x: 130,
             y: hpTextHeight,
             style: {
-                fontSize: "36px"
+                fontSize: "26px"
             },
             content: ""
         });
         this.firstHero.arrow = renderRegularHPText({
             scene: this.scene,
-            x: this.firstHero.previousHP.getRightCenter().x + 70,
+            x: this.firstHero.previousHP.getRightCenter().x + 40,
             y: hpTextHeight,
             content: "→",
             style: {
-                fontSize: "36px"
+                fontSize: "26px"
             }
         });
         this.firstHero.remainingHP = renderRegularHPText({
             scene: this.scene,
-            x: this.firstHero.previousHP.getRightCenter().x + 120,
+            x: this.firstHero.arrow.getRightCenter().x + 10,
             y: hpTextHeight,
             style: {
-                fontSize: "36px"
+                fontSize: "26px"
             },
             content: ""
         });
@@ -133,7 +133,7 @@ class CombatForecast extends GameObjects.Container {
 
     private createSecondHero() {
         this.secondHero.statMods = new GameObjects.Group(this.scene);
-        this.secondHero.portrait = new HeroPortrait(this.scene, "").setFlipX(true).setX(900).setOrigin(1, 0).setScale(0.6);
+        this.secondHero.portrait = new HeroPortrait(this.scene, 900, "").setFlipX(true).setOrigin(1, 0).setScale(0.6);
         this.secondHero.nameplate = new HeroNameplate(this.scene, 390, 20, {
             name: "", weaponType: "", weaponColor: "",
             tapCallbacks: {
@@ -185,25 +185,15 @@ class CombatForecast extends GameObjects.Container {
         super(scene, 0, 0);
         //         const hpLineHeight = 70;
         this.forecastBackground = new GameObjects.Image(scene, 0, 0, "top-banner", "forecast-bg").setOrigin(0, 0);
+        this.forecastBackground.setDisplaySize(+this.scene.game.config.width, this.forecastBackground.displayHeight);
         this.add(this.forecastBackground);
         this.createFirstHero();
         this.createSecondHero();
 
         this.add(renderText(scene, this.forecastBackground.getCenter().x, hpLineHeight, "HP", {
             fontSize: "22px",
-        }).setOrigin(0.5));
-
-        // this.portraitDisplayTween = scene.tweens.add({
-        //     duration: 300,
-        //     x: 850,
-        //     targets: this.secondHero.portrait,
-        // });
+        }).setOrigin(0.5, 0.5));
     }
-
-    //     disable() {
-    //         this.koTween?.stop();
-    //         this.setVisible(false);
-    //     }
 
     private updateSide({ side, team, hero, statChangesX, xShift: xChangeBetweenStats }: {
         side: RenderedSide;
