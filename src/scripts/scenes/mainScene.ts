@@ -458,6 +458,9 @@ export default class MainScene extends Phaser.Scene {
         }
       });
       this.combatForecast.setVisible(true);
+      const tween = this.interactionsIndicator.setVisible(true).hover(defender).tween();
+
+      tween.play();
     });
 
     this.socket.on("update entity", ({ unitId, type, ...data }: HeroUpdatePayload) => {

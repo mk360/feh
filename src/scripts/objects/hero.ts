@@ -2,7 +2,7 @@ import TextColors from "../utils/text-colors";
 import { renderSpecialText, renderText } from "../utils/text-renderer";
 import IconsSwitcher from "./icons-switcher";
 
-import { GameObjects, Scene, Tweens } from "phaser";
+import { GameObjects, Math, Scene, Tweens } from "phaser";
 
 const hpBarWidth = 50;
 
@@ -130,6 +130,13 @@ class Hero extends GameObjects.Container {
 
     toggleEffectivenessImages() {
         this.effectivenessImage.setVisible(!!this.effectivenessImage.iconsList.length).toggleIcons();
+    }
+
+    getAbsoluteCoordinates() {
+        const vec = new Math.Vector2();
+        vec.add(this);
+        vec.add(this.sprite);
+        return vec;
     }
 };
 
