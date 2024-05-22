@@ -183,7 +183,6 @@ class CombatForecast extends GameObjects.Container {
 
     constructor(scene: Scene) {
         super(scene, 0, 0);
-        //         const hpLineHeight = 70;
         this.forecastBackground = new GameObjects.Image(scene, 0, 0, "top-banner", "forecast-bg").setOrigin(0, 0);
         this.forecastBackground.setDisplaySize(+this.scene.game.config.width, this.forecastBackground.displayHeight);
         this.add(this.forecastBackground);

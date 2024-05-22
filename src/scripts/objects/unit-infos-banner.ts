@@ -116,8 +116,8 @@ class UnitInfosBanner extends GameObjects.Container {
     private createStats() {
         const statsBlockX = 130;
 
-        this.hpBackground = new GameObjects.Image(this.scene, statsBlockX, 70, "top-banner", "hp plate").setScale(0.85, 0.7).setOrigin(0, 0.5);
-
+        this.hpBackground = new GameObjects.Image(this.scene, statsBlockX, 70, "top-banner", "hp plate").setScale(0.85, 0.7).setOrigin(0, 0.5).setInteractive();
+        this.hpBackground.setSize(this.hpBackground.displayWidth, this.hpBackground.displayHeight);
         this.add(this.hpBackground.setInteractive());
 
         const atkStatLabel = renderText(this.scene, statsBlockX + 10, 100, "Atk", { fontSize: "18px" }).setInteractive();
@@ -154,7 +154,7 @@ class UnitInfosBanner extends GameObjects.Container {
                     style: {
                         fontSize: "26px"
                     }
-                }).setInteractive()
+                })
             }
         };
 
@@ -191,21 +191,27 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.textbox.y = label.getBottomLeft().y + 10;
                 this.textbox.setContent(content);
                 this.textbox.display();
-                // this.controlTextboxDisplay(statKey);
-                // this.textboxTarget = statKey;
             }
+            if (statKey !== "hp") {
 
-            label.on("pointerdown", () => {
-                this.scene.sound.playAudioSprite("sfx", "tap");
-                this.highlighter.highlightElement(value);
-                statDetailsCallback();
-                this.highlighter.highlightElement(label);
-            });
-            value.on("pointerdown", () => {
-                this.scene.sound.playAudioSprite("sfx", "tap");
-                statDetailsCallback();
-                this.highlighter.highlightElement(value);
-            });
+                label.on("pointerdown", () => {
+                    this.scene.sound.playAudioSprite("sfx", "tap");
+                    this.highlighter.highlightElement(value);
+                    statDetailsCallback();
+                    this.highlighter.highlightElement(label);
+                });
+                value.on("pointerdown", () => {
+                    this.scene.sound.playAudioSprite("sfx", "tap");
+                    statDetailsCallback();
+                    this.highlighter.highlightElement(value);
+                });
+            } else {
+                this.hpBackground.on("pointerdown", () => {
+                    this.scene.sound.playAudioSprite("sfx", "tap");
+                    statDetailsCallback();
+                    this.highlighter.highlightElement(this.hpBackground);
+                });
+            }
             this.add([label, value]);
         }
         this.add(new GameObjects.Image(this.scene, statsBlockX, 125, "top-banner", "separator").setScale(0.17, 0.5).setOrigin(0));

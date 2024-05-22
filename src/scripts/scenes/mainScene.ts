@@ -263,14 +263,6 @@ export default class MainScene extends Phaser.Scene {
     this.movementUI.add(this.endRosary);
     this.movementUI.add(this.startRosary);
 
-    // for (let i = 1; i <= 6; i++) {
-    //   for (let j = 1; j <= 8; j++) {
-    //     const rng = new Phaser.Math.RandomDataGenerator().between(0, 0xffffff);
-    //     const rec = new GameObjects.Rectangle(this, (i - 1) * squareSize, j * squareSize + fixedY, squareSize, squareSize, rng, 0.5).setOrigin(0);
-    //     this.movementUI.add(rec);
-    //   }
-    // }
-
     for (let entityId in entities.heroes) {
       const entity = entities.heroes[entityId];
       const hero = this.addHero(entity).setInteractive();
@@ -826,15 +818,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //     timeline.play();
 //   };
 
-//   resetView() {
-//     this.movementRangeLayer.removeAll();
-//     this.clearTiles(this.walkTiles.concat(this.attackTiles));
-//     this.walkTiles = [];
-//     this.attackTiles = [];
-//     this.highlightIdleHeroes();
-//     this.unitInfosBanner.setVisible(false);
-//   }
-
 //   endAction(hero: Hero) {
 //     hero.off("drag");
 //     hero.off("dragover");
@@ -958,26 +941,4 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //     } else {
 //       this.enemyRangeLayer.removeAll();
 //     }
-//   }
-
-//   create() {
-//     this.combatForecast = this.add.existing(new CombatForecast(this).setVisible(false)).setDepth(5);
-//     this.movementAllowedImages = this.add.group();
-//     this.movementArrows = this.add.group();
-//     this.add.rectangle(0, 180, 750, 1000, 0xFFFFFF).setOrigin(0);
-//     const banner = this.add.image(-90, 0, "background").setOrigin(0).setTint(0x0F343D);
-//     this.startBackgroundMusic(0.13);
-//     banner.setDisplaySize(banner.displayWidth, 180);
-
-//     this.interactionIndicator = this.add.existing(new InteractionIndicator(this, 0, 0).setVisible(false).setDepth(6));
-//     this.fpsText = renderText(this, 500, 120, "", { fontSize: "25px" });
-//     // const shine = this.add.particles(0, 0, "effect-shine", {
-//     //   scale: {
-//     //     start: 1,
-//     //     end: 3
-//     //   },
-//     //   x: 150,
-//     //   y: 250,
-//     // });
-//     this.processAction(battle.initiateBattle());
 //   }
