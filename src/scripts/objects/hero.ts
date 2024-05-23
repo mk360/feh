@@ -32,7 +32,7 @@ class Hero extends GameObjects.Container {
         this.glowingSprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.5).setDepth(1).setAlpha(0).setTintFill(0xFFFFFF);
         this.add(this.sprite);
         this.add(this.glowingSprite);
-        this.statusesImage = new IconsSwitcher(scene, 50, 35, data.tags.map((tag) => {
+        this.statusesImage = new IconsSwitcher(scene, 35, 35, data.tags.map((tag) => {
             return {
                 frame: tag.toLowerCase(),
                 texture: "statuses"
