@@ -152,7 +152,7 @@ class Textbox extends GameObjects.Container {
             valuesLines.push(buffValue);
         }
 
-        if (penalty > 0) {
+        if (penalty < 0) {
             const penaltyLabel = renderLabelText({
                 scene: this.scene,
                 x: valuesLines[valuesLines.length - 1].getRightCenter().x + 10,
