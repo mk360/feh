@@ -81,7 +81,7 @@ class CombatForecast extends GameObjects.Container {
     private createFirstHero() {
         this.firstHero.statMods = new GameObjects.Group(this.scene);
         this.firstHero.portrait = new HeroPortrait(this.scene, -100, "").setOrigin(0).setScale(0.6);
-        this.firstHero.nameplate = new HeroNameplate(this.scene, 70, 20, {
+        this.firstHero.nameplate = new HeroNameplate(this.scene, 60, 20, {
             name: "",
             weaponColor: "",
             weaponType: "",
@@ -117,14 +117,14 @@ class CombatForecast extends GameObjects.Container {
             },
             content: ""
         });
-        this.firstHero.damage = renderText(this.scene, 230, 100, "", {
+        this.firstHero.damage = renderText(this.scene, this.firstHero.arrow.getBottomCenter().x - 30, 100, "", {
             fontSize: "18px"
         });
         this.firstHero.roundCount = renderText(this.scene, this.firstHero.damage.getRightCenter().x + 1, this.firstHero.damage.getTopCenter().y, "×2", {
             fontSize: "18px"
         });
 
-        this.firstHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damage.getBottomLeft().x + 10, this.firstHero.damage.getBottomLeft().y, "top-banner", "separator").setOrigin(0.5, 0).setScale(0.2, 0.5);
+        this.firstHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damage.getBottomCenter().x + 10, this.firstHero.damage.getBottomLeft().y, "top-banner", "separator").setOrigin(0.5, 0).setScale(0.2, 0.5);
         const { statMods, ...ui } = this.firstHero;
         for (let uiElement in ui) {
             this.add(this.firstHero[uiElement]);
@@ -134,7 +134,7 @@ class CombatForecast extends GameObjects.Container {
     private createSecondHero() {
         this.secondHero.statMods = new GameObjects.Group(this.scene);
         this.secondHero.portrait = new HeroPortrait(this.scene, 900, "").setFlipX(true).setOrigin(1, 0).setScale(0.6);
-        this.secondHero.nameplate = new HeroNameplate(this.scene, 390, 20, {
+        this.secondHero.nameplate = new HeroNameplate(this.scene, 270, 20, {
             name: "", weaponType: "", weaponColor: "",
             tapCallbacks: {
                 weaponType: null,
@@ -145,36 +145,36 @@ class CombatForecast extends GameObjects.Container {
             scene: this.scene,
             content: "",
             style: {
-                fontSize: "36px",
+                fontSize: "26px",
             },
-            x: 430,
+            x: 310,
             y: hpTextHeight,
         });
         this.secondHero.arrow = renderRegularHPText({
             scene: this.scene,
-            x: this.secondHero.previousHP.getRightCenter().x + 70,
+            x: this.secondHero.previousHP.getRightCenter().x + 40,
             y: hpTextHeight,
             content: "→",
             style: {
-                fontSize: "36px"
+                fontSize: "26px"
             }
         });
         this.secondHero.remainingHP = renderRegularHPText({
             scene: this.scene,
             content: 0,
-            x: this.secondHero.previousHP.getRightCenter().x + 120,
+            x: this.secondHero.arrow.getRightCenter().x + 10,
             y: hpTextHeight,
             style: {
-                fontSize: "36px"
+                fontSize: "26px"
             }
         });
-        this.secondHero.damage = renderText(this.scene, this.secondHero.arrow.getCenter().x - 20, this.firstHero.damage.getTopCenter().y, "-", {
+        this.secondHero.damage = renderText(this.scene, this.secondHero.arrow.getCenter().x, this.firstHero.damage.getTopCenter().y, "-", {
             fontSize: "18px"
         });
         this.secondHero.roundCount = renderText(this.scene, this.secondHero.damage.getRightCenter().x, this.secondHero.damage.getTopCenter().y, "", {
             fontSize: "18px"
         });
-        this.secondHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damageLine.x + 260, this.firstHero.damageLine.y, "top-banner", "separator").setOrigin(0.5, 0).setScale(0.2, 0.5).setTint(0xff0000);
+        this.secondHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damageLine.x + 200, this.firstHero.damageLine.y, "top-banner", "separator").setOrigin(0.5, 0).setScale(0.2, 0.5).setTint(0xff0000);
         const { statMods, ...ui } = this.secondHero;
         for (let uiElement in ui) {
             this.add(this.secondHero[uiElement]);
@@ -205,7 +205,6 @@ class CombatForecast extends GameObjects.Container {
         side.damage.setText(hero.turns === 0 ? "-" : hero.damage.toString()).setColor(hero.effective ? TextColors.effective : TextColors.white);
         if (hero.turns >= 2) {
             side.roundCount.setText("×" + hero.turns);
-            side.damage.x -= 10;
             side.roundCount.setX(side.damage.getRightCenter().x);
         } else {
             side.roundCount.setText("");
@@ -275,8 +274,8 @@ class CombatForecast extends GameObjects.Container {
 
         if (this.portraitDisplayTween) this.portraitDisplayTween.stop();
         this.portraitDisplayTween = this.scene.tweens.add({
-            duration: 200,
-            x: 870,
+            duration: 300,
+            x: 700,
             onStart: () => {
                 this.secondHero.portrait.x = 1100;
             },
