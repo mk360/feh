@@ -14,6 +14,19 @@ interface RenderedStat {
     value: GameObjects.Text;
 };
 
+interface StatChanges {
+    buffs: {
+        [k in Exclude<keyof Stats, "hp">]: number
+    };
+    debuffs: {
+        [k in Exclude<keyof Stats, "hp">]: number
+    };
+    changes: {
+        [k in Exclude<keyof Stats, "hp">]: number
+    };
+    hasPanic: boolean;
+}
+
 function replaceColorPlaceholder(placeholderData: string, replacingArgument: string) {
     const pascalCase = replacingArgument.replace(replacingArgument[0], replacingArgument[0].toUpperCase());
     return placeholderData.replace("%c", replacingArgument !== "colorless" ? pascalCase : "").trim();
@@ -30,7 +43,6 @@ class UnitInfosBanner extends GameObjects.Container {
     private displayedHero: Hero;
     private highlighter = new HighlightRectangle(this.scene);
     //     private S: GameObjects.Image;
-    //     private textboxTarget: string;
     private heroPortrait: GameObjects.Image;
     private weaponBg: GameObjects.Image;
     private specialBg: GameObjects.Image;
@@ -42,6 +54,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private assistBg: GameObjects.Image;
     private assist: GameObjects.Text;
     private hpBackground: GameObjects.Image;
+    private statChanges: StatChanges;
 
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0);
@@ -181,7 +194,8 @@ class UnitInfosBanner extends GameObjects.Container {
                     baseValue: statKey === "hp" ? internalHero.Stats[0].maxHP : internalHero.Stats[0][statKey],
                     boon: internalHero.Boon?.[0].value,
                     bane: internalHero.Bane?.[0].value,
-                    // penalty: hero.mapPenalties[statKey],
+                    buff: this.statChanges.buffs[castKey],
+                    penalty: this.statChanges.debuffs[castKey],
                     // buff: hero.mapBoosts[statKey],
                     description
                 });
@@ -344,7 +358,8 @@ class UnitInfosBanner extends GameObjects.Container {
         }
     }
 
-    setHero(hero: Hero) {
+    setHero(hero: Hero, statChanges: StatChanges) {
+        this.statChanges = statChanges;
         this.textbox.clearContent().setVisible(false);
         const internalHero = hero.getInternalHero();
         const { Name, Stats, Weapon, Skill, Special, Assist, Side } = internalHero;
@@ -390,9 +405,10 @@ class UnitInfosBanner extends GameObjects.Container {
                 const hpGradient = applyGradient(this.stats.hp.value);
                 this.stats.hp.value.setFill(hpGradient).setText(Stats[0].hp);
             } else {
-                value.setText(Stats[0][statKey]);
-                // const statChange = internalHero.mapBoosts[statKey] + internalHero.mapPenalties[statKey];
-                // value.setColor(statChange > 0 ? TextColors.boon : statChange < 0 ? TextColors.bane : "white");
+                const baseValue = Stats[0][statKey];
+                const updatedValue = baseValue + statChanges.changes[statKey];
+                value.setText(updatedValue);
+                value.setColor(updatedValue > baseValue ? TextColors.boon : updatedValue < baseValue ? TextColors.bane : TextColors.numbers);
             }
         }
 

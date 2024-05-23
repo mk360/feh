@@ -269,7 +269,6 @@ export default class MainScene extends Phaser.Scene {
       hero.setName(entityId);
       hero.on("pointerdown", () => {
         this.sound.playAudioSprite("sfx", "tap");
-        this.unitInfosBanner.setVisible(true).setHero(hero);
 
         this.socket.emit("request preview movement", {
           unitId: hero.name
@@ -295,7 +294,7 @@ export default class MainScene extends Phaser.Scene {
 
       hero.on("dragenter", (_, target) => {
         if (target.type === "Rectangle") {
-          this.combatForecast.setVisible(false);
+          // this.combatForecast.setVisible(false);
           this.interactionsIndicator.disable();
           const gridCell = pixelsToGrid(target.x, target.y);
           const savedPosition = hero.getInternalHero().Position[0];
@@ -339,6 +338,12 @@ export default class MainScene extends Phaser.Scene {
     this.add.existing(this.unitInfosBanner);
     this.combatForecast = new CombatForecast(this).setVisible(false);
     this.add.existing(this.combatForecast);
+
+    this.socket.on("response unit map stats", ({ unitId, ...stats }) => {
+      const hero = this.heroesLayer.getByName(unitId) as Hero;
+      this.unitInfosBanner.setVisible(true).setHero(hero, stats);
+    });
+
     this.socket.on("response preview movement", ({ movement = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, targetableEnemies }) => {
       const childrenTiles = this.tilesLayer.getChildren();
       while (childrenTiles.length) childrenTiles.pop().destroy();
