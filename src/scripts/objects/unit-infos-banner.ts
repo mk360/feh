@@ -57,7 +57,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private statChanges: StatChanges;
 
     constructor(scene: Phaser.Scene) {
-        super(scene, 0, 0);
+        super(scene, 0, 71);
         const blockX = 290;
         this.bannerBg = new GameObjects.Image(scene, 0, 0, "top-banner", "unit-banner-bg").setOrigin(0, 0).setInteractive();
         this.bannerBg.on("pointerdown", () => {

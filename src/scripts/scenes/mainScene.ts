@@ -12,10 +12,11 @@ import InteractionIndicator from '../objects/interaction-indicator';
 import Pathfinder from '../classes/path-finder';
 import { renderText } from '../utils/text-renderer';
 import CombatForecast from '../objects/combat-forecast';
+import Footer from '../objects/footer';
 
 const squareSize = 90;
 const squaresOffset = 45;
-const fixedY = 135;
+const fixedY = 200;
 
 function gridToPixels(x: number, y: number) {
   return {
@@ -86,6 +87,7 @@ export default class MainScene extends Phaser.Scene {
   private movementIndicator: GameObjects.Image;
   private pathfinder = new Pathfinder();
   private doubleClick = createDoubleTapHandler();
+  private footer: Footer;
 
   startTurn(turnCount: number) {
     const background = this.add.rectangle(0, 0, 6 * squareSize, this.game.canvas.height, 0, 0.6).setOrigin(0);
@@ -106,14 +108,14 @@ export default class MainScene extends Phaser.Scene {
           this.sound.play("player-phase");
         },
         x: background.getCenter().x - 100,
-        duration: 300 // initial slide
+        duration: 250 // initial slide
       }
     }, {
       tween: {
         targets: [playerPhaseText, glowingPlayerPhaseText, turnText],
         scaleY: 1,
         x: background.getCenter().x - 100,
-        duration: 300 // initial slide
+        duration: 250 // initial slide
       }
     }, {
       from: 100,
@@ -123,7 +125,7 @@ export default class MainScene extends Phaser.Scene {
         duration: 2000
       }
     }, {
-      from: 400,
+      from: 200,
       tween: {
         targets: [chains1, chains2],
         x: "+=200",
@@ -134,7 +136,7 @@ export default class MainScene extends Phaser.Scene {
       tween: {
         targets: [playerPhaseText, glowingPlayerPhaseText, turnText],
         x: "+=200",
-        duration: 900 // slowdown
+        duration: 1000 // slowdown
       },
     }, {
       from: 200,
@@ -177,7 +179,7 @@ export default class MainScene extends Phaser.Scene {
     }, {
       from: 0,
       tween: {
-        targets: [playerPhaseText, chains1, chains2, background],
+        targets: [playerPhaseText, phaseGleam, chains1, chains2, background],
         alpha: 0,
         duration: 100
       }
@@ -247,10 +249,16 @@ export default class MainScene extends Phaser.Scene {
 
   create() {
     this.sound.pauseOnBlur = false;
+    this.add.image(0, 0, "marginals", "header").setOrigin(0);
     const entities = this.game.registry.list.world;
-    this.background = this.add.image(0, 180, "map").setOrigin(0, 0).setInteractive();
-    this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
     this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
+    this.combatForecast = new CombatForecast(this).setVisible(false);
+    this.add.existing(this.unitInfosBanner);
+    this.add.existing(this.combatForecast);
+    this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
+    this.footer = new Footer(this, 0, this.background.getBottomCenter().y, 1);
+    this.add.existing(this.footer);
+    this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
     this.tilesLayer = this.add.layer();
     this.movementUI = this.add.layer();
     this.heroesLayer = this.add.layer();
@@ -335,10 +343,6 @@ export default class MainScene extends Phaser.Scene {
       });
     }
 
-    this.add.existing(this.unitInfosBanner);
-    this.combatForecast = new CombatForecast(this).setVisible(false);
-    this.add.existing(this.combatForecast);
-
     this.socket.on("response unit map stats", ({ unitId, ...stats }) => {
       const hero = this.heroesLayer.getByName(unitId) as Hero;
       this.unitInfosBanner.setVisible(true).setHero(hero, stats);
@@ -421,6 +425,10 @@ export default class MainScene extends Phaser.Scene {
         this.sound.play("confirm");
         const tiles = this.tilesLayer.getChildren();
         while (tiles.length) tiles.pop().destroy();
+        this.heroesLayer.getChildren().forEach((child: Hero) => {
+          child.effectivenessImage.iconsList = [];
+          child.setInteractive(undefined, undefined, false);
+        });
         const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
         while (ui.length) ui.pop().destroy();
       }
@@ -436,7 +444,7 @@ export default class MainScene extends Phaser.Scene {
           damage: previewAttacker.damagePerTurn,
           turns: previewAttacker.turns,
           startHP: previewAttacker.previousHP,
-          effective: false,
+          effectiveness: previewAttacker.effectiveness,
           remainingHP: previewAttacker.newHP,
           statMods: previewAttacker.combatBuffs
         },
@@ -445,7 +453,7 @@ export default class MainScene extends Phaser.Scene {
           damage: previewDefender.damagePerTurn,
           turns: previewDefender.turns,
           startHP: previewDefender.previousHP,
-          effective: false,
+          effectiveness: false,
           remainingHP: previewDefender.newHP,
           statMods: previewDefender.combatBuffs
         }
@@ -471,6 +479,7 @@ export default class MainScene extends Phaser.Scene {
         child.setInteractive(undefined, undefined, false);
       });
       this.unitInfosBanner.closeTextbox();
+      this.unitInfosBanner.setVisible(false);
     });
 
     let turn = 1;
@@ -485,8 +494,18 @@ export default class MainScene extends Phaser.Scene {
       });
     }
 
-    // if (!this.sound.locked) startTurnTimeline.play();
-    startTurnTimeline.play();
+    const layer = this.add.rectangle(0, 0, +this.game.config.width, +this.game.config.height, 0xD8BA94, 1).setOrigin(0);
+    const startGameButton = new GameObjects.Rectangle(this, layer.getCenter().x, layer.getCenter().y - 50, 240, 120, 0x00AF81).setInteractive();
+    startGameButton.on("pointerdown", () => {
+      layer.destroy();
+      startGameText.destroy();
+      startGameButton.destroy();
+      startTurnTimeline.play();
+    });
+    this.add.existing(startGameButton);
+    const startGameText = this.add.existing(renderText(this, startGameButton.getCenter().x, startGameButton.getCenter().y, "Start Game", {
+      fontSize: 26
+    }).setOrigin(0.5));
   }
 
   update(_, delta) {
