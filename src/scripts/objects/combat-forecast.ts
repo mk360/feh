@@ -16,7 +16,7 @@ import Hero from "./hero";
 
 interface ForecastHeroData {
     startHP: number;
-    effective: boolean;
+    effectiveness: boolean;
     remainingHP: number;
     turns: number;
     entity: Hero;
@@ -189,9 +189,9 @@ class CombatForecast extends GameObjects.Container {
         this.createFirstHero();
         this.createSecondHero();
 
-        this.add(renderText(scene, this.forecastBackground.getCenter().x, hpLineHeight, "HP", {
+        this.add(renderText(scene, this.forecastBackground.getCenter().x, hpLineHeight - 10, "HP", {
             fontSize: "22px",
-        }).setOrigin(0.5, 0.5));
+        }).setOrigin(0.5, 0));
     }
 
     private updateSide({ side, team, hero, statChangesX, xShift: xChangeBetweenStats }: {
@@ -202,7 +202,7 @@ class CombatForecast extends GameObjects.Container {
         xShift: number;
     }) {
         side.statMods.clear(true, true);
-        side.damage.setText(hero.turns === 0 ? "-" : hero.damage.toString()).setColor(hero.effective ? TextColors.effective : TextColors.white);
+        side.damage.setText(hero.turns === 0 ? "-" : hero.damage.toString()).setColor(hero.effectiveness ? TextColors.effective : TextColors.white);
         if (hero.turns >= 2) {
             side.roundCount.setText("×" + hero.turns);
             side.roundCount.setX(side.damage.getRightCenter().x);
@@ -212,22 +212,22 @@ class CombatForecast extends GameObjects.Container {
 
         let xOffset = statChangesX;
 
-        // for (let stat in statChanges) {
-        //     if (statChanges[stat]) {
-        //         const statValue = statChanges[stat];
-        //         const statChangeValue = renderText(this.scene, xOffset, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
-        //             color: statValue < 0 ? TextColors.bane : TextColors.boon
-        //         }).setOrigin(1, 0);
-        //         const changedStat = renderText(this.scene, statChangeValue.getLeftCenter().x - 35, 140, capitalize(stat));
-        //         side.statMods.add(changedStat).add(statChangeValue);
-        //         this.add(side.statMods.getChildren());
-        //         if (team === "attacker") {
-        //             xOffset = changedStat.getLeftCenter().x + xChangeBetweenStats;
-        //         } else {
-        //             xOffset = statChangeValue.getRightCenter().x + xChangeBetweenStats;
-        //         }
-        //     }
-        // }
+        for (let stat in hero.statMods) {
+            if (hero.statMods[stat]) {
+                const statValue = hero.statMods[stat];
+                const statChangeValue = renderText(this.scene, xOffset, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
+                    color: statValue < 0 ? TextColors.bane : TextColors.boon
+                }).setOrigin(1, 0);
+                const changedStat = renderText(this.scene, statChangeValue.getLeftCenter().x - 35, 140, capitalize(stat));
+                side.statMods.add(changedStat).add(statChangeValue);
+                this.add(side.statMods.getChildren());
+                if (team === "attacker") {
+                    xOffset = changedStat.getLeftCenter().x + xChangeBetweenStats;
+                } else {
+                    xOffset = statChangeValue.getRightCenter().x + xChangeBetweenStats;
+                }
+            }
+        }
 
         const { Weapon, Name, Stats } = hero.entity.getInternalHero();
 
@@ -267,32 +267,32 @@ class CombatForecast extends GameObjects.Container {
             hero: params.defender
         });
 
-        // if (this.koTween?.targets) {
-        //     (this.koTween.targets[0] as GameObjects.Image)?.setAlpha(1);
-        //     this.koTween.stop();
-        // }
+        if (this.koTween?.targets) {
+            (this.koTween.targets[0] as GameObjects.Image)?.setAlpha(1);
+            this.koTween.stop();
+        }
+
+        let koPortrait: GameObjects.Image;
+
+        if (params.attacker.remainingHP === 0) {
+            koPortrait = this.firstHero.portrait;
+        }
+
+        if (params.defender.remainingHP === 0) {
+            koPortrait = this.secondHero.portrait;
+        }
+
+        if (koPortrait) this.runKOTween(koPortrait);
 
         if (this.portraitDisplayTween) this.portraitDisplayTween.stop();
         this.portraitDisplayTween = this.scene.tweens.add({
             duration: 300,
-            x: 700,
+            x: 650,
             onStart: () => {
                 this.secondHero.portrait.x = 1100;
             },
             targets: this.secondHero.portrait,
         }).play();
-
-        // let koPortrait: GameObjects.Image;
-
-        // if (params.attacker.remainingHP === 0) {
-        //     koPortrait = this.firstHero.portrait;
-        // }
-
-        // if (params.defender.remainingHP === 0) {
-        //     koPortrait = this.secondHero.portrait;
-        // }
-
-        // if (koPortrait) this.runKOTween(koPortrait);
 
         return this;
     }
