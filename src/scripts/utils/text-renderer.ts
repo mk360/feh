@@ -40,7 +40,7 @@ export function renderDamageText(config: TextRenderingConfig) {
     return text;
 }
 
-export function renderStatText(config: TextRenderingConfig) {
+export function renderNumberText(config: TextRenderingConfig) {
     const { gradient, text } = renderTextWith2DContext(config);
     gradient.addColorStop(0, "white");
     gradient.addColorStop(1, TextColors.numbers);

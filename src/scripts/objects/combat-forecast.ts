@@ -9,7 +9,7 @@
 import { GameObjects, Scene, Tweens } from "phaser";
 import HeroNameplate from "./hero-nameplate";
 import HeroPortrait from "./hero-portrait";
-import { getHealthyHPGradient, getLowHPGradient, renderRegularHPText, renderText } from "../utils/text-renderer";
+import { getHealthyHPGradient, getLowHPGradient, renderNumberText, renderRegularHPText, renderText } from "../utils/text-renderer";
 import TextColors from "../utils/text-colors";
 import Stats from "../../interfaces/stats";
 import Hero from "./hero";
@@ -117,11 +117,23 @@ class CombatForecast extends GameObjects.Container {
             },
             content: ""
         });
-        this.firstHero.damage = renderText(this.scene, this.firstHero.arrow.getBottomCenter().x - 30, 100, "", {
-            fontSize: "18px"
+        this.firstHero.damage = renderNumberText({
+            scene: this.scene,
+            x: this.firstHero.arrow.getBottomCenter().x - 30,
+            y: 100,
+            content: "",
+            style: {
+                fontSize: "18px"
+            }
         });
-        this.firstHero.roundCount = renderText(this.scene, this.firstHero.damage.getRightCenter().x + 1, this.firstHero.damage.getTopCenter().y, "×2", {
-            fontSize: "18px"
+        this.firstHero.roundCount = renderNumberText({
+            scene: this.scene,
+            x: this.firstHero.damage.getRightCenter().x + 1,
+            y: this.firstHero.damage.getTopCenter().y,
+            content: "×2",
+            style: {
+                fontSize: "18px"
+            }
         });
 
         this.firstHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damage.getBottomCenter().x + 10, this.firstHero.damage.getBottomLeft().y, "top-banner", "separator").setOrigin(0.5, 0).setScale(0.2, 0.5);
@@ -168,8 +180,14 @@ class CombatForecast extends GameObjects.Container {
                 fontSize: "26px"
             }
         });
-        this.secondHero.damage = renderText(this.scene, this.secondHero.arrow.getCenter().x, this.firstHero.damage.getTopCenter().y, "-", {
-            fontSize: "18px"
+        this.secondHero.damage = renderNumberText({
+            scene: this.scene,
+            x: this.secondHero.arrow.getCenter().x,
+            y: this.firstHero.damage.getTopCenter().y,
+            content: "-",
+            style: {
+                fontSize: "18px"
+            }
         });
         this.secondHero.roundCount = renderText(this.scene, this.secondHero.damage.getRightCenter().x, this.secondHero.damage.getTopCenter().y, "", {
             fontSize: "18px"
@@ -182,7 +200,7 @@ class CombatForecast extends GameObjects.Container {
     }
 
     constructor(scene: Scene) {
-        super(scene, 0, 0);
+        super(scene, 0, 71);
         this.forecastBackground = new GameObjects.Image(scene, 0, 0, "top-banner", "forecast-bg").setOrigin(0, 0);
         this.forecastBackground.setDisplaySize(+this.scene.game.config.width, this.forecastBackground.displayHeight);
         this.add(this.forecastBackground);
@@ -202,7 +220,7 @@ class CombatForecast extends GameObjects.Container {
         xShift: number;
     }) {
         side.statMods.clear(true, true);
-        side.damage.setText(hero.turns === 0 ? "-" : hero.damage.toString()).setColor(hero.effectiveness ? TextColors.effective : TextColors.white);
+        side.damage.setText(hero.turns === 0 ? "-" : hero.damage.toString()).setColor(hero.effectiveness ? TextColors.effective : TextColors.numbers);
         if (hero.turns >= 2) {
             side.roundCount.setText("×" + hero.turns);
             side.roundCount.setX(side.damage.getRightCenter().x);

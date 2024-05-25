@@ -16,7 +16,7 @@ import Footer from '../objects/footer';
 
 const squareSize = 90;
 const squaresOffset = 45;
-const fixedY = 200;
+const fixedY = 205;
 
 function gridToPixels(x: number, y: number) {
   return {
