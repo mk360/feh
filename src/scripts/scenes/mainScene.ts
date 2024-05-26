@@ -308,18 +308,21 @@ export default class MainScene extends Phaser.Scene {
           const savedPosition = hero.getInternalHero().Position[0];
           const { x, y } = gridToPixels(gridCell.x, gridCell.y);
           hero.temporaryPosition = gridCell;
-          const path = this.pathfinder.findPath(savedPosition, gridCell);
-          const pathCopy = [...path];
-          this.drawPath(pathCopy);
-          this.movementIndicator.setX(x).setY(y);
-          this.sound.playAudioSprite("sfx", "hover");
-        } else {
-          this.socket.emit("request preview battle", {
-            target: target.name,
-            unit: hero.name,
-            position: hero.temporaryPosition
-          });
-          this.socket.sendBuffer = [];
+
+          if (target.name === "attack") {
+            this.socket.emit("request preview battle", {
+              x: gridCell.x,
+              y: gridCell.y,
+              unit: hero.name,
+              position: hero.temporaryPosition
+            });
+          } else {
+            const path = this.pathfinder.findPath(savedPosition, gridCell);
+            const pathCopy = [...path];
+            this.drawPath(pathCopy);
+            this.movementIndicator.setX(x).setY(y);
+            this.sound.playAudioSprite("sfx", "hover");
+          }
         }
       });
 
@@ -358,7 +361,7 @@ export default class MainScene extends Phaser.Scene {
         const y = tile - Math.floor(tile / 10) * 10;
         const pxPosition = gridToPixels(x, y);
         this.pathfinder.setWalkable(x, y);
-        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x0000FF, 0.5).setInteractive(undefined, undefined, true);
+        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x0000FF, 0.5).setInteractive(undefined, undefined, true).setName("walk");
         this.tilesLayer.add(rec);
       }
 
@@ -374,7 +377,7 @@ export default class MainScene extends Phaser.Scene {
         const x = Math.floor(tile / 10);
         const y = tile - Math.floor(tile / 10) * 10;
         const pxPosition = gridToPixels(x, y);
-        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.7);
+        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.7).setInteractive(undefined, undefined, true).setName("attack");
         this.tilesLayer.add(rec);
       }
 
@@ -386,13 +389,9 @@ export default class MainScene extends Phaser.Scene {
         this.tilesLayer.add(rec);
       }
 
-      for (let unit of this.heroesLayer.getAll() as Hero[]) {
-        unit.effectivenessImage.iconsList = [];
-        unit.effectivenessImage.setVisible(false);
-      }
-
       for (let enemy in effectiveness) {
         const enemyHero = this.heroesLayer.getByName(enemy) as Hero;
+        enemyHero.effectivenessImage.iconsList = [];
         const [heroIsEffective, enemyIsEffective] = effectiveness[enemy];
 
         if (heroIsEffective) {
@@ -404,11 +403,6 @@ export default class MainScene extends Phaser.Scene {
         }
 
         enemyHero.toggleEffectivenessImages();
-      }
-
-      for (let enemy of targetableEnemies) {
-        const enemyObject = this.heroesLayer.getByName(enemy) as Hero;
-        enemyObject.setInteractive(undefined, undefined, true);
       }
     });
 
@@ -427,7 +421,6 @@ export default class MainScene extends Phaser.Scene {
         while (tiles.length) tiles.pop().destroy();
         this.heroesLayer.getChildren().forEach((child: Hero) => {
           child.effectivenessImage.iconsList = [];
-          child.setInteractive(undefined, undefined, false);
         });
         const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
         while (ui.length) ui.pop().destroy();
