@@ -13,6 +13,7 @@ import Pathfinder from '../classes/path-finder';
 import { renderText } from '../utils/text-renderer';
 import CombatForecast from '../objects/combat-forecast';
 import Footer from '../objects/footer';
+import createMapBuffAnimation from '../animations/map-buff';
 
 const squareSize = 90;
 const squaresOffset = 45;
@@ -185,6 +186,14 @@ export default class MainScene extends Phaser.Scene {
       }
     }]);
 
+    // turnChangeTimeline.on("start", () => {
+    //   this.input.enabled = false;
+    // });
+
+    // turnChangeTimeline.on("complete", () => {
+    //   this.input.enabled = true;
+    // })
+
     return turnChangeTimeline;
   }
 
@@ -253,8 +262,6 @@ export default class MainScene extends Phaser.Scene {
     const entities = this.game.registry.list.world;
     this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
     this.combatForecast = new CombatForecast(this).setVisible(false);
-    this.add.existing(this.unitInfosBanner);
-    this.add.existing(this.combatForecast);
     this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
     this.footer = new Footer(this, 0, this.background.getBottomCenter().y, 1);
     this.add.existing(this.footer);
@@ -271,11 +278,16 @@ export default class MainScene extends Phaser.Scene {
     this.movementUI.add(this.endRosary);
     this.movementUI.add(this.startRosary);
 
+    this.add.existing(this.unitInfosBanner);
+    this.add.existing(this.combatForecast);
+
     for (let entityId in entities.heroes) {
       const entity = entities.heroes[entityId];
       const hero = this.addHero(entity).setInteractive();
       hero.setName(entityId);
       hero.on("pointerdown", () => {
+        // const x = createMapBuffAnimation(this, hero);
+        // x.play();
         this.sound.playAudioSprite("sfx", "tap");
 
         this.socket.emit("request preview movement", {
@@ -302,12 +314,10 @@ export default class MainScene extends Phaser.Scene {
 
       hero.on("dragenter", (_, target) => {
         if (target.type === "Rectangle") {
-          // this.combatForecast.setVisible(false);
           this.interactionsIndicator.disable();
           const gridCell = pixelsToGrid(target.x, target.y);
           const savedPosition = hero.getInternalHero().Position[0];
           const { x, y } = gridToPixels(gridCell.x, gridCell.y);
-          hero.temporaryPosition = gridCell;
 
           if (target.name === "attack") {
             this.socket.emit("request preview battle", {
@@ -317,6 +327,8 @@ export default class MainScene extends Phaser.Scene {
               position: hero.temporaryPosition
             });
           } else {
+            hero.temporaryPosition = gridCell;
+            this.combatForecast.setVisible(false);
             const path = this.pathfinder.findPath(savedPosition, gridCell);
             const pathCopy = [...path];
             this.drawPath(pathCopy);
@@ -351,7 +363,7 @@ export default class MainScene extends Phaser.Scene {
       this.unitInfosBanner.setVisible(true).setHero(hero, stats);
     });
 
-    this.socket.on("response preview movement", ({ movement = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, targetableEnemies }) => {
+    this.socket.on("response preview movement", ({ movement = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness }) => {
       const childrenTiles = this.tilesLayer.getChildren();
       while (childrenTiles.length) childrenTiles.pop().destroy();
       this.pathfinder.reset();
@@ -387,6 +399,10 @@ export default class MainScene extends Phaser.Scene {
         const pxPosition = gridToPixels(x, y);
         const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x00FFFF, 0.5).setInteractive(undefined, undefined, true).setName("warp");
         this.tilesLayer.add(rec);
+      }
+
+      for (let character of this.heroesLayer.getAll() as Hero[]) {
+        character.effectivenessImage.iconsList = [];
       }
 
       for (let enemy in effectiveness) {
@@ -472,7 +488,6 @@ export default class MainScene extends Phaser.Scene {
         child.setInteractive(undefined, undefined, false);
       });
       this.unitInfosBanner.closeTextbox();
-      this.unitInfosBanner.setVisible(false);
     });
 
     let turn = 1;
