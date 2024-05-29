@@ -37,6 +37,8 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.atlas("statuses", "/assets/statuses/statuses.webp", "/assets/statuses/statuses.json");
     this.load.atlas("path", "/assets/sheets/movement/movement.webp", "/assets/sheets/movement/movement.json");
     this.load.image("chains", "/assets/chains.png");
+    this.load.image("stat-change-aura", "/assets/stat-change-aura.webp");
+    this.load.image("stat-change-particle", "/assets/stat-change-particle.webp");
     this.load.atlas("marginals", "/assets/sheets/marginals.webp", "/assets/sheets/marginals.json")
     this.load.image("player-phase-glow", "/assets/player-phase-glow.png");
     this.load.image("player-phase-gleam", "/assets/player-phase-gleam.png");
@@ -46,6 +48,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audioSprite("sfx", "/assets/audio/sfx.json", "/assets/audio/sfx.ogg");
     this.load.audioSprite("battle-sfx", "/assets/audio/battle-sfx.json", "/assets/audio/battle-sfx.ogg");
     this.load.audio("confirm", "/assets/audio/confirm.mp3");
+    this.load.audio("bonus", "/assets/audio/statuses/bonus.ogg");
     this.load.image("effective-against-enemy", "/assets/effective-against-enemy.png");
     this.load.image("enemy-effective", "/assets/enemy-effective.png");
     this.load.image("ui-button", "/assets/ui-button.png");
