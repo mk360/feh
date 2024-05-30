@@ -4,7 +4,7 @@
  * implement bonuses
  */
 
-import { GameObjects } from 'phaser';
+import { GameObjects, Tweens } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import socket from "../../default-socket";
@@ -13,7 +13,8 @@ import Pathfinder from '../classes/path-finder';
 import { renderText } from '../utils/text-renderer';
 import CombatForecast from '../objects/combat-forecast';
 import Footer from '../objects/footer';
-import createMapBuffAnimation from '../animations/map-buff';
+import mapBuffAnimation from '../animations/map-buff';
+import effectTriggerAnimation from '../animations/effect-trigger';
 
 const squareSize = 90;
 const squaresOffset = 45;
@@ -182,17 +183,13 @@ export default class MainScene extends Phaser.Scene {
       tween: {
         targets: [playerPhaseText, phaseGleam, chains1, chains2, background],
         alpha: 0,
-        duration: 100
+        duration: 500
       }
     }]);
 
-    // turnChangeTimeline.on("start", () => {
-    //   this.input.enabled = false;
-    // });
-
-    // turnChangeTimeline.on("complete", () => {
-    //   this.input.enabled = true;
-    // })
+    turnChangeTimeline.on("start", () => {
+      this.input.enabled = false;
+    });
 
     return turnChangeTimeline;
   }
@@ -286,8 +283,6 @@ export default class MainScene extends Phaser.Scene {
       const hero = this.addHero(entity).setInteractive();
       hero.setName(entityId);
       hero.on("pointerdown", () => {
-        // const x = createMapBuffAnimation(this, hero);
-        // x.play();
         this.sound.playAudioSprite("sfx", "tap");
 
         this.socket.emit("request preview movement", {
@@ -495,9 +490,21 @@ export default class MainScene extends Phaser.Scene {
     const startTurnTimeline = this.startTurn(turn);
     if (turn === 1) {
       startTurnTimeline.add({
-        from: -300,
+        from: 500,
         run: () => {
-          this.startBackgroundMusic(0.13);
+          const [firstHero, secondHero] = this.heroesLayer.getChildren() as Hero[];
+
+          const effectTrigger = effectTriggerAnimation(this, firstHero);
+          const mapBuff = mapBuffAnimation(this, secondHero);
+          const t = this.add.timeline([...effectTrigger, { from: 100 }, ...mapBuff]);
+
+          t.play();
+
+          // t.add(mapBuffAnimation(this, secondHero).data);
+
+          // t.play();
+
+          // this.startBackgroundMusic(0.13);
         }
       });
     }
