@@ -4,7 +4,7 @@
  * implement bonuses
  */
 
-import { GameObjects, Tweens } from 'phaser';
+import { GameObjects } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import socket from "../../default-socket";
@@ -341,17 +341,24 @@ export default class MainScene extends Phaser.Scene {
         hero.setDepth(hero.depth + 1);
       });
 
-      hero.on("dragend", () => {
+      hero.on("dragend", (_, target) => {
         this.clearMovementLayer();
         hero.setDepth(hero.depth - 1);
         const gridCell = pixelsToGrid(hero.x, hero.y);
         this.startRosary.setVisible(false);
         this.endRosary.setVisible(false);
         this.movementIndicator.setVisible(false);
-        this.socket.emit("request confirm movement", {
-          unitId: hero.name,
-          ...gridCell,
-        });
+        if (target.name !== "attack") {
+          this.socket.emit("request confirm movement", {
+            unitId: hero.name,
+            ...gridCell,
+          });
+        } else {
+          this.socket.emit("request confirm battle", {
+            unitId: hero.name,
+            ...gridCell
+          });
+        }
         this.socket.sendBuffer = [];
       });
     }
