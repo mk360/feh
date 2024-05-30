@@ -341,7 +341,7 @@ export default class MainScene extends Phaser.Scene {
         hero.setDepth(hero.depth + 1);
       });
 
-      hero.on("dragend", (_, target) => {
+      hero.on("drop", (_, target) => {
         this.clearMovementLayer();
         hero.setDepth(hero.depth - 1);
         const gridCell = pixelsToGrid(hero.x, hero.y);
@@ -360,6 +360,28 @@ export default class MainScene extends Phaser.Scene {
           });
         }
         this.socket.sendBuffer = [];
+      })
+
+      hero.on("dragend", (target, _, a) => {
+        // this.clearMovementLayer();
+        // hero.setDepth(hero.depth - 1);
+        // const gridCell = pixelsToGrid(hero.x, hero.y);
+        // this.startRosary.setVisible(false);
+        // this.endRosary.setVisible(false);
+        // this.movementIndicator.setVisible(false);
+        // console.log(target, target.name, a);
+        // if (target.name !== "attack") {
+        //   this.socket.emit("request confirm movement", {
+        //     unitId: hero.name,
+        //     ...gridCell,
+        //   });
+        // } else {
+        //   this.socket.emit("request confirm battle", {
+        //     unitId: hero.name,
+        //     ...gridCell
+        //   });
+        // }
+        // this.socket.sendBuffer = [];
       });
     }
 
