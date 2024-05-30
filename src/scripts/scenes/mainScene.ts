@@ -195,10 +195,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   drawPath(path: [number, number][]) {
-    const layerChildren = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
-    for (let child of layerChildren) {
-      child.destroy(true);
-    }
+    this.clearMovementLayer();
 
     const [start, ...remainder] = path;
     if (remainder.length) {
@@ -251,6 +248,11 @@ export default class MainScene extends Phaser.Scene {
       endArrow.setAngle(finalAngle);
       this.movementUI.add(endArrow);
     }
+  }
+
+  clearMovementLayer() {
+    const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
+    while (ui.length) ui.pop().destroy();
   }
 
   create() {
@@ -340,6 +342,7 @@ export default class MainScene extends Phaser.Scene {
       });
 
       hero.on("dragend", () => {
+        this.clearMovementLayer();
         hero.setDepth(hero.depth - 1);
         const gridCell = pixelsToGrid(hero.x, hero.y);
         this.startRosary.setVisible(false);
@@ -433,8 +436,7 @@ export default class MainScene extends Phaser.Scene {
         this.heroesLayer.getChildren().forEach((child: Hero) => {
           child.effectivenessImage.iconsList = [];
         });
-        const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
-        while (ui.length) ui.pop().destroy();
+        this.clearMovementLayer();
       }
     });
 
