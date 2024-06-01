@@ -390,7 +390,7 @@ export default class MainScene extends Phaser.Scene {
       this.unitInfosBanner.setVisible(true).setHero(hero, stats);
     });
 
-    this.socket.on("response preview movement", ({ movement = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness }) => {
+    this.socket.on("response preview movement", ({ movement = [], assistArray = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness }) => {
       const childrenTiles = this.tilesLayer.getChildren();
       while (childrenTiles.length) childrenTiles.pop().destroy();
       this.pathfinder.reset();
@@ -425,6 +425,14 @@ export default class MainScene extends Phaser.Scene {
         const y = tile - Math.floor(tile / 10) * 10;
         const pxPosition = gridToPixels(x, y);
         const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x00FFFF, 0.5).setInteractive(undefined, undefined, true).setName("warp");
+        this.tilesLayer.add(rec);
+      }
+
+      for (let tile of assistArray) {
+        const x = Math.floor(tile / 10);
+        const y = tile - Math.floor(tile / 10) * 10;
+        const pxPosition = gridToPixels(x, y);
+        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x00FF00, 0.5).setInteractive(undefined, undefined, true).setName("assist");
         this.tilesLayer.add(rec);
       }
 
