@@ -360,7 +360,7 @@ export default class MainScene extends Phaser.Scene {
           });
         }
         this.socket.sendBuffer = [];
-      })
+      });
 
       hero.on("dragend", (target, _, a) => {
         // this.clearMovementLayer();
