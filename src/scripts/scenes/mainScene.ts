@@ -272,7 +272,7 @@ export default class MainScene extends Phaser.Scene {
     this.miscUIElements.add(this.interactionsIndicator);
     this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
     this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
-    this.movementIndicator = new GameObjects.Image(this, 0, 0, "path", "movement-allowed").setVisible(false);
+    this.movementIndicator = new GameObjects.Image(this, 0, 0, "movement-indicators", "movement-indicator").setVisible(false);
     this.movementUI.add(this.movementIndicator);
     this.movementUI.add(this.endRosary);
     this.movementUI.add(this.startRosary);
@@ -316,21 +316,41 @@ export default class MainScene extends Phaser.Scene {
           const savedPosition = hero.getInternalHero().Position[0];
           const { x, y } = gridToPixels(gridCell.x, gridCell.y);
 
-          if (target.name === "attack") {
-            this.socket.emit("request preview battle", {
-              x: gridCell.x,
-              y: gridCell.y,
-              unit: hero.name,
-              position: hero.temporaryPosition
-            });
-          } else {
-            hero.temporaryPosition = gridCell;
-            this.combatForecast.setVisible(false);
-            const path = this.pathfinder.findPath(savedPosition, gridCell);
-            const pathCopy = [...path];
-            this.drawPath(pathCopy);
-            this.movementIndicator.setX(x).setY(y);
-            this.sound.playAudioSprite("sfx", "hover");
+          switch (target.name) {
+            case "attack":
+              this.socket.emit("request preview battle", {
+                x: gridCell.x,
+                y: gridCell.y,
+                unit: hero.name,
+                position: hero.temporaryPosition
+              });
+
+              this.movementIndicator.setFrame("attack-indicator");
+              this.movementIndicator.setX(x).setY(y);
+              break;
+            case "movement":
+              hero.temporaryPosition = gridCell;
+              this.combatForecast.setVisible(false);
+              const path = this.pathfinder.findPath(savedPosition, gridCell);
+              const pathCopy = [...path];
+              this.drawPath(pathCopy);
+              this.movementIndicator.setX(x).setY(y);
+              this.movementIndicator.setFrame("movement-indicator");
+              this.sound.playAudioSprite("sfx", "hover");
+
+              break;
+            case "warp":
+              this.movementIndicator.setX(x).setY(y);
+              this.combatForecast.setVisible(false);
+              this.movementIndicator.setFrame("movement-indicator");
+              this.sound.playAudioSprite("sfx", "hover");
+              break;
+            case "assist":
+              this.movementIndicator.setX(x).setY(y);
+              this.combatForecast.setVisible(false);
+              this.movementIndicator.setFrame("assist-indicator");
+              this.sound.playAudioSprite("sfx", "hover");
+              break;
           }
         }
       });
@@ -400,7 +420,7 @@ export default class MainScene extends Phaser.Scene {
         const y = tile - Math.floor(tile / 10) * 10;
         const pxPosition = gridToPixels(x, y);
         this.pathfinder.setWalkable(x, y);
-        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x0000FF, 0.5).setInteractive(undefined, undefined, true).setName("walk");
+        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x0000FF, 0.5).setInteractive(undefined, undefined, true).setName("movement");
         this.tilesLayer.add(rec);
       }
 
@@ -514,6 +534,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     this.background.on("pointerdown", () => {
+      this.movementIndicator.setVisible(false);
       this.sound.playAudioSprite("sfx", "cancel");
       const tiles = this.tilesLayer.getChildren();
       while (tiles.length) tiles.pop().destroy();
