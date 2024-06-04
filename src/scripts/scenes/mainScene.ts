@@ -374,7 +374,7 @@ export default class MainScene extends Phaser.Scene {
             ...gridCell,
           });
         } else {
-          this.socket.emit("request confirm battle", {
+          this.socket.emit("request confirm combat", {
             unitId: hero.name,
             ...gridCell
           });
