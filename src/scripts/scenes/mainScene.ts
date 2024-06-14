@@ -77,6 +77,7 @@ export default class MainScene extends Phaser.Scene {
   private tilesLayer: GameObjects.Layer;
   private unitInfosBanner: UnitInfosBanner;
   private side: string;
+  private fpsText: GameObjects.Text;
   private socket = socket;
   private interactionsIndicator: InteractionIndicator;
   private combatForecast: CombatForecast;
@@ -106,6 +107,7 @@ export default class MainScene extends Phaser.Scene {
         targets: [chains1, chains2],
         scaleY: 1,
         onStart: () => {
+          this.game.input.enabled = false;
           this.add.existing(turnText);
           this.sound.play("player-phase");
         },
@@ -186,10 +188,6 @@ export default class MainScene extends Phaser.Scene {
         duration: 500
       }
     }]);
-
-    turnChangeTimeline.on("start", () => {
-      this.input.enabled = false;
-    });
 
     return turnChangeTimeline;
   }
@@ -286,7 +284,9 @@ export default class MainScene extends Phaser.Scene {
       hero.setName(entityId);
       hero.on("pointerdown", () => {
         this.sound.playAudioSprite("sfx", "tap");
-
+        this.heroesLayer.getChildren().forEach((child: Hero) => {
+          child.disableMovementIndicator();
+        });
         this.socket.emit("request preview movement", {
           unitId: hero.name
         });
@@ -536,6 +536,9 @@ export default class MainScene extends Phaser.Scene {
     this.background.on("pointerdown", () => {
       this.movementIndicator.setVisible(false);
       this.sound.playAudioSprite("sfx", "cancel");
+      this.heroesLayer.getChildren().forEach((child: Hero) => {
+        child.enableMovementIndicator();
+      });
       const tiles = this.tilesLayer.getChildren();
       while (tiles.length) tiles.pop().destroy();
       this.heroesLayer.getChildren().forEach((child: Hero) => {
@@ -568,6 +571,10 @@ export default class MainScene extends Phaser.Scene {
         }
       });
     }
+
+    startTurnTimeline.once("complete", () => {
+      this.game.input.enabled = true;
+    })
 
     const layer = this.add.rectangle(0, 0, +this.game.config.width, +this.game.config.height, 0xD8BA94, 1).setOrigin(0);
     const startGameButton = new GameObjects.Rectangle(this, layer.getCenter().x, layer.getCenter().y - 50, 240, 120, 0x00AF81).setInteractive();
@@ -632,8 +639,7 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //   movementAllowedTween: Phaser.Tweens.Tween;
 //   combatForecast: CombatForecast;
 //   interactionIndicator: InteractionIndicator;
-//   interactionIndicatorTween: Tweens.Tween;
-//   fpsText: GameObjects.Text;
+//   interactionIndicatorTween: Tweens.Tween
 //   actionsTray = new ActionsTray(this);
 //   tileHighlight: GameObjects.Image;
 //   updateDelta = 0;
