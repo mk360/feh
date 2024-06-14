@@ -14,15 +14,24 @@ const { filename } = cmd(options);
 const fileContents = JSON.parse(fs.readFileSync(path.join(__dirname, filename), "utf-8"));
 
 (async function runHeroPipeline() {
-    if (!fs.existsSync(path.join(__dirname, "../../src/assets/battle"))) {
-        fs.mkdirSync(path.join(__dirname, "../../src/assets/battle"));
+    if (!fs.existsSync(path.join(__dirname, "../../public/assets/battle"))) {
+        fs.mkdirSync(path.join(__dirname, "../../public/assets/battle"));
     }
-    for (let { Name: name } of fileContents) {
-        await downloadAssets(name);
-        await compileAudio(name);
-        const compiledPath = await compileImages(name);
-        await finalizeCompiledFile(name, compiledPath);
-    }
+    await Promise.allSettled(fileContents.map(async ({ Name }) => {
+        return downloadAssets(Name).then(() => {
+            compileAudio(Name);
+        }).then(() => {
+            return compileImages(Name);
+        }).then((path) => {
+            finalizeCompiledFile(Name, path);
+        });
+    }))
+    // for (let { Name: name } of fileContents) {
+    //     await downloadAssets(name);
+    //     await compileAudio(name);
+    //     const compiledPath = await compileImages(name);
+    //     await finalizeCompiledFile(name, compiledPath);
+    // }
 
     if (fs.existsSync(path.join(__dirname, "../../temp"))) {
         fs.rmSync(path.join(__dirname, "../../temp"), { force: true, recursive: true });
