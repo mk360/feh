@@ -1,6 +1,6 @@
 import { renderRegularHPText, renderText, getLowHPGradient, getHealthyHPGradient } from "../utils/text-renderer";
 import Hero from "./hero";
-import { GameObjects } from "phaser";
+import { GameObjects, Geom } from "phaser";
 import TextColors from "../utils/text-colors";
 import HeroNameplate from "./hero-nameplate";
 import Stats from "../../interfaces/stats";
@@ -108,10 +108,10 @@ class UnitInfosBanner extends GameObjects.Container {
             fontSize: "16px"
         });
         this.assist = renderText(this.scene, this.assistBg.getLeftCenter().x + 20, this.assistBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
-            fontSize: "19px"
+            fontSize: "16px"
         });
         this.special = renderText(this.scene, this.specialBg.getLeftCenter().x + 20, this.specialBg.getCenter().y, "").setOrigin(0, 0.5).setStyle({
-            fontSize: "19px"
+            fontSize: "16px"
         });
         this.add(this.weaponName);
         this.add(this.special);
@@ -324,7 +324,7 @@ class UnitInfosBanner extends GameObjects.Container {
 
         for (let skillSlot of ["A", "B", "C"] as const) {
             this[skillSlot].on("pointerdown", () => {
-                // this.highlighter.highlightElement(this[skillSlot]);
+                this.highlighter.highlightElement(this[skillSlot]);
                 this.scene.sound.playAudioSprite("sfx", "tap");
                 const internalHero = this.displayedHero.getInternalHero();
                 const passive = internalHero.Skill?.find((s) => s.slot === skillSlot);
@@ -334,10 +334,13 @@ class UnitInfosBanner extends GameObjects.Container {
                         description: passive.description
                     });
                     this.textbox.setContent(passiveContent);
-                    this.textbox.x = this.C.getRightCenter().x;
-                    this.textbox.y = this.C.getBottomCenter().y + 5;
-                    this.textbox.open();
+                } else {
+                    this.textbox.setContent([[renderText(this.scene, 0, 0, "None")]]);
                 }
+
+                this.textbox.x = this.C.getRightCenter().x;
+                this.textbox.y = this.C.getBottomCenter().y + 5;
+                this.textbox.open();
             });
         }
     }

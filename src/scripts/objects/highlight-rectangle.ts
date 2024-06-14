@@ -14,8 +14,8 @@ class HighlightRectangle extends GameObjects.Rectangle {
         this.x = element.getTopLeft().x;
         this.setAlpha(0.8);
         this.y = element.getTopLeft().y;
-        this.width = element.width;
-        this.height = element.height;
+        this.width = element.displayWidth;
+        this.height = element.displayHeight;
         this.setVisible(true);
 
         element.once("pointerup", () => {

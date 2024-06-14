@@ -14,7 +14,7 @@ const finder = new PF.DijkstraFinder({
 });
 
 class Pathfinder {
-    private grid: PF.Grid;
+    private grid = grid.clone();
 
     reset() {
         this.grid = grid.clone();
