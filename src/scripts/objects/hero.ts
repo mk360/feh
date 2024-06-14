@@ -18,6 +18,8 @@ class Hero extends GameObjects.Container {
     private special: GameObjects.Text | GameObjects.Image;
     glowingSprite: GameObjects.Image;
     hpText: GameObjects.Text;
+    movementIndicator: GameObjects.Image;
+    private movementIndicatorTween: Tweens.Tween;
     statusesImage: IconsSwitcher;
     effectivenessImage: IconsSwitcher;
 
@@ -29,6 +31,17 @@ class Hero extends GameObjects.Container {
         super(scene, x, y);
         this.temporaryPosition = data.Position[0];
         this.setData("hero", data);
+        this.movementIndicator = new GameObjects.Image(scene, 0, 0, "movement-indicators", "movement-indicator").setDisplaySize(95, 95).setAlpha(0).setVisible(false);
+        this.movementIndicatorTween = this.scene.add.tween({
+            targets: [this.movementIndicator],
+            duration: 1100,
+            yoyo: true,
+            loop: -1,
+            loopDelay: 100,
+            alpha: 1,
+            paused: true,
+        });
+        this.add(this.movementIndicator);
         this.sprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.5);
         this.glowingSprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.5).setDepth(1).setAlpha(0).setTintFill(0xFFFFFF);
         this.add(this.sprite);
@@ -62,9 +75,10 @@ class Hero extends GameObjects.Container {
         this.setSize(120, 120);
         this.updateHP(stats.hp);
         const existingSpecial = data.Special;
+        this.enableMovementIndicator();
         if (existingSpecial) {
             if (existingSpecial[0].cooldown === 0) {
-                this.special = new GameObjects.Image(this.scene, team === "team1" ? -30 : 30, -5, "skills-ui", "special-icon").setScale(0.5);
+                this.special = new GameObjects.Image(this.scene, team === "team1" ? -30 : 30, -5, "skills-ui", "special-icon").setScale(0.35);
             } else {
                 this.special = renderSpecialText({
                     scene: this.scene,
@@ -123,6 +137,22 @@ class Hero extends GameObjects.Container {
                 });
             }
         }
+    }
+
+    enableMovementIndicator() {
+        this.movementIndicator.setVisible(true);
+        const special = this.getInternalHero().Special?.[0];
+        if (special && special.cooldown === 0) {
+            this.movementIndicator.setFrame("special-indicator");
+        } else {
+            this.movementIndicator.setFrame("movement-indicator");
+        }
+        this.movementIndicatorTween.restart();
+    }
+
+    disableMovementIndicator() {
+        this.movementIndicator.setVisible(false);
+        this.movementIndicatorTween.pause();
     }
 
     toggleStatuses() {
