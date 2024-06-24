@@ -4,7 +4,7 @@
  * implement bonuses
  */
 
-import { GameObjects } from 'phaser';
+import { GameObjects, Time } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import socket from "../../default-socket";
@@ -15,6 +15,7 @@ import CombatForecast from '../objects/combat-forecast';
 import Footer from '../objects/footer';
 import mapBuffAnimation from '../animations/map-buff';
 import effectTriggerAnimation from '../animations/effect-trigger';
+import parseServerResponse from '../../parse-server-response';
 
 const squareSize = 90;
 const squaresOffset = 45;
@@ -73,7 +74,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   rng = new Phaser.Math.RandomDataGenerator();
-  private heroesLayer: GameObjects.Layer;
+  heroesLayer: GameObjects.Layer;
   private tilesLayer: GameObjects.Layer;
   private unitInfosBanner: UnitInfosBanner;
   private side: string;
@@ -260,6 +261,8 @@ export default class MainScene extends Phaser.Scene {
     this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
     this.combatForecast = new CombatForecast(this).setVisible(false);
     this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
+    const toolbar = this.add.container(0, this.background.getBottomCenter().y);
+    // const dangerArea = toolbar.add(new GameObjects.Image(this, 0, 0,))
     this.footer = new Footer(this, 0, this.background.getBottomCenter().y, 1);
     this.add.existing(this.footer);
     this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
@@ -477,6 +480,15 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
+    this.socket.on("response", (args) => {
+      const x = parseServerResponse(this, args);
+      const t = new Time.Timeline(this);
+      for (let a of x) {
+        t.add(a);
+      }
+      t.play();
+    });
+
     this.socket.on("response confirm movement", (response: { unitId: string, x: number, y: number, valid: boolean }) => {
       const object = this.heroesLayer.getByName(response.unitId) as Hero;
       const pxCell = gridToPixels(response.x, response.y);
@@ -555,13 +567,14 @@ export default class MainScene extends Phaser.Scene {
       startTurnTimeline.add({
         from: 500,
         run: () => {
-          const [firstHero, secondHero] = this.heroesLayer.getChildren() as Hero[];
+          this.socket.emit("ready");
+          // const [firstHero, secondHero] = this.heroesLayer.getChildren() as Hero[];
 
-          const effectTrigger = effectTriggerAnimation(this, firstHero);
-          const mapBuff = mapBuffAnimation(this, secondHero);
-          const t = this.add.timeline([...effectTrigger, { from: 100 }, ...mapBuff]);
+          // const effectTrigger = effectTriggerAnimation(this, firstHero);
+          // const mapBuff = mapBuffAnimation(this, secondHero);
+          // const t = this.add.timeline([...effectTrigger, { from: 100 }, ...mapBuff]);
 
-          t.play();
+          // t.play();
 
           // t.add(mapBuffAnimation(this, secondHero).data);
 
