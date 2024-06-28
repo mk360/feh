@@ -8,7 +8,7 @@ function mapDebuffAnimation(scene: MainScene, target: Hero) {
     // const statChangeParticles = Array.from<GameObjects.Image>({ length: 4 }).fill(new GameObjects.Image(scene, heroCoordinates.x, heroCoordinates.y, "stat-change-particle").setScale(0.1).setRotation(Math.PI / 2));
     // statChangeImage.setTint(0x00D4F0, 0x00D4F0, 0x0549B7, 0x0549B7);
     const heroCoordinates = target.getAbsoluteCoordinates();
-    const statChangeAura = new GameObjects.Image(scene, heroCoordinates.x, heroCoordinates.y + 50, "stat-change-aura").setAlpha(0.9).setOrigin(0.5, 1);
+    const statChangeAura = new GameObjects.Image(scene, heroCoordinates.x, heroCoordinates.y + 50, "stat-change-aura").setAlpha(0.9).setOrigin(0.5, 1).setTint(0xFEDB2F);
     const firstParticle = new GameObjects.Image(scene, heroCoordinates.x, heroCoordinates.y + 10, "stat-change-particle").setScale(0.1).setRotation(Math.PI / 2).setOrigin(0.5, 0).setTint(0xFEDB2F);
     const rightParticle = new GameObjects.Image(scene, heroCoordinates.x + 30, heroCoordinates.y + 10, "stat-change-particle").setScale(0.1).setRotation(Math.PI / 2).setOrigin(0.5, 0).setTint(0xFEDB2F);
     const leftParticle = new GameObjects.Image(scene, heroCoordinates.x - 20, heroCoordinates.y + 20, "stat-change-particle").setScale(0.1).setRotation(Math.PI / 2).setOrigin(0.5, 0).setTint(0xFEDB2F);

@@ -365,6 +365,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.statChanges = statChanges;
         this.textbox.clearContent().setVisible(false);
         const internalHero = hero.getInternalHero();
+        console.log({ internalHero });
         const { Name, Stats, Weapon, Skill, Special, Assist, Side } = internalHero;
         const name = Name[0].value
         const stats = Stats[0];

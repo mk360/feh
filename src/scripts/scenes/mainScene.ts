@@ -480,13 +480,20 @@ export default class MainScene extends Phaser.Scene {
       }
     });
 
-    this.socket.on("response", (args) => {
+    function promiseAnimation(timeline: Time.Timeline) {
+      return new Promise((resolve, reject) => {
+        timeline.on("complete", () => {
+          resolve(null);
+        });
+        timeline.play();
+      });
+    }
+
+    this.socket.on("response", async (args) => {
       const x = parseServerResponse(this, args);
-      const t = new Time.Timeline(this);
-      for (let a of x) {
-        t.add(a);
+      for (let eventLine of x) {
+        await Promise.all(eventLine.map(promiseAnimation));
       }
-      t.play();
     });
 
     this.socket.on("response confirm movement", (response: { unitId: string, x: number, y: number, valid: boolean }) => {
