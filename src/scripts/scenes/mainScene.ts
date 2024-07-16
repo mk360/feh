@@ -13,27 +13,9 @@ import Pathfinder from '../classes/path-finder';
 import { renderText } from '../utils/text-renderer';
 import CombatForecast from '../objects/combat-forecast';
 import Footer from '../objects/footer';
-import mapBuffAnimation from '../animations/map-buff';
-import effectTriggerAnimation from '../animations/effect-trigger';
 import parseServerResponse from '../../parse-server-response';
-
-const squareSize = 90;
-const squaresOffset = 45;
-const fixedY = 205;
-
-function gridToPixels(x: number, y: number) {
-  return {
-    x: (x - 1) * squareSize + squaresOffset,
-    y: y * squareSize + fixedY,
-  }
-}
-
-function pixelsToGrid(x: number, y: number) {
-  return {
-    x: Math.round((squaresOffset + x) / squareSize),
-    y: Math.round((y - fixedY) / squareSize)
-  };
-}
+import { gridToPixels, squareSize } from '../utils/grid-functions';
+import { pixelsToGrid } from '../utils/grid-functions';
 
 function createHeroQuoter(scene: MainScene) {
   let previousQuote = "";
@@ -75,11 +57,11 @@ export default class MainScene extends Phaser.Scene {
 
   rng = new Phaser.Math.RandomDataGenerator();
   heroesLayer: GameObjects.Layer;
+  socket = socket;
   private tilesLayer: GameObjects.Layer;
   private unitInfosBanner: UnitInfosBanner;
   private side: string;
   private fpsText: GameObjects.Text;
-  private socket = socket;
   private interactionsIndicator: InteractionIndicator;
   private combatForecast: CombatForecast;
   private playHeroQuote = createHeroQuoter(this);
@@ -92,106 +74,6 @@ export default class MainScene extends Phaser.Scene {
   private pathfinder = new Pathfinder();
   private doubleClick = createDoubleTapHandler();
   private footer: Footer;
-
-  startTurn(turnCount: number) {
-    const background = this.add.rectangle(0, 0, 6 * squareSize, this.game.canvas.height, 0, 0.6).setOrigin(0);
-    const phaseGleam = this.add.image(0, this.game.canvas.height / 2, "player-phase-gleam").setScale(1.4, 0.8);
-    const playerPhaseText = this.add.image(-360, phaseGleam.y, "player-phase-base").setScale(1, 0.4);
-    const glowingPlayerPhaseText = this.add.image(20, phaseGleam.y, "player-phase-glow").setScale(1, 0.4).setAlpha(0);
-    const chains1 = this.add.image(-400, playerPhaseText.getCenter().y - 200, "chains").setAlpha(0.1, 1, 0.1, 1);
-    const chains2 = this.add.image(-400, playerPhaseText.getCenter().y + 200, "chains").setAlpha(0.1, 1, 0.1, 1);
-    const turnText = renderText(this, playerPhaseText.getCenter().x, playerPhaseText.getCenter().y + 100, `Turn ${turnCount}`, {
-      fontSize: 40
-    }).setOrigin(0.5);
-    const turnChangeTimeline = this.add.timeline([{
-      tween: {
-        targets: [chains1, chains2],
-        scaleY: 1,
-        onStart: () => {
-          this.game.input.enabled = false;
-          this.add.existing(turnText);
-          this.sound.play("player-phase");
-        },
-        x: background.getCenter().x - 100,
-        duration: 250 // initial slide
-      }
-    }, {
-      tween: {
-        targets: [playerPhaseText, glowingPlayerPhaseText, turnText],
-        scaleY: 1,
-        x: background.getCenter().x - 100,
-        duration: 250 // initial slide
-      }
-    }, {
-      from: 100,
-      tween: {
-        targets: [phaseGleam],
-        x: "+=1100",
-        duration: 2000
-      }
-    }, {
-      from: 200,
-      tween: {
-        targets: [chains1, chains2],
-        x: "+=200",
-        duration: 1000 // slowdown
-      },
-    }, {
-      from: 0,
-      tween: {
-        targets: [playerPhaseText, glowingPlayerPhaseText, turnText],
-        x: "+=200",
-        duration: 1000 // slowdown
-      },
-    }, {
-      from: 200,
-      tween: {
-        targets: [glowingPlayerPhaseText],
-        alpha: 1,
-        yoyo: true,
-        duration: 200
-      }
-    }, {
-      from: 700,
-      tween: {
-        targets: [chains1, chains2],
-        x: "+=1000",
-        scaleY: 0.4,
-        duration: 300
-      }
-    }, {
-      from: 0,
-      tween: {
-        targets: [playerPhaseText, glowingPlayerPhaseText, turnText],
-        x: "+=1000",
-        scaleY: 0.4,
-        duration: 300
-      }
-    }, {
-      from: 500,
-      tween: {
-        targets: [glowingPlayerPhaseText],
-        alpha: 0,
-        duration: 500
-      }
-    }, {
-      from: 100,
-      tween: {
-        targets: [playerPhaseText],
-        alpha: 1,
-        duration: 400
-      }
-    }, {
-      from: 0,
-      tween: {
-        targets: [playerPhaseText, phaseGleam, chains1, chains2, background],
-        alpha: 0,
-        duration: 500
-      }
-    }]);
-
-    return turnChangeTimeline;
-  }
 
   drawPath(path: [number, number][]) {
     this.clearMovementLayer();
@@ -313,6 +195,7 @@ export default class MainScene extends Phaser.Scene {
       });
 
       hero.on("dragenter", (_, target) => {
+        console.log(target.type);
         if (target.type === "Rectangle") {
           this.interactionsIndicator.disable();
           const gridCell = pixelsToGrid(target.x, target.y);
@@ -481,7 +364,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     function promiseAnimation(timeline: Time.Timeline) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         timeline.on("complete", () => {
           resolve(null);
         });
@@ -566,35 +449,7 @@ export default class MainScene extends Phaser.Scene {
       });
       this.unitInfosBanner.closeTextbox();
     });
-
-    let turn = 1;
-
-    const startTurnTimeline = this.startTurn(turn);
-    if (turn === 1) {
-      startTurnTimeline.add({
-        from: 500,
-        run: () => {
-          this.socket.emit("ready");
-          // const [firstHero, secondHero] = this.heroesLayer.getChildren() as Hero[];
-
-          // const effectTrigger = effectTriggerAnimation(this, firstHero);
-          // const mapBuff = mapBuffAnimation(this, secondHero);
-          // const t = this.add.timeline([...effectTrigger, { from: 100 }, ...mapBuff]);
-
-          // t.play();
-
-          // t.add(mapBuffAnimation(this, secondHero).data);
-
-          // t.play();
-
-          // this.startBackgroundMusic(0.13);
-        }
-      });
-    }
-
-    startTurnTimeline.once("complete", () => {
-      this.game.input.enabled = true;
-    })
+    // this.startBackgroundMusic(0.13);
 
     const layer = this.add.rectangle(0, 0, +this.game.config.width, +this.game.config.height, 0xD8BA94, 1).setOrigin(0);
     const startGameButton = new GameObjects.Rectangle(this, layer.getCenter().x, layer.getCenter().y - 50, 240, 120, 0x00AF81).setInteractive();
@@ -602,7 +457,7 @@ export default class MainScene extends Phaser.Scene {
       layer.destroy();
       startGameText.destroy();
       startGameButton.destroy();
-      startTurnTimeline.play();
+      this.socket.emit("ready");
     });
     this.add.existing(startGameButton);
     const startGameText = this.add.existing(renderText(this, startGameButton.getCenter().x, startGameButton.getCenter().y, "Start Game", {
