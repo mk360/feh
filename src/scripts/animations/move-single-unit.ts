@@ -1,13 +1,11 @@
-import { Types } from "phaser";
+import { Time } from "phaser";
 import Hero from "../objects/hero";
 import { gridToPixels } from "../utils/grid-functions";
+import MainScene from "../scenes/mainScene";
 
-function Move(target: Hero, targetCoordinates: { x: number; y: number }) {
-    const timelineData: Types.Time.TimelineEventConfig[] = [];
-
+function MoveSingleUnit(scene: MainScene, target: Hero, targetCoordinates: { x: number; y: number }) {
     const targetPixels = gridToPixels(targetCoordinates.x, targetCoordinates.y);
-
-    timelineData.push({
+    const timeline = new Time.Timeline(scene, [{
         from: 0,
         tween: {
             targets: [target],
@@ -26,9 +24,9 @@ function Move(target: Hero, targetCoordinates: { x: number; y: number }) {
             y: targetPixels.y,
             duration: 600
         }
-    });
+    }]);
 
-    return timelineData;
+    return timeline;
 };
 
-export default Move;
+export default MoveSingleUnit;

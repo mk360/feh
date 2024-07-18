@@ -4,7 +4,8 @@ import mapDebuffAnimation from "./scripts/animations/map-debuff";
 import Hero from "./scripts/objects/hero";
 import MainScene from "./scripts/scenes/mainScene";
 import playerPhase from "./scripts/animations/player-phase";
-import Move from "./scripts/animations/move";
+import MoveSingleUnit from "./scripts/animations/move-single-unit";
+import MoveMultipleUnits from "./scripts/animations/move-multiple-units";
 import { Time } from "phaser";
 
 const animationKeys = {
@@ -27,11 +28,31 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
                     const newTurnAnimation = isCurrentSide ? playerPhase : playerPhase;
                     const timeline = newTurnAnimation(scene, +args[2]);
                     timelineArray.push(timeline);
-                    break;
                 }
 
                 case "move": {
-                    const [animation, target, x, y] = args;
+                    const [, target, x, y] = args;
+                    const targetHero = scene.children.getByName(target) as Hero;
+                    const movementAnimation = MoveSingleUnit(scene, targetHero, { x: +x, y: +y });
+                    timelineArray.push(movementAnimation);
+                }
+
+                case "move-multiple": {
+                    args.shift();
+                    const stringified = args.join("");
+                    const affectedEntities = stringified.split("|");
+                    const mapped = affectedEntities.map((message) => {
+                        const [target, targetX, targetY] = message.split(" ");
+                        return {
+                            target,
+                            coords: {
+                                x: +targetX,
+                                y: +targetY
+                            }
+                        }
+                    });
+                    const animation = MoveMultipleUnits(scene, mapped);
+                    timelineArray.push(animation);
                 }
 
                 default: {
