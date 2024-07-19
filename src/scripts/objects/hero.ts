@@ -140,14 +140,16 @@ class Hero extends GameObjects.Container {
     }
 
     enableMovementIndicator() {
-        this.movementIndicator.setVisible(true);
-        const special = this.getInternalHero().Special?.[0];
-        if (special && special.cooldown === 0) {
-            this.movementIndicator.setFrame("special-indicator");
-        } else {
-            this.movementIndicator.setFrame("movement-indicator");
+        if (!this.getInternalHero().FinishedAction) {
+            this.movementIndicator.setVisible(true);
+            const special = this.getInternalHero().Special?.[0];
+            if (special && special.cooldown === 0) {
+                this.movementIndicator.setFrame("special-indicator");
+            } else {
+                this.movementIndicator.setFrame("movement-indicator");
+            }
+            this.movementIndicatorTween.restart();
         }
-        this.movementIndicatorTween.restart();
     }
 
     disableMovementIndicator() {

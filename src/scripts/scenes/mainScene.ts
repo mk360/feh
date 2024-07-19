@@ -195,7 +195,6 @@ export default class MainScene extends Phaser.Scene {
       });
 
       hero.on("dragenter", (_, target) => {
-        console.log(target.type);
         if (target.type === "Rectangle") {
           this.interactionsIndicator.disable();
           const gridCell = pixelsToGrid(target.x, target.y);
@@ -535,50 +534,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //     this.currentState = this.states.preparation;
 //   }
 
-//   activateHero(hero: Hero) {
-//     hero.on("drag", (_, dragX: number, dragY: number) => {
-//       hero.x = dragX;
-//       hero.y = dragY;
-//     });
-//     hero.on("dragenter", (_, target: GameObjects.Rectangle | Hero) => {
-//       this.combatForecast.disable();
-//       this.interactionIndicatorTween?.stop();
-//       this.interactionIndicator.setVisible(false);
-
-//       const actions = battle.decideDragAction(target.name, hero.getInternalHero(), this.walkTiles, this.attackTiles);
-//       if (actions) {
-//         for (let action of actions) {
-//           this.processAction(action);
-//         }
-//       }
-//     });
-
-//     hero.on("dragend", () => {
-//       const targetTile = pixelsToGrid(hero.x, hero.y);
-//       const actions = battle.decideDragDropAction(targetTile.x + "-" + targetTile.y, hero.getInternalHero(), this.walkTiles, this.attackTiles);
-//       for (let action of actions) {
-//         this.processAction(action);
-//       }
-//       this.rosary.setVisible(false);
-//     });
-
-//     hero.on("pointerdown", ({ event: { timeStamp } }) => {
-//       battle.resetPathfinder(pixelsToGrid(hero.x, hero.y));
-//       this.clearTiles(this.walkTiles.concat(this.attackTiles));
-
-//       if (this.handleDoubleTap(timeStamp)) {
-//         this.sound.play("confirm");
-//         this.endAction(hero);
-//         return;
-//       }
-//       this.movementAllowedImages.setVisible(false);
-//       const img = this.children.getByName(`movement-${hero.name}`) as GameObjects.Image;
-//       img.setVisible(true).setAlpha(1);
-//       this.movementAllowedTween.pause();
-//       this.displayHeroInformations(hero);
-//     });
-//   }
-
 //   processAction(action: UIAction) {
 //     switch (action.type) {
 //       case "display-enemy-range": {
@@ -587,37 +542,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //         break;
 //       };
 
-//       case "cancel": {
-//         const { args: { x, y, hero } } = action;
-//         this.endArrow.setVisible(false);
-//         this.movementArrows.clear(true, true);
-//         const pxCoords = gridToPixels(x, y);
-//         this.tweens.add({
-//           targets: this.heroesLayer.getByName(hero.id),
-//           x: pxCoords.x,
-//           y: pxCoords.y,
-//           duration: 100
-//         });
-
-//         battle.resetPathfinder({ x, y });
-//       }
-//         break;
-//       case "move": {
-//         const { args: { x, y, hero } } = action;
-//         this.endArrow.setVisible(false);
-//         this.movementArrows.clear(true, true);
-//         const pxCoords = gridToPixels(x, y);
-//         const heroObject = this.getByName<Hero>(hero.id);
-//         heroObject.x = pxCoords.x;
-//         heroObject.y = pxCoords.y;
-//         battle.moveHero(hero, { x, y });
-//       }
-//         break;
-//       case "disable": {
-//         const { args } = action;
-//         const hero = this.getByName<Hero>(args.id);
-//         this.endAction(hero);
-//       }
 //         break;
 //       case "attack": {
 //         const { args } = action;
@@ -797,27 +721,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //     this.interactionIndicator.setVisible(false);
 //     timeline.play();
 //   };
-
-//   endAction(hero: Hero) {
-//     hero.off("drag");
-//     hero.off("dragover");
-//     hero.off("dragenter");
-//     hero.off("dragleave");
-//     hero.off("dragend");
-//     hero.off("pointerdown").on("pointerdown", () => {
-//       this.displayHeroInformations(hero);
-//     });
-//     this.input.setDraggable(hero, false);
-//     battle.resetPathfinder(hero.getInternalHero().coordinates);
-//     hero.image.setTint(0x777777);
-//     this.sound.play("confirm");
-//     this.heroesWhoMoved.push(hero);
-//     this.children.remove(this.children.getByName("movement-" + hero.name));
-//     this.endArrow.setVisible(false);
-//     this.highlightIdleHeroes();
-//     this.movementArrows.clear(true, true);
-//     this.clearTiles(this.walkTiles.concat(this.attackTiles));
-//   }
 
 //   highlightIdleHeroes() {
 //     this.movementAllowedImages.setVisible(true);
