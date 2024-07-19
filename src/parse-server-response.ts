@@ -6,12 +6,16 @@ import MainScene from "./scripts/scenes/mainScene";
 import playerPhase from "./scripts/animations/player-phase";
 import MoveSingleUnit from "./scripts/animations/move-single-unit";
 import MoveMultipleUnits from "./scripts/animations/move-multiple-units";
+import finishAnimation from "./scripts/animations/finish";
 import { Time } from "phaser";
+import killAnimation from "./scripts/animations/kill";
 
 const animationKeys = {
     "trigger": effectTriggerAnimation,
     "Penalty": mapDebuffAnimation,
-    "Bonus": mapBuffAnimation
+    "Bonus": mapBuffAnimation,
+    "finish": finishAnimation,
+    "kill": killAnimation
 };
 
 function parseServerResponse(scene: MainScene, lines: string[]) {

@@ -51,6 +51,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audioSprite("battle-sfx", "/assets/audio/battle-sfx.json", "/assets/audio/battle-sfx.ogg");
     this.load.audio("confirm", "/assets/audio/confirm.mp3");
     this.load.audio("bonus", "/assets/audio/statuses/bonus.ogg");
+    this.load.audio("penalty", "/assets/audio/statuses/penalty.ogg");
     this.load.image("effect", "/assets/effect.png");
     this.load.image("effect-blur", "/assets/effect-blur.png");
     this.load.image("effective-against-enemy", "/assets/effective-against-enemy.png");
