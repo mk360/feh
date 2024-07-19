@@ -1,6 +1,6 @@
-export const squareSize = 125;
-export const squaresOffset = 63;
-export const fixedY = 120;
+export const squareSize = 90;
+export const squaresOffset = 45;
+export const fixedY = 205;
 
 export function pixelsToGrid(x: number, y: number) {
     return {
