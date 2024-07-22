@@ -4,6 +4,7 @@ import mapDebuffAnimation from "./scripts/animations/map-debuff";
 import Hero from "./scripts/objects/hero";
 import MainScene from "./scripts/scenes/mainScene";
 import playerPhase from "./scripts/animations/player-phase";
+import enemyPhase from "./scripts/animations/enemy-phase";
 import MoveSingleUnit from "./scripts/animations/move-single-unit";
 import MoveMultipleUnits from "./scripts/animations/move-multiple-units";
 import finishAnimation from "./scripts/animations/finish";
@@ -29,7 +30,7 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
             switch (args[0]) {
                 case "turn": {
                     const isCurrentSide = scene.socket.id === args[1];
-                    const newTurnAnimation = isCurrentSide ? playerPhase : playerPhase;
+                    const newTurnAnimation = isCurrentSide ? playerPhase : enemyPhase;
                     const timeline = newTurnAnimation(scene, +args[2]);
                     timelineArray.push(timeline);
                 }

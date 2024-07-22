@@ -16,6 +16,8 @@ import Footer from '../objects/footer';
 import parseServerResponse from '../../parse-server-response';
 import { gridToPixels, squareSize } from '../utils/grid-functions';
 import { pixelsToGrid } from '../utils/grid-functions';
+import ActionsTray from '../objects/actions-tray';
+import Button from '../objects/button';
 
 function createHeroQuoter(scene: MainScene) {
   let previousQuote = "";
@@ -74,6 +76,7 @@ export default class MainScene extends Phaser.Scene {
   private pathfinder = new Pathfinder();
   private doubleClick = createDoubleTapHandler();
   private footer: Footer;
+  private actionsTray: ActionsTray;
 
   drawPath(path: [number, number][]) {
     this.clearMovementLayer();
@@ -144,8 +147,10 @@ export default class MainScene extends Phaser.Scene {
     this.combatForecast = new CombatForecast(this).setVisible(false);
     this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
     const toolbar = this.add.container(0, this.background.getBottomCenter().y);
-    // const dangerArea = toolbar.add(new GameObjects.Image(this, 0, 0,))
-    this.footer = new Footer(this, 0, this.background.getBottomCenter().y, 1);
+    this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
+    // const button = new Button(this, "test");
+    // this.actionsTray.addAction(button);
+    this.footer = new Footer(this, 0, this.actionsTray.getBounds().bottom, 1);
     this.add.existing(this.footer);
     this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
     this.tilesLayer = this.add.layer();

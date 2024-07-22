@@ -41,12 +41,13 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("chains", "/assets/chains.png");
     this.load.image("stat-change-aura", "/assets/stat-change-aura.webp");
     this.load.image("stat-change-particle", "/assets/stat-change-particle.webp");
-    this.load.atlas("marginals", "/assets/sheets/marginals.webp", "/assets/sheets/marginals.json")
-    this.load.image("player-phase-glow", "/assets/player-phase-glow.png");
-    this.load.image("player-phase-gleam", "/assets/player-phase-gleam.png");
-    this.load.image("player-phase-base", "/assets/player-phase-title.png");
-    this.load.audio("player-phase", "/assets/player-phase.mp3");
-    this.load.atlas("top-banner", "/assets/top-banner.webp", "/assets/top-banner.json");
+    this.load.atlas("marginals", "/assets/sheets/marginals.webp", "/assets/sheets/marginals.json");
+    this.load.atlas("player-phase", "/assets/sheets/player-phase.webp", "/assets/sheets/player-phase.json");
+    this.load.atlas("enemy-phase", "/assets/sheets/enemy-phase.webp", "/assets/sheets/enemy-phase.json");
+    this.load.image("enemy-phase-gfx", "/assets/enemy-phase.png");
+    this.load.audio("player-phase", "/assets/audio/player-phase.ogg");
+    this.load.audio("enemy-phase", "/assets/audio/enemy-phase.ogg");
+    this.load.atlas("top-banner", "/assets/sheets/top-banner.webp", "/assets/sheets/top-banner.json");
     this.load.audioSprite("sfx", "/assets/audio/sfx.json", "/assets/audio/sfx.ogg");
     this.load.audioSprite("battle-sfx", "/assets/audio/battle-sfx.json", "/assets/audio/battle-sfx.ogg");
     this.load.audio("confirm", "/assets/audio/confirm.mp3");

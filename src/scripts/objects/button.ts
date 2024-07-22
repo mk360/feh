@@ -16,13 +16,13 @@ class Button extends GameObjects.Container {
         this.label.setWordWrapWidth(90, true);
         this.on("pointerdown", () => {
             button.setTexture("ui-button-pressed");
-            this.label.x += 2;
-            this.label.y += 2;
+            this.label.x += 5;
+            this.label.y += 10;
         });
         this.on("pointerup", () => {
             button.setTexture("ui-button");
-            this.label.x -= 2;
-            this.label.y -= 2;
+            this.label.x -= 5;
+            this.label.y -= 10;
         });
     }
 
