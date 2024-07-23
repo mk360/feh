@@ -192,7 +192,6 @@ export default class MainScene extends Phaser.Scene {
           this.playHeroQuote(hero);
         }
       });
-      this.input.setDraggable([hero], true);
 
       hero.on("drag", (_, dragX: number, dragY: number) => {
         hero.x = dragX;
@@ -293,7 +292,15 @@ export default class MainScene extends Phaser.Scene {
         // }
         // this.socket.sendBuffer = [];
       });
+
+      this.input.setDraggable([hero], true);
     }
+
+    this.socket.on("update-entity", ({ unitId, data }) => {
+      const hero = this.heroesLayer.getByName(unitId) as Hero;
+      const newData = Object.assign(hero.getInternalHero(), data);
+      hero.data.set("hero", newData);
+    });
 
     this.socket.on("response unit map stats", ({ unitId, ...stats }) => {
       const hero = this.heroesLayer.getByName(unitId) as Hero;
