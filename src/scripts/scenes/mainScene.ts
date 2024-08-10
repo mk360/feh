@@ -464,6 +464,9 @@ export default class MainScene extends Phaser.Scene {
 
     const layer = this.add.rectangle(0, 0, +this.game.config.width, +this.game.config.height, 0xD8BA94, 1).setOrigin(0);
     const startGameButton = new GameObjects.Rectangle(this, layer.getCenter().x, layer.getCenter().y - 50, 240, 120, 0x00AF81).setInteractive();
+    const startGameText = renderText(this, startGameButton.getCenter().x, startGameButton.getCenter().y, "Start Game", {
+      fontSize: 26
+    }).setOrigin(0.5);
     startGameButton.on("pointerdown", () => {
       layer.destroy();
       startGameText.destroy();
@@ -471,9 +474,7 @@ export default class MainScene extends Phaser.Scene {
       this.socket.emit("ready");
     });
     this.add.existing(startGameButton);
-    const startGameText = this.add.existing(renderText(this, startGameButton.getCenter().x, startGameButton.getCenter().y, "Start Game", {
-      fontSize: 26
-    }).setOrigin(0.5));
+    this.add.existing(startGameText);
   }
 
   update(_, delta) {
@@ -644,108 +645,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //     return damageText;
 //   }
 
-//   runCombat(outcome: CombatOutcome) {
-//     const timeline = this.add.timeline([]);
-//     for (let i = 0; i < outcome.turns.length; i++) {
-//       const turn = outcome.turns[i];
-//       const damageText = this.createDamageText(turn).setVisible(false);
-//       this.add.existing(damageText);
-//       const attackerObject = this.getByName<Hero>(turn.attacker.id);
-//       const defenderObject = this.getByName<Hero>(turn.defender.id);
-//       const attackerCoordinates = this.getHeroCoordinates(attackerObject);
-//       const defenderCoordinates = this.getHeroCoordinates(defenderObject);
-//       const damageTween = this.tweens.create({
-//         targets: [damageText],
-//         y: "-=20",
-//         duration: 150,
-//         yoyo: true,
-//         onStart: () => {
-//           damageText.setVisible(true);
-//         },
-//         onComplete: () => {
-//           this.children.remove(damageText);
-//           damageText.destroy(true);
-//         }
-//       }) as Tweens.Tween;
-//       // add special trigger effect
-//       timeline.add([{
-//         at: i * 800 + 400,
-//         tween: {
-//           targets: attackerObject,
-//           x: `-=${(attackerCoordinates.x - defenderCoordinates.x) / 2}`,
-//           y: `-=${(attackerCoordinates.y - defenderCoordinates.y) / 2}`,
-//           yoyo: true,
-//           duration: 150,
-//           onYoyo: () => {
-//             this.sound.play("hit");
-//             defenderObject.updateHP(turn.remainingHP);
-//             const combatAttacker = this.getByName<Hero>(outcome.attacker.id);
-//             const combatDefender = this.getByName<Hero>(outcome.defender.id);
-//             const attackerRatio = combatAttacker.getInternalHero().stats.hp / combatAttacker.getInternalHero().maxHP;
-//             const defenderHPRatio = combatDefender.getInternalHero().stats.hp / combatDefender.getInternalHero().maxHP;
-//             this.combatForecast.updatePortraits(attackerRatio, defenderHPRatio);
-//           }
-//         }
-//       }]);
-//       timeline.add([{
-//         at: i * 800 + 475,
-//         tween: damageTween
-//       }, {
-//         at: i * 800 + 475,
-//         tween: defenderObject.createFlashTween()
-//       }]);
-//     }
-
-//     const deadUnit = [outcome.attacker, outcome.defender].find((hero) => hero.remainingHP === 0);
-//     if (deadUnit) {
-//       const deadUnitObject = this.getByName<Hero>(deadUnit.id);
-//       const koTween = this.createKOTween(deadUnitObject);
-
-//       timeline.add([{ tween: koTween, at: 800 * outcome.turns.length + 500 }])
-//     }
-
-//     if (outcome.attacker.remainingHP) {
-//       timeline.add([{
-//         at: 800 * outcome.turns.length + 900,
-//         tween: {
-//           targets: [],
-//           onComplete: () => {
-//             const attackerObject = this.getByName<Hero>(outcome.attacker.id);
-//             this.endAction(attackerObject);
-//           }
-//         }
-//       }]);
-//     }
-
-//     timeline.add([{
-//       at: 800 * outcome.turns.length + 600,
-//       tween: {
-//         targets: [],
-//         onComplete: () => {
-//           this.combatForecast.disable();
-//           this.game.input.enabled = true;
-//         }
-//       }
-//     }]);
-
-//     this.game.input.enabled = false;
-//     this.interactionIndicatorTween?.stop();
-//     this.interactionIndicator.setVisible(false);
-//     timeline.play();
-//   };
-
-//   highlightIdleHeroes() {
-//     this.movementAllowedImages.setVisible(true);
-//     (this.movementAllowedTween.targets as GameObjects.Image[]).forEach((image) => {
-//       image.setAlpha(1);
-//     });
-//     this.movementAllowedTween.resume();
-//   }
-
-//   killHero(hero: Hero) {
-//     this[hero.team] = this[hero.team].filter(({ name }) => name !== hero.name);
-//   }
-
 //   createKOTween(hero: Hero) {
 //     return this.tweens.create({
 //       targets: hero.image,
@@ -761,66 +660,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //         hero = null;
 //       }
 //     }) as Tweens.Tween;
-//   }
-
-//   setTurn({ turn, turnCount }: { turn: Team, turnCount: number }) {
-//     this.movementAllowedImages.clear(true, true);
-//     const otherTeam = turn === "team1" ? "team2" : "team1";
-//     if (turn !== this.turn) {
-//       this.movementRangeLayer.removeAll();
-//     }
-
-//     for (let heroId in battle.state.teams[battle.state.currentTurn].members) {
-//       const hero = this.getByName<Hero>(heroId);
-//       const { x, y } = pixelsToGrid(hero.x, hero.y);
-//       let currentCoords: Coords = { x, y };
-//       this.input.setDraggable(hero, true);
-//       const img = new Phaser.GameObjects.Image(this, hero.x, hero.y, "movement-allowed").setName(`movement-${hero.name}`);
-//       const matchingTile = this.getTile(currentCoords.x + "-" + currentCoords.y);
-//       img.setDisplaySize(matchingTile.width, matchingTile.height);
-//       this.movementAllowedImages.add(img, true);
-//       this.activateHero(hero);
-//     }
-
-//     if (turnCount > 1) {
-//       this.currentState = this.states.fighting;
-//     } else {
-//       this.currentState = this.states.preparation;
-//     }
-
-//     this.currentState.changeActionsTray(this.actionsTray);
-
-//     this.movementAllowedTween?.stop().destroy();
-//     this.movementAllowedTween = this.tweens.add({
-//       targets: this.movementAllowedImages.getChildren(),
-//       loop: -1,
-//       yoyo: true,
-//       duration: 900,
-//       alpha: 0,
-//     });
-
-//     for (let heroId in battle.state.teams[otherTeam].members) {
-//       const hero = this.getByName<Hero>(heroId);
-//       hero.off("dragend");
-//       hero.image.clearTint();
-//       this.input.setDraggable(hero, false);
-//       hero.off("dragstart");
-//       hero.off("dragenter");
-//       hero.off("pointerdown").on("pointerdown", () => {
-//         this.displayHeroInformations(hero);
-//       });
-//     }
-
-//     battle.resetEffects(otherTeam);
-//     const effects = battle.getTurnStartEffects(turn);
-
-//     for (let effect of effects) {
-//       const target = this.getByName<Hero>(effect.targetHeroId);
-//       if (target && effect.appliedEffect.stats) {
-//         target.getInternalHero().setMapBoosts(effect.appliedEffect.stats);
-//         target.statuses.push("buff");
-//       }
-//     }
 //   }
 
 //   displayEnemyRange(enabled: boolean) {

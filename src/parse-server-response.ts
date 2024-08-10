@@ -60,6 +60,11 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
                     timelineArray.push(animation);
                 }
 
+                // case "attack": {
+                //     args.shift();
+
+                // }
+
                 default: {
                     const [animation, target] = args;
                     if (animation in animationKeys) {
