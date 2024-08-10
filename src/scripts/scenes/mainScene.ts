@@ -63,6 +63,7 @@ export default class MainScene extends Phaser.Scene {
   private tilesLayer: GameObjects.Layer;
   private unitInfosBanner: UnitInfosBanner;
   private side: string;
+  private storedPath: [number, number][] = [];
   private fpsText: GameObjects.Text;
   private interactionsIndicator: InteractionIndicator;
   private combatForecast: CombatForecast;
@@ -265,32 +266,19 @@ export default class MainScene extends Phaser.Scene {
         } else {
           this.socket.emit("request confirm combat", {
             unitId: hero.name,
-            ...gridCell
+            attackerCoordinates: hero.temporaryPosition,
+            ...gridCell,
+            path: this.storedPath.map(([x, y]) => ({
+              x,
+              y
+            }))
           });
         }
         this.socket.sendBuffer = [];
       });
 
-      hero.on("dragend", (target, _, a) => {
-        // this.clearMovementLayer();
-        // hero.setDepth(hero.depth - 1);
-        // const gridCell = pixelsToGrid(hero.x, hero.y);
-        // this.startRosary.setVisible(false);
-        // this.endRosary.setVisible(false);
-        // this.movementIndicator.setVisible(false);
-        // console.log(target, target.name, a);
-        // if (target.name !== "attack") {
-        //   this.socket.emit("request confirm movement", {
-        //     unitId: hero.name,
-        //     ...gridCell,
-        //   });
-        // } else {
-        //   this.socket.emit("request confirm battle", {
-        //     unitId: hero.name,
-        //     ...gridCell
-        //   });
-        // }
-        // this.socket.sendBuffer = [];
+      hero.on("dragend", () => {
+        this.storedPath = [];
       });
 
       this.input.setDraggable([hero], true);
@@ -384,13 +372,13 @@ export default class MainScene extends Phaser.Scene {
     }
 
     this.socket.on("response", async (args) => {
-      const x = parseServerResponse(this, args);
-      for (let eventLine of x) {
+      const responseAnimations = parseServerResponse(this, args);
+      for (let eventLine of responseAnimations) {
         await Promise.all(eventLine.map(promiseAnimation));
       }
     });
 
-    this.socket.on("response confirm movement", (response: { unitId: string, x: number, y: number, valid: boolean }) => {
+    this.socket.on("response confirm movement", (response: { unitId: string, x: number, y: number }) => {
       const object = this.heroesLayer.getByName(response.unitId) as Hero;
       const pxCell = gridToPixels(response.x, response.y);
       this.tweens.add({
@@ -399,15 +387,13 @@ export default class MainScene extends Phaser.Scene {
         y: pxCell.y,
         duration: 100,
       });
-      if (response.valid) {
-        this.sound.play("confirm");
-        const tiles = this.tilesLayer.getChildren();
-        while (tiles.length) tiles.pop().destroy();
-        this.heroesLayer.getChildren().forEach((child: Hero) => {
-          child.effectivenessImage.iconsList = [];
-        });
-        this.clearMovementLayer();
-      }
+      this.sound.play("confirm");
+      const tiles = this.tilesLayer.getChildren();
+      while (tiles.length) tiles.pop().destroy();
+      this.heroesLayer.getChildren().forEach((child: Hero) => {
+        child.effectivenessImage.iconsList = [];
+      });
+      this.clearMovementLayer();
     });
 
     this.socket.on("response preview battle", (preview) => {
@@ -561,34 +547,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //         this.runCombat(args.outcome);
 //       }
 //         break;
-//       case "preview": {
-//         const { args } = action;
-//         this.unitInfosBanner.setVisible(false);
-//         this.interactionIndicatorTween?.destroy();
-//         const defenderCoordinates = this.getHeroCoordinates(this.getByName<Hero>(args.defender.id));
-//         this.interactionIndicator.x = defenderCoordinates.x;
-//         this.interactionIndicator.y = defenderCoordinates.y - 80;
-//         this.interactionIndicatorTween = this.tweens.add({
-//           targets: [this.interactionIndicator],
-//           y: defenderCoordinates.y - 70,
-//           duration: 400,
-//           loop: -1,
-//           yoyo: true,
-//         }) as Tweens.Tween;
-//         this.interactionIndicatorTween.play();
-//         this.interactionIndicator.setVisible(true).setContent("attack");
-//         this.combatForecast.setVisible(true).setForecastData({
-//           attacker: {
-//             hero: args.attacker,
-//             ...args.outcome.attacker
-//           },
-//           defender: {
-//             hero: args.defender,
-//             ...args.outcome.defender
-//           }
-//         });
-//       }
-//         break;
 //       case "switch": {
 //         const { args } = action;
 //         const { firstHero, secondHero } = args;
@@ -614,11 +572,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //         }]).play();
 //         break;
 //       }
-//       case "start-turn": {
-//         const { args } = action;
-//         this.setTurn(args);
-//         break;
-//       };
 //       case "swap-spaces": {
 //         this.switchPositionsMode();
 //         break;

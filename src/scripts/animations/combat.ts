@@ -1,6 +1,6 @@
 import { Types } from "phaser";
 import MainScene from "../scenes/mainScene";
-import { renderDamageText } from "../utils/text-renderer";
+import damageAnimation from "./damage";
 import Hero from "../objects/hero";
 
 /**
@@ -11,16 +11,10 @@ import Hero from "../objects/hero";
  * rinse and repeat pour le reste des tours ??
  */
 
-function characterCombatDisplaceAnimation(character: Hero) {
-    const tweenData: Types.Time.TimelineEventConfig = {
-
-    };
-
-}
-
 function combatAnimation(scene: MainScene, payload: string[]) {
     const tweens: Types.Time.TimelineEventConfig[] = [];
-    for (let event of payload) {
+    for (let i = 0; i < payload.length; i++) {
+        const event = payload[i];
         const [attacker, attackerHP, attackerCooldown, shouldAttackerTriggerSpecial, damage, attackerHealing, defender] = event.split(" ");
         const defenderObject = scene.children.getByName(defender) as Hero;
         const defenderCoordinates = defenderObject.getAbsoluteCoordinates();
@@ -28,6 +22,7 @@ function combatAnimation(scene: MainScene, payload: string[]) {
         const attackerCoordinates = attackerObject.getAbsoluteCoordinates();
 
         tweens.push({
+            from: i * 200,
             tween: {
                 targets: [attackerObject],
                 x: `-=${(attackerCoordinates.x - defenderCoordinates.x) / 2}`,
@@ -35,7 +30,8 @@ function combatAnimation(scene: MainScene, payload: string[]) {
                 yoyo: true,
                 duration: 150,
                 onYoyo: () => {
-                    this.sound.play("hit");
+                    const damageTween = damageAnimation(scene, defenderObject, +damage);
+                    damageTween.play();
                     // defenderObject.updateHP(event.remainingHP);
                     attackerObject.updateHP(+attackerHP);
                     attackerObject.updateSpecial(+attackerCooldown);

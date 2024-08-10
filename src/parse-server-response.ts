@@ -7,6 +7,7 @@ import playerPhase from "./scripts/animations/player-phase";
 import enemyPhase from "./scripts/animations/enemy-phase";
 import MoveSingleUnit from "./scripts/animations/move-single-unit";
 import MoveMultipleUnits from "./scripts/animations/move-multiple-units";
+import combatAnimation from "./scripts/animations/combat";
 import finishAnimation from "./scripts/animations/finish";
 import { Time } from "phaser";
 import killAnimation from "./scripts/animations/kill";
@@ -16,7 +17,7 @@ const animationKeys = {
     "Penalty": mapDebuffAnimation,
     "Bonus": mapBuffAnimation,
     "finish": finishAnimation,
-    "kill": killAnimation
+    "kill": killAnimation,
 };
 
 function parseServerResponse(scene: MainScene, lines: string[]) {
@@ -60,10 +61,10 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
                     timelineArray.push(animation);
                 }
 
-                // case "attack": {
-                //     args.shift();
+                case "attack": {
+                    console.log(args);
 
-                // }
+                }
 
                 default: {
                     const [animation, target] = args;

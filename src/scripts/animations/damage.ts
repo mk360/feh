@@ -27,4 +27,8 @@ function damageAnimation(scene: MainScene, target: Hero, amount: number) {
             damageText.destroy(true);
         }
     }) as Tweens.Tween;
+
+    return damageTween;
 }
+
+export default damageAnimation;
