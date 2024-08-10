@@ -34,13 +34,15 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
                     const newTurnAnimation = isCurrentSide ? playerPhase : enemyPhase;
                     const timeline = newTurnAnimation(scene, +args[2]);
                     timelineArray.push(timeline);
+                    break;
                 }
 
                 case "move": {
                     const [, target, x, y] = args;
-                    const targetHero = scene.children.getByName(target) as Hero;
+                    const targetHero = scene.heroesLayer.getByName(target) as Hero;
                     const movementAnimation = MoveSingleUnit(scene, targetHero, { x: +x, y: +y });
                     timelineArray.push(movementAnimation);
+                    break;
                 }
 
                 case "move-multiple": {
@@ -59,11 +61,12 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
                     });
                     const animation = MoveMultipleUnits(scene, mapped);
                     timelineArray.push(animation);
+                    break;
                 }
 
                 case "attack": {
                     console.log(args);
-
+                    break;
                 }
 
                 default: {

@@ -222,6 +222,7 @@ export default class MainScene extends Phaser.Scene {
               hero.temporaryPosition = gridCell;
               this.combatForecast.setVisible(false);
               const path = this.pathfinder.findPath(savedPosition, gridCell);
+              this.storedPath = path;
               const pathCopy = [...path];
               this.drawPath(pathCopy);
               this.movementIndicator.setX(x).setY(y);
@@ -275,9 +276,6 @@ export default class MainScene extends Phaser.Scene {
           });
         }
         this.socket.sendBuffer = [];
-      });
-
-      hero.on("dragend", () => {
         this.storedPath = [];
       });
 
