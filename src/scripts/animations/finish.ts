@@ -9,6 +9,7 @@ function finishAnimation(scene: MainScene, hero: Hero) {
             onStart() {
                 scene.clearMovementLayer();
                 hero.disableMovementIndicator();
+                scene.input.setDraggable(hero, false);
             },
             duration: 100,
         },

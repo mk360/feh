@@ -24,13 +24,12 @@ class Hero extends GameObjects.Container {
     effectivenessImage: IconsSwitcher;
 
     constructor(scene: Scene, x: number, y: number, data: any) {
-        const name = data.Name[0].value;
-        const team = data.Side[0].value;
-        const stats = data.Stats[0];
-        const weapon = data.Weapon[0];
         super(scene, x, y);
-        this.temporaryPosition = data.Position[0];
-        this.setData("hero", data);
+        const name = data.components.Name[0].value;
+        const team = data.components.Side[0].value;
+        const stats = data.components.Stats[0];
+        const weapon = data.components.Weapon[0];
+        this.temporaryPosition = data.components.Position[0];
         this.movementIndicator = new GameObjects.Image(scene, 0, 0, "movement-indicators", "movement-indicator").setDisplaySize(95, 95).setAlpha(0).setVisible(false);
         this.movementIndicatorTween = this.scene.add.tween({
             targets: [this.movementIndicator],
@@ -46,12 +45,7 @@ class Hero extends GameObjects.Container {
         this.glowingSprite = new GameObjects.Image(scene, 0, 0, name, "map").setScale(0.5).setDepth(1).setAlpha(0).setTintFill(0xFFFFFF);
         this.add(this.sprite);
         this.add(this.glowingSprite);
-        this.statusesImage = new IconsSwitcher(scene, 35, 35, data.tags.map((tag) => {
-            return {
-                frame: tag.toLowerCase(),
-                texture: "statuses"
-            }
-        })).setScale(0.4);
+        this.statusesImage = new IconsSwitcher(scene, 35, 35, []).setScale(0.4);
         this.effectivenessImage = new IconsSwitcher(scene, 0, 0, []);
         const hpBarHeight = this.statusesImage.getCenter().y;
         this.hpText = renderText(scene, -25, hpBarHeight, stats.hp, {
@@ -73,9 +67,12 @@ class Hero extends GameObjects.Container {
         this.hpText.setFill(gradient);
         this.add(this.hpText);
         this.setSize(120, 120);
-        this.updateHP(stats.hp);
         const existingSpecial = data.Special;
+
+        this.updateHero(data);
+        this.updateHP(stats.hp);
         this.enableMovementIndicator();
+
         if (existingSpecial) {
             if (existingSpecial[0].cooldown === 0) {
                 this.special = new GameObjects.Image(this.scene, team === "team1" ? -30 : 30, -5, "skills-ui", "special-icon").setScale(0.35);
@@ -93,6 +90,20 @@ class Hero extends GameObjects.Container {
             }
             this.add(this.special);
         }
+    }
+
+    updateHero(newData) {
+        this.setData("hero", {
+            tags: newData.tags,
+            ...newData.components
+        });
+
+        this.statusesImage.iconsList = newData.tags.map((tag) => {
+            return {
+                frame: tag.toLowerCase(),
+                texture: "statuses"
+            }
+        });
     }
 
     createFlashTween() {

@@ -64,7 +64,7 @@ export default class PreloadScene extends Phaser.Scene {
 
     for (let heroId in world.heroes) {
       const heroData = world.heroes[heroId];
-      const heroName = heroData.Name[0].value as string;
+      const heroName = heroData.components.Name[0].value as string;
       const formatted = formatName(heroName);
       this.load.atlas(heroName, `/assets/battle/${formatted}.webp`, `/assets/battle/${formatted}.json`);
       this.load.audioSprite(`${heroName} quotes`, `/assets/audio/quotes/${formatted}.json`, `/assets/audio/quotes/${formatted}.m4a`);

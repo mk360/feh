@@ -16,9 +16,9 @@ function combatAnimation(scene: MainScene, payload: string[]) {
     for (let i = 0; i < payload.length; i++) {
         const event = payload[i];
         const [attacker, attackerHP, attackerCooldown, shouldAttackerTriggerSpecial, damage, attackerHealing, defender] = event.split(" ");
-        const defenderObject = scene.children.getByName(defender) as Hero;
+        const defenderObject = scene.heroesLayer.getByName(defender) as Hero;
         const defenderCoordinates = defenderObject.getAbsoluteCoordinates();
-        const attackerObject = scene.children.getByName(attacker) as Hero;
+        const attackerObject = scene.heroesLayer.getByName(attacker) as Hero;
         const attackerCoordinates = attackerObject.getAbsoluteCoordinates();
 
         tweens.push({
