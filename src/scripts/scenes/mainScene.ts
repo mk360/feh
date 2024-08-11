@@ -74,6 +74,7 @@ export default class MainScene extends Phaser.Scene {
   private endRosary: GameObjects.Image;
   private background: GameObjects.Image;
   private movementIndicator: GameObjects.Image;
+  private actionIndicator: GameObjects.Image;
   private pathfinder = new Pathfinder();
   private doubleClick = createDoubleTapHandler();
   private footer: Footer;
@@ -136,7 +137,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   clearMovementLayer() {
-    const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator] as GameObjects.GameObject[]).includes(child));
+    const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator, this.actionIndicator] as GameObjects.GameObject[]).includes(child));
     while (ui.length) ui.pop().destroy();
   }
 
@@ -162,7 +163,9 @@ export default class MainScene extends Phaser.Scene {
     this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
     this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
     this.movementIndicator = new GameObjects.Image(this, 0, 0, "movement-indicators", "movement-indicator").setVisible(false);
+    this.actionIndicator = new GameObjects.Image(this, 0, 0, "movement-indicators", "movement-indicator").setVisible(false);
     this.movementUI.add(this.movementIndicator);
+    this.movementUI.add(this.actionIndicator);
     this.movementUI.add(this.endRosary);
     this.movementUI.add(this.startRosary);
 
@@ -215,8 +218,8 @@ export default class MainScene extends Phaser.Scene {
                 position: hero.temporaryPosition
               });
 
-              this.movementIndicator.setFrame("attack-indicator");
-              this.movementIndicator.setX(x).setY(y);
+              this.actionIndicator.setFrame("attack-indicator").setVisible(true);
+              this.actionIndicator.setX(x).setY(y);
               break;
             case "movement":
               hero.temporaryPosition = gridCell;
@@ -227,19 +230,20 @@ export default class MainScene extends Phaser.Scene {
               this.drawPath(pathCopy);
               this.movementIndicator.setX(x).setY(y);
               this.movementIndicator.setFrame("movement-indicator");
+              this.actionIndicator.setVisible(false);
               this.sound.playAudioSprite("sfx", "hover");
 
               break;
             case "warp":
-              this.movementIndicator.setX(x).setY(y);
+              this.actionIndicator.setX(x).setY(y);
               this.combatForecast.setVisible(false);
-              this.movementIndicator.setFrame("movement-indicator");
+              this.actionIndicator.setFrame("movement-indicator").setVisible(true);
               this.sound.playAudioSprite("sfx", "hover");
               break;
             case "assist":
-              this.movementIndicator.setX(x).setY(y);
+              this.actionIndicator.setX(x).setY(y);
               this.combatForecast.setVisible(false);
-              this.movementIndicator.setFrame("assist-indicator");
+              this.actionIndicator.setFrame("assist-indicator").setVisible(true);
               this.sound.playAudioSprite("sfx", "hover");
               break;
           }
@@ -282,10 +286,11 @@ export default class MainScene extends Phaser.Scene {
       this.input.setDraggable([hero], true);
     }
 
-    this.socket.on("update-entity", ({ unitId, data }) => {
-      const hero = this.heroesLayer.getByName(unitId) as Hero;
-      const newData = Object.assign(hero.getInternalHero(), data);
-      hero.data.set("hero", newData);
+    this.socket.on("update-entities", (dict) => {
+      for (let heroId in dict) {
+        const hero = this.heroesLayer.getByName(heroId) as Hero;
+        hero.updateHero(dict[heroId]);
+      }
     });
 
     this.socket.on("response unit map stats", ({ unitId, ...stats }) => {
@@ -374,6 +379,8 @@ export default class MainScene extends Phaser.Scene {
       for (let eventLine of responseAnimations) {
         await Promise.all(eventLine.map(promiseAnimation));
       }
+
+      this.socket.emit("request update");
     });
 
     this.socket.on("response confirm movement", (response: { unitId: string, x: number, y: number }) => {
@@ -413,7 +420,7 @@ export default class MainScene extends Phaser.Scene {
           damage: previewDefender.damagePerTurn,
           turns: previewDefender.turns,
           startHP: previewDefender.previousHP,
-          effectiveness: false,
+          effectiveness: previewDefender.effectiveness,
           remainingHP: previewDefender.newHP,
           statMods: previewDefender.combatBuffs
         }
@@ -427,14 +434,14 @@ export default class MainScene extends Phaser.Scene {
     this.socket.on("update entity", ({ unitId, type, ...data }: HeroUpdatePayload) => {
       const hero = this.heroesLayer.getByName(unitId) as Hero;
       const internalHero = hero.getInternalHero();
-      internalHero[type] = [data];
+      internalHero[type] = Array.isArray(data) ? data : [data];
     });
 
     this.background.on("pointerdown", () => {
       this.movementIndicator.setVisible(false);
       this.sound.playAudioSprite("sfx", "cancel");
       this.heroesLayer.getChildren().forEach((child: Hero) => {
-        child.enableMovementIndicator();
+        if (!child.getInternalHero().Finished) child.enableMovementIndicator();
       });
       const tiles = this.tilesLayer.getChildren();
       while (tiles.length) tiles.pop().destroy();
@@ -486,7 +493,7 @@ export default class MainScene extends Phaser.Scene {
   };
 
   addHero(entity) {
-    const { x: gridX, y: gridY } = entity.Position[0];
+    const { x: gridX, y: gridY } = entity.components.Position[0];
     const { x, y } = gridToPixels(gridX, gridY);
     const heroObject = new Hero(this, x, y, entity);
     heroObject.setSize(90, 90);
@@ -594,23 +601,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //     }).setDepth(4);
 
 //     return damageText;
-//   }
-
-//   createKOTween(hero: Hero) {
-//     return this.tweens.create({
-//       targets: hero.image,
-//       alpha: 0,
-//       duration: 300,
-//       onStart: () => {
-//         this.sound.play("ko");
-//       },
-//       onComplete: () => {
-//         this.children.remove(hero);
-//         battle.killHero(hero.getInternalHero(), hero.team);
-//         hero.destroy();
-//         hero = null;
-//       }
-//     }) as Tweens.Tween;
 //   }
 
 //   displayEnemyRange(enabled: boolean) {
