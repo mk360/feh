@@ -65,7 +65,12 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
                 }
 
                 case "attack": {
-                    console.log(args);
+                    scene.clearMovementLayer();
+                    scene.interactionsIndicator.disable();
+                    const animations = combatAnimation(scene, effect);
+                    const timeline = new Time.Timeline(scene, animations);
+                    timelineArray.push(timeline);
+
                     break;
                 }
 

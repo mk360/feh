@@ -59,14 +59,14 @@ export default class MainScene extends Phaser.Scene {
 
   rng = new Phaser.Math.RandomDataGenerator();
   heroesLayer: GameObjects.Layer;
+  interactionsIndicator: InteractionIndicator;
   socket = socket;
   private tilesLayer: GameObjects.Layer;
   private unitInfosBanner: UnitInfosBanner;
   private side: string;
   private storedPath: [number, number][] = [];
   private fpsText: GameObjects.Text;
-  private interactionsIndicator: InteractionIndicator;
-  private combatForecast: CombatForecast;
+  combatForecast: CombatForecast;
   private playHeroQuote = createHeroQuoter(this);
   private movementUI: GameObjects.Layer;
   private miscUIElements: GameObjects.Layer;
@@ -139,6 +139,7 @@ export default class MainScene extends Phaser.Scene {
   clearMovementLayer() {
     const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator, this.actionIndicator] as GameObjects.GameObject[]).includes(child));
     while (ui.length) ui.pop().destroy();
+    this.actionIndicator.setVisible(false);
   }
 
   create() {
