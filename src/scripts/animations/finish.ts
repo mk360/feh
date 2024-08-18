@@ -13,7 +13,6 @@ function finishAnimation(scene: MainScene, hero: Hero) {
             },
             duration: 100,
         },
-        from: 0
     }];
 
     return timelineData;

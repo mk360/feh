@@ -9,21 +9,24 @@ function damageAnimation(scene: MainScene, target: Hero, amount: number) {
         ...target.getAbsoluteCoordinates(),
         content: amount,
         style: {
-            fontSize: 10
+            fontSize: 25
         }
     });
 
-    const damageTween = scene.tweens.create({
+    damageText.setOrigin(0.5);
+
+    const damageTween = scene.tweens.add({
         targets: [damageText],
         y: "-=20",
         duration: 150,
         yoyo: true,
         onStart: () => {
+            scene.add.existing(damageText);
             damageText.setVisible(true);
             scene.sound.playAudioSprite("battle-sfx", "hit");
         },
         onComplete: () => {
-            this.children.remove(damageText);
+            scene.children.remove(damageText);
             damageText.destroy(true);
         }
     }) as Tweens.Tween;

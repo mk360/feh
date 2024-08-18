@@ -2,6 +2,7 @@ import { Types } from "phaser";
 import MainScene from "../scenes/mainScene";
 import damageAnimation from "./damage";
 import Hero from "../objects/hero";
+import { gridToPixels } from "../utils/grid-functions";
 
 function combatAnimation(scene: MainScene, payload: string) {
     const tweens: Types.Time.TimelineEventConfig[] = [];
@@ -9,18 +10,20 @@ function combatAnimation(scene: MainScene, payload: string) {
     for (let i = 0; i < events.length; i++) {
         const [, attacker, attackerHP, attackerCooldown, shouldAttackerTriggerSpecial, damage, attackerHealing, defender, defenderHP] = events[i].split(" ");
         const defenderObject = scene.heroesLayer.getByName(defender) as Hero;
-        const defenderCoordinates = defenderObject.getAbsoluteCoordinates();
         const attackerObject = scene.heroesLayer.getByName(attacker) as Hero;
-        const attackerCoordinates = attackerObject.getAbsoluteCoordinates();
+        const attackerCoordinates = attackerObject.getInternalHero().Position[0];
+        const attackerPosition = gridToPixels(attackerCoordinates.x, attackerCoordinates.y);
+        const defenderCoordinates = defenderObject.getInternalHero().Position[0];
+        const defenderPosition = gridToPixels(defenderCoordinates.x, defenderCoordinates.y);
 
         tweens.push({
-            from: 350 * i + 350,
+            from: 400,
             tween: {
                 targets: [attackerObject],
-                x: `-=${(attackerCoordinates.x - defenderCoordinates.x) / 2}`,
-                y: `-=${(attackerCoordinates.y - defenderCoordinates.y) / 2}`,
+                x: `-=${(attackerPosition.x - defenderPosition.x) / 2}`,
+                y: `-=${(attackerPosition.y - defenderPosition.y) / 2}`,
                 yoyo: true,
-                duration: 200,
+                duration: 250,
                 onYoyo: () => {
                     const damageTween = damageAnimation(scene, defenderObject, +damage);
                     damageTween.play();
