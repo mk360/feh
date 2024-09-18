@@ -67,7 +67,7 @@ class Hero extends GameObjects.Container {
         this.hpText.setFill(gradient);
         this.add(this.hpText);
         this.setSize(120, 120);
-        const existingSpecial = data.Special;
+        const existingSpecial = data.components.Special;
 
         this.updateHero(data);
         this.updateHP(stats.hp);

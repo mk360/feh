@@ -219,7 +219,9 @@ class CombatForecast extends GameObjects.Container {
         statChangesX: number;
         xShift: number;
     }) {
+        console.log(side.statMods.children);
         side.statMods.clear(true, true);
+        console.log(side.statMods.children);
         side.damage.setText(hero.turns === 0 ? "-" : hero.damage.toString()).setColor(hero.effectiveness ? TextColors.effective : TextColors.numbers);
         if (hero.turns >= 2) {
             side.roundCount.setText("×" + hero.turns);
@@ -270,6 +272,7 @@ class CombatForecast extends GameObjects.Container {
     }
 
     setForecastData(params: ForecastData) {
+        console.log(params);
         const forecastCenter = this.forecastBackground.getCenter();
         this.updateSide({
             side: this.firstHero,
