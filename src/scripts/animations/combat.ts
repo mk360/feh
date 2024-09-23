@@ -8,7 +8,7 @@ function combatAnimation(scene: MainScene, payload: string) {
     const tweens: Types.Time.TimelineEventConfig[] = [];
     const events = payload.split("|");
     for (let i = 0; i < events.length; i++) {
-        const [, attacker, attackerHP, attackerCooldown, shouldAttackerTriggerSpecial, damage, attackerHealing, defender, defenderHP] = events[i].split(" ");
+        const [, attacker, attackerHP, attackerCooldown, shouldAttackerTriggerSpecial, damage, attackerHealing, defender, defenderHP, defenderCooldown, shouldDefenderTriggerSpecial, _, defenderHealing] = events[i].split(" ");
         const defenderObject = scene.heroesLayer.getByName(defender) as Hero;
         const attackerObject = scene.heroesLayer.getByName(attacker) as Hero;
         const attackerCoordinates = attackerObject.getInternalHero().Position[0];
@@ -23,14 +23,14 @@ function combatAnimation(scene: MainScene, payload: string) {
                 x: `-=${(attackerPosition.x - defenderPosition.x) / 2}`,
                 y: `-=${(attackerPosition.y - defenderPosition.y) / 2}`,
                 yoyo: true,
-                duration: 250,
+                duration: 200,
                 onYoyo: () => {
                     const damageTween = damageAnimation(scene, defenderObject, +damage);
                     damageTween.play();
                     scene.sound.playAudioSprite("battle-sfx", "hit");
-                    // defenderObject.updateHP(event.remainingHP);
                     attackerObject.updateHP(+attackerHP);
                     attackerObject.updateSpecial(+attackerCooldown);
+                    defenderObject.updateSpecial(+defenderCooldown);
                     defenderObject.updateHP(+defenderHP);
                     const attackerRatio = +attackerHP / attackerObject.getInternalHero().Stats[0].maxHP;
                     const defenderHPRatio = +defenderHP / defenderObject.getInternalHero().Stats[0].maxHP;

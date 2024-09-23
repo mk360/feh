@@ -15,7 +15,8 @@ class Hero extends GameObjects.Container {
     hpBarBackground: GameObjects.Rectangle;
     weaponType: GameObjects.Image;
     sprite: GameObjects.Image;
-    private special: GameObjects.Text | GameObjects.Image;
+    private specialText: GameObjects.Text;
+    private specialImage: GameObjects.Image;
     glowingSprite: GameObjects.Image;
     hpText: GameObjects.Text;
     movementIndicator: GameObjects.Image;
@@ -74,21 +75,7 @@ class Hero extends GameObjects.Container {
         this.enableMovementIndicator();
 
         if (existingSpecial) {
-            if (existingSpecial[0].cooldown === 0) {
-                this.special = new GameObjects.Image(this.scene, team === "team1" ? -30 : 30, -5, "skills-ui", "special-icon").setScale(0.35);
-            } else {
-                this.special = renderSpecialText({
-                    scene: this.scene,
-                    x: team === "team1" ? -40 : 20,
-                    y: -20,
-                    style: {
-                        fontSize: 22,
-                        shadowColor: "black",
-                    },
-                    content: existingSpecial[0].cooldown,
-                });
-            }
-            this.add(this.special);
+            this.createSpecial(existingSpecial[0].cooldown);
         }
     }
 
@@ -118,6 +105,27 @@ class Hero extends GameObjects.Container {
         return flashingTween as Tweens.Tween;
     }
 
+    createSpecial(startingCooldown: number) {
+        const { value: team } = this.getInternalHero().Side[0];
+        this.specialImage = new GameObjects.Image(this.scene, team === "team1" ? -40 : 20, -20, "skills-ui", "special-icon").setScale(0.35).setOrigin(0);
+        this.specialText = renderSpecialText({
+            scene: this.scene,
+            x: team === "team1" ? -40 : 20,
+            y: -20,
+            style: {
+                fontSize: 20,
+                shadowColor: "black",
+            },
+            content: startingCooldown,
+        });
+
+        this.specialImage.setVisible(startingCooldown === 0);
+        this.specialText.setVisible(startingCooldown > 0);
+
+        this.add(this.specialImage);
+        this.add(this.specialText);
+    }
+
     getInternalHero() {
         return this.data.get("hero");
     }
@@ -131,22 +139,10 @@ class Hero extends GameObjects.Container {
     }
 
     updateSpecial(newCooldown: number) {
-        if (this.special) {
-            const { value: team } = this.getInternalHero().Team[0];
-            if (newCooldown === 0) {
-                this.special = new GameObjects.Image(this.scene, team === "team1" ? -40 : 20, -25, "skills-ui", "special-icon");
-            } else {
-                this.special = renderSpecialText({
-                    scene: this.scene,
-                    x: team === "team1" ? -40 : 20,
-                    y: -25,
-                    style: {
-                        fontSize: 26,
-                        shadowColor: "black",
-                    },
-                    content: newCooldown,
-                });
-            }
+        this.specialImage.setVisible(newCooldown === 0);
+        this.specialText.setVisible(newCooldown > 0);
+        if (newCooldown) {
+            this.specialText.setText(newCooldown.toString());
         }
     }
 
