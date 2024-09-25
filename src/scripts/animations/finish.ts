@@ -4,14 +4,15 @@ import MainScene from "../scenes/mainScene";
 
 function finishAnimation(scene: MainScene, hero: Hero) {
     const timelineData: Types.Time.TimelineEventConfig[] = [{
-        tween: {
-            targets: [hero],
-            onStart() {
-                scene.clearMovementLayer();
-                hero.disableMovementIndicator();
-                scene.input.setDraggable(hero, false);
-            },
-            duration: 100,
+        run() {
+            scene.clearMovementLayer();
+            hero.disableMovementIndicator();
+            scene.clearTiles();
+            scene.combatForecast.setVisible(false);
+            scene.input.setDraggable(hero, false);
+            scene.heroesLayer.getChildren().forEach((child: Hero) => {
+                if (!child.getInternalHero().Finished) child.enableMovementIndicator();
+            });
         },
     }];
 

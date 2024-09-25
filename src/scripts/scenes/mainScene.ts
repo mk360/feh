@@ -136,6 +136,14 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
+  clearTiles() {
+    this.tilesLayer.removeAll();
+    this.heroesLayer.getChildren().forEach((child: Hero) => {
+      child.effectivenessImage.iconsList = [];
+      child.setInteractive(undefined, undefined, false);
+    });
+  }
+
   clearMovementLayer() {
     const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator, this.actionIndicator] as GameObjects.GameObject[]).includes(child));
     while (ui.length) ui.pop().destroy();
@@ -203,88 +211,98 @@ export default class MainScene extends Phaser.Scene {
         hero.y = dragY;
       });
 
-      hero.on("dragenter", (_, target) => {
-        if (target.type === "Rectangle") {
-          this.interactionsIndicator.disable();
-          const gridCell = pixelsToGrid(target.x, target.y);
-          const savedPosition = hero.getInternalHero().Position[0];
-          const { x, y } = gridToPixels(gridCell.x, gridCell.y);
+      if (!hero.getInternalHero().FinishedAction) {
+        hero.on("dragenter", (_, target) => {
+          if (target.type === "Rectangle") {
+            this.interactionsIndicator.disable();
+            const gridCell = pixelsToGrid(target.x, target.y);
+            const savedPosition = hero.getInternalHero().Position[0];
+            const { x, y } = gridToPixels(gridCell.x, gridCell.y);
+
+            switch (target.name) {
+              case "attack":
+                this.socket.emit("request preview battle", {
+                  x: gridCell.x,
+                  y: gridCell.y,
+                  unit: hero.name,
+                  position: hero.temporaryPosition
+                });
+
+                this.actionIndicator.setFrame("attack-indicator").setVisible(true);
+                this.actionIndicator.setX(x).setY(y);
+                break;
+              case "movement":
+                hero.temporaryPosition = gridCell;
+                this.combatForecast.setVisible(false);
+                const path = this.pathfinder.findPath(savedPosition, gridCell);
+                this.storedPath = path;
+                const pathCopy = [...path];
+                this.drawPath(pathCopy);
+                this.movementIndicator.setX(x).setY(y);
+                this.movementIndicator.setFrame("movement-indicator");
+                this.actionIndicator.setVisible(false);
+                this.sound.playAudioSprite("sfx", "hover");
+
+                break;
+              case "warp":
+                this.actionIndicator.setX(x).setY(y);
+                this.combatForecast.setVisible(false);
+                this.actionIndicator.setFrame("movement-indicator").setVisible(true);
+                this.sound.playAudioSprite("sfx", "hover");
+                break;
+              case "assist":
+                this.actionIndicator.setX(x).setY(y);
+                this.combatForecast.setVisible(false);
+                this.actionIndicator.setFrame("assist-indicator").setVisible(true);
+                this.sound.playAudioSprite("sfx", "hover");
+                break;
+            }
+          }
+        });
+
+        hero.on("dragstart", () => {
+          this.startRosary.setVisible(true).setX(hero.x).setY(hero.y);
+          this.movementIndicator.setVisible(true).setX(hero.x).setY(hero.y);
+          hero.setDepth(hero.depth + 1);
+        });
+
+        hero.on("drop", (_, target) => {
+          this.clearMovementLayer();
+          hero.setDepth(hero.depth - 1);
+          const gridCell = pixelsToGrid(hero.x, hero.y);
+          this.startRosary.setVisible(false);
+          this.endRosary.setVisible(false);
+          this.movementIndicator.setVisible(false);
 
           switch (target.name) {
-            case "attack":
-              this.socket.emit("request preview battle", {
-                x: gridCell.x,
-                y: gridCell.y,
-                unit: hero.name,
-                position: hero.temporaryPosition
-              });
+            case "assist": {
+              this.socket.emit("request confirm assist", {
 
-              this.actionIndicator.setFrame("attack-indicator").setVisible(true);
-              this.actionIndicator.setX(x).setY(y);
-              break;
-            case "movement":
-              hero.temporaryPosition = gridCell;
-              this.combatForecast.setVisible(false);
-              const path = this.pathfinder.findPath(savedPosition, gridCell);
-              this.storedPath = path;
-              const pathCopy = [...path];
-              this.drawPath(pathCopy);
-              this.movementIndicator.setX(x).setY(y);
-              this.movementIndicator.setFrame("movement-indicator");
-              this.actionIndicator.setVisible(false);
-              this.sound.playAudioSprite("sfx", "hover");
-
-              break;
-            case "warp":
-              this.actionIndicator.setX(x).setY(y);
-              this.combatForecast.setVisible(false);
-              this.actionIndicator.setFrame("movement-indicator").setVisible(true);
-              this.sound.playAudioSprite("sfx", "hover");
-              break;
-            case "assist":
-              this.actionIndicator.setX(x).setY(y);
-              this.combatForecast.setVisible(false);
-              this.actionIndicator.setFrame("assist-indicator").setVisible(true);
-              this.sound.playAudioSprite("sfx", "hover");
-              break;
+              })
+            }
           }
-        }
-      });
+          if (target.name !== "attack") {
+            this.socket.emit("request confirm movement", {
+              unitId: hero.name,
+              ...gridCell,
+            });
+          } else {
+            this.socket.emit("request confirm combat", {
+              unitId: hero.name,
+              attackerCoordinates: hero.temporaryPosition,
+              ...gridCell,
+              path: this.storedPath.map(([x, y]) => ({
+                x,
+                y
+              }))
+            });
+          }
+          this.socket.sendBuffer = [];
+          this.storedPath = [];
+        });
 
-      hero.on("dragstart", () => {
-        this.startRosary.setVisible(true).setX(hero.x).setY(hero.y);
-        this.movementIndicator.setVisible(true).setX(hero.x).setY(hero.y);
-        hero.setDepth(hero.depth + 1);
-      });
-
-      hero.on("drop", (_, target) => {
-        this.clearMovementLayer();
-        hero.setDepth(hero.depth - 1);
-        const gridCell = pixelsToGrid(hero.x, hero.y);
-        this.startRosary.setVisible(false);
-        this.endRosary.setVisible(false);
-        this.movementIndicator.setVisible(false);
-        if (target.name !== "attack") {
-          this.socket.emit("request confirm movement", {
-            unitId: hero.name,
-            ...gridCell,
-          });
-        } else {
-          this.socket.emit("request confirm combat", {
-            unitId: hero.name,
-            attackerCoordinates: hero.temporaryPosition,
-            ...gridCell,
-            path: this.storedPath.map(([x, y]) => ({
-              x,
-              y
-            }))
-          });
-        }
-        this.socket.sendBuffer = [];
-        this.storedPath = [];
-      });
-
-      this.input.setDraggable([hero], true);
+        this.input.setDraggable([hero], true);
+      }
     }
 
     this.socket.on("update-entities", (dict) => {

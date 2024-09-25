@@ -10,6 +10,13 @@ function killAnimation(scene: MainScene, hero: Hero) {
             alpha: 0,
             duration: 500,
             onStart() {
+                hero.glowingSprite.setAlpha(1);
+                scene.tweens.add({
+                    targets: [hero.glowingSprite],
+                    alpha: 0,
+                    delay: 50,
+                    duration: 500
+                }).play();
                 scene.sound.playAudioSprite("battle-sfx", "ko");
             },
             onComplete() {
