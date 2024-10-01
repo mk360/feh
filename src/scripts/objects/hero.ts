@@ -1,8 +1,8 @@
+import MainScene from "../scenes/mainScene";
 import TextColors from "../utils/text-colors";
 import { renderSpecialText, renderText } from "../utils/text-renderer";
 import IconsSwitcher from "./icons-switcher";
-
-import { GameObjects, Math, Scene, Tweens } from "phaser";
+import { GameObjects, Math, Tweens } from "phaser";
 
 const hpBarWidth = 50;
 
@@ -24,13 +24,14 @@ class Hero extends GameObjects.Container {
     statusesImage: IconsSwitcher;
     effectivenessImage: IconsSwitcher;
 
-    constructor(scene: Scene, x: number, y: number, data: any) {
+    constructor(scene: MainScene, x: number, y: number, data: any) {
         super(scene, x, y);
         const name = data.components.Name[0].value;
         const team = data.components.Side[0].value;
         const stats = data.components.Stats[0];
         const weapon = data.components.Weapon[0];
         this.temporaryPosition = data.components.Position[0];
+        const isLeftSided = team === scene.side;
         this.movementIndicator = new GameObjects.Image(scene, 0, 0, "movement-indicators", "movement-indicator").setDisplaySize(95, 95).setAlpha(0).setVisible(false);
         this.movementIndicatorTween = this.scene.add.tween({
             targets: [this.movementIndicator],
@@ -52,8 +53,8 @@ class Hero extends GameObjects.Container {
         this.hpText = renderText(scene, -25, hpBarHeight, stats.hp, {
             fontSize: "14px"
         }).setOrigin(1, 0.5);
-        this.hpBar = new GameObjects.Rectangle(scene, this.hpText.getRightCenter().x, hpBarHeight, hpBarWidth, 5, team === "team1" ? parseInt(TextColors.player.replace("#", ""), 16) : parseInt(TextColors.enemy.replace("#", ""), 16)).setOrigin(0, 0).setDepth(2);
-        this.weaponType = new GameObjects.Image(scene, team === "team1" ? -30 : 30, -30, "weapons", `${weapon.color}-${weapon.weaponType}`).setScale(1);
+        this.hpBar = new GameObjects.Rectangle(scene, this.hpText.getRightCenter().x, hpBarHeight, hpBarWidth, 5, isLeftSided ? parseInt(TextColors.player.replace("#", ""), 16) : parseInt(TextColors.enemy.replace("#", ""), 16)).setOrigin(0, 0).setDepth(2);
+        this.weaponType = new GameObjects.Image(scene, isLeftSided ? -30 : 30, -30, "weapons", `${weapon.color}-${weapon.weaponType}`).setScale(1);
         this.hpBarBackground = new GameObjects.Rectangle(scene, this.hpBar.getLeftCenter().x - 1, hpBarHeight - 1, hpBarWidth + 2, 7, 0x000000).setOrigin(0, 0);
         this.add(this.hpBarBackground);
         this.add(this.hpBar);
@@ -62,9 +63,9 @@ class Hero extends GameObjects.Container {
         this.add(this.effectivenessImage);
         const gradient = this.hpText.context.createLinearGradient(0, 0, 0, this.hpText.height);
         gradient.addColorStop(0, "white");
-        gradient.addColorStop(0.7, team === "team1" ? TextColors.player : TextColors.enemy);
-        this.sprite.setFlipX(team === "team2");
-        this.glowingSprite.setFlipX(team === "team2");
+        gradient.addColorStop(0.7, isLeftSided ? TextColors.player : TextColors.enemy);
+        this.sprite.setFlipX(team !== scene.side);
+        this.glowingSprite.setFlipX(team !== scene.side);
         this.hpText.setFill(gradient);
         this.add(this.hpText);
         this.setSize(120, 120);
@@ -75,7 +76,7 @@ class Hero extends GameObjects.Container {
         this.enableMovementIndicator();
 
         if (existingSpecial) {
-            this.createSpecial(existingSpecial[0].cooldown);
+            this.createSpecial(existingSpecial[0].cooldown, scene);
         }
     }
 
@@ -105,12 +106,13 @@ class Hero extends GameObjects.Container {
         return flashingTween as Tweens.Tween;
     }
 
-    createSpecial(startingCooldown: number) {
+    createSpecial(startingCooldown: number, scene: MainScene) {
         const { value: team } = this.getInternalHero().Side[0];
-        this.specialImage = new GameObjects.Image(this.scene, team === "team1" ? -40 : 20, -20, "skills-ui", "special-icon").setScale(0.35).setOrigin(0);
+        const isLeftSided = team === scene.side;
+        this.specialImage = new GameObjects.Image(this.scene, isLeftSided ? -40 : 20, -20, "skills-ui", "special-icon").setScale(0.35).setOrigin(0);
         this.specialText = renderSpecialText({
-            scene: this.scene,
-            x: team === "team1" ? -40 : 20,
+            scene,
+            x: isLeftSided ? -40 : 20,
             y: -20,
             style: {
                 fontSize: 20,

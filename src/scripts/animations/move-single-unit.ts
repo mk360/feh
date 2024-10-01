@@ -5,6 +5,8 @@ import MainScene from "../scenes/mainScene";
 
 function MoveSingleUnit(scene: MainScene, target: Hero, targetCoordinates: { x: number; y: number }) {
     const { x: pxX, y: pxY } = gridToPixels(targetCoordinates.x, targetCoordinates.y);
+    target.getInternalHero().Position = [targetCoordinates]; // optimistic assignment while we wait for the server
+
     const timeline = new Time.Timeline(scene, [{
         tween: {
             targets: [target],

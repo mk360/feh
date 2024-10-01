@@ -13,15 +13,17 @@ function combatAnimation(scene: MainScene, payload: string) {
         const attackerObject = scene.heroesLayer.getByName(attacker) as Hero;
         const attackerCoordinates = attackerObject.getInternalHero().Position[0];
         const attackerPosition = gridToPixels(attackerCoordinates.x, attackerCoordinates.y);
+        attackerObject.x = attackerPosition.x;
+        attackerObject.y = attackerPosition.y;
         const defenderCoordinates = defenderObject.getInternalHero().Position[0];
         const defenderPosition = gridToPixels(defenderCoordinates.x, defenderCoordinates.y);
 
         tweens.push({
-            from: 400,
+            from: i ? 400 : 100,
             tween: {
                 targets: [attackerObject],
-                x: `-=${(attackerPosition.x - defenderPosition.x) / 2}`,
-                y: `-=${(attackerPosition.y - defenderPosition.y) / 2}`,
+                x: (defenderPosition.x + attackerPosition.x) / 2,
+                y: (defenderPosition.y + attackerPosition.y) / 2,
                 yoyo: true,
                 duration: 200,
                 onYoyo: () => {
@@ -38,6 +40,10 @@ function combatAnimation(scene: MainScene, payload: string) {
                     if (+attackerHealing) {
 
                     }
+                },
+                onComplete: () => {
+                    attackerObject.x = attackerPosition.x;
+                    attackerObject.y = attackerPosition.y;
                 }
             }
         });
