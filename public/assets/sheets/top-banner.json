@@ -1,9 +1,169 @@
 {
 	"frames": {
+		"A": {
+			"frame": {
+				"x": 0,
+				"y": 0,
+				"w": 34,
+				"h": 36
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 34,
+				"h": 36
+			},
+			"sourceSize": {
+				"w": 34,
+				"h": 36
+			}
+		},
+		"B": {
+			"frame": {
+				"x": 34,
+				"y": 0,
+				"w": 31,
+				"h": 36
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 31,
+				"h": 36
+			},
+			"sourceSize": {
+				"w": 31,
+				"h": 36
+			}
+		},
+		"C": {
+			"frame": {
+				"x": 65,
+				"y": 0,
+				"w": 32,
+				"h": 40
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 32,
+				"h": 40
+			},
+			"sourceSize": {
+				"w": 32,
+				"h": 40
+			}
+		},
+		"S": {
+			"frame": {
+				"x": 97,
+				"y": 0,
+				"w": 28,
+				"h": 38
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 28,
+				"h": 38
+			},
+			"sourceSize": {
+				"w": 28,
+				"h": 38
+			}
+		},
+		"assist": {
+			"frame": {
+				"x": 0,
+				"y": 40,
+				"w": 1123,
+				"h": 147
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 1123,
+				"h": 147
+			},
+			"sourceSize": {
+				"w": 1123,
+				"h": 147
+			}
+		},
+		"assist-icon": {
+			"frame": {
+				"x": 0,
+				"y": 187,
+				"w": 55,
+				"h": 62
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 55,
+				"h": 62
+			},
+			"sourceSize": {
+				"w": 55,
+				"h": 62
+			}
+		},
+		"banner-bg": {
+			"frame": {
+				"x": 55,
+				"y": 187,
+				"w": 1032,
+				"h": 149
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 1032,
+				"h": 149
+			},
+			"sourceSize": {
+				"w": 1032,
+				"h": 149
+			}
+		},
+		"enemy-banner": {
+			"frame": {
+				"x": 0,
+				"y": 336,
+				"w": 750,
+				"h": 180
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 750,
+				"h": 180
+			},
+			"sourceSize": {
+				"w": 750,
+				"h": 180
+			}
+		},
 		"forecast-bg": {
 			"frame": {
-				"x": 1,
-				"y": 1,
+				"x": 0,
+				"y": 516,
 				"w": 750,
 				"h": 180
 			},
@@ -22,8 +182,8 @@
 		},
 		"hp plate": {
 			"frame": {
-				"x": 753,
-				"y": 1,
+				"x": 750,
+				"y": 336,
 				"w": 223,
 				"h": 71
 			},
@@ -42,8 +202,8 @@
 		},
 		"nameplate": {
 			"frame": {
-				"x": 978,
-				"y": 1,
+				"x": 750,
+				"y": 407,
 				"w": 307,
 				"h": 82
 			},
@@ -62,8 +222,8 @@
 		},
 		"separator": {
 			"frame": {
-				"x": 2375,
-				"y": 1,
+				"x": 0,
+				"y": 696,
 				"w": 1086,
 				"h": 25
 			},
@@ -78,12 +238,32 @@
 			"sourceSize": {
 				"w": 1086,
 				"h": 25
+			}
+		},
+		"special-icon": {
+			"frame": {
+				"x": 973,
+				"y": 336,
+				"w": 55,
+				"h": 65
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 55,
+				"h": 65
+			},
+			"sourceSize": {
+				"w": 55,
+				"h": 65
 			}
 		},
 		"unit-banner-bg": {
 			"frame": {
-				"x": 3463,
-				"y": 1,
+				"x": 0,
+				"y": 721,
 				"w": 750,
 				"h": 180
 			},
@@ -100,44 +280,44 @@
 				"h": 180
 			}
 		},
-		"unit-bg-test": {
+		"weapon": {
 			"frame": {
-				"x": 4215,
-				"y": 1,
-				"w": 1032,
-				"h": 149
+				"x": 1123,
+				"y": 0,
+				"w": 1120,
+				"h": 141
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 1032,
-				"h": 149
+				"w": 1120,
+				"h": 141
 			},
 			"sourceSize": {
-				"w": 1032,
-				"h": 149
+				"w": 1120,
+				"h": 141
 			}
 		},
-		"unitbg": {
+		"weapon_icon": {
 			"frame": {
-				"x": 5249,
-				"y": 1,
-				"w": 603,
-				"h": 76
+				"x": 1123,
+				"y": 141,
+				"w": 59,
+				"h": 57
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 603,
-				"h": 76
+				"w": 59,
+				"h": 57
 			},
 			"sourceSize": {
-				"w": 603,
-				"h": 76
+				"w": 59,
+				"h": 57
 			}
 		}
 	},
@@ -147,8 +327,8 @@
 		"image": "spritesheet",
 		"format": "RGBA8888",
 		"size": {
-			"w": 5853,
-			"h": 182
+			"w": 2243,
+			"h": 901
 		},
 		"scale": "1"
 	}
