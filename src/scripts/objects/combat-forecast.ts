@@ -76,7 +76,6 @@ class CombatForecast extends GameObjects.Container {
         damage: null,
     };
     private koTween: Tweens.Tween;
-    private portraitTweens: Tweens.Tween[] = [];
 
     private createFirstHero() {
         this.firstHero.statMods = new GameObjects.Group(this.scene);
@@ -219,9 +218,8 @@ class CombatForecast extends GameObjects.Container {
         statChangesX: number;
         xShift: number;
     }) {
-        console.log(side.statMods.children);
         side.statMods.clear(true, true);
-        console.log(side.statMods.children);
+        console.log([...side.statMods.getChildren()]);
         side.damage.setText(hero.turns === 0 ? "-" : hero.damage.toString()).setColor(hero.effectiveness ? TextColors.effective : TextColors.numbers);
         if (hero.turns >= 2) {
             side.roundCount.setText("×" + hero.turns);

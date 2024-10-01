@@ -1,6 +1,6 @@
 import { renderRegularHPText, renderText, getLowHPGradient, getHealthyHPGradient } from "../utils/text-renderer";
 import Hero from "./hero";
-import { GameObjects, Geom } from "phaser";
+import { GameObjects } from "phaser";
 import TextColors from "../utils/text-colors";
 import HeroNameplate from "./hero-nameplate";
 import Stats from "../../interfaces/stats";
@@ -55,10 +55,12 @@ class UnitInfosBanner extends GameObjects.Container {
     private assist: GameObjects.Text;
     private hpBackground: GameObjects.Image;
     private statChanges: StatChanges;
+    private playerSide = "";
 
-    constructor(scene: Phaser.Scene) {
+    constructor(scene: Phaser.Scene, playerSide: string) {
         super(scene, 0, 71);
         const blockX = 290;
+        this.playerSide = playerSide;
         this.bannerBg = new GameObjects.Image(scene, 0, 0, "top-banner", "unit-banner-bg").setOrigin(0, 0).setInteractive();
         this.bannerBg.on("pointerdown", () => {
             this.closeTextbox();
@@ -206,8 +208,8 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.textbox.setContent(content);
                 this.textbox.display();
             }
-            if (statKey !== "hp") {
 
+            if (statKey !== "hp") {
                 label.on("pointerdown", () => {
                     this.scene.sound.playAudioSprite("sfx", "tap");
                     this.highlighter.highlightElement(value);
@@ -383,6 +385,7 @@ class UnitInfosBanner extends GameObjects.Container {
         const { maxHP, hp } = stats;
 
         this.heroPortrait.setTexture(name, hp / maxHP < 0.5 ? "portrait-damage" : "portrait");
+        this.bannerBg.setFrame(this.playerSide === Side[0].value ? "unit-banner-bg" : "enemy-banner");
         if (Special) this.special.setText(Special[0].name);
         else this.special.setText("-");
 

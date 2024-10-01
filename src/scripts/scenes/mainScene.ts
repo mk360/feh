@@ -4,7 +4,7 @@
  * implement bonuses
  */
 
-import { GameObjects, Time } from 'phaser';
+import { Display, GameObjects, Time } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import socket from "../../default-socket";
@@ -61,9 +61,12 @@ export default class MainScene extends Phaser.Scene {
   heroesLayer: GameObjects.Layer;
   interactionsIndicator: InteractionIndicator;
   socket = socket;
+  currentTurn = "";
+  side = "";
+  footer: Footer;
   private tilesLayer: GameObjects.Layer;
   private unitInfosBanner: UnitInfosBanner;
-  private side: string;
+  teamIds: string[] = [];
   private storedPath: [number, number][] = [];
   private fpsText: GameObjects.Text;
   combatForecast: CombatForecast;
@@ -77,7 +80,6 @@ export default class MainScene extends Phaser.Scene {
   private actionIndicator: GameObjects.Image;
   private pathfinder = new Pathfinder();
   private doubleClick = createDoubleTapHandler();
-  private footer: Footer;
   private actionsTray: ActionsTray;
 
   drawPath(path: [number, number][]) {
@@ -150,160 +152,238 @@ export default class MainScene extends Phaser.Scene {
     this.actionIndicator.setVisible(false);
   }
 
-  create() {
-    this.sound.pauseOnBlur = false;
-    this.add.image(0, 0, "marginals", "header").setOrigin(0);
-    const entities = this.game.registry.list.world;
-    this.unitInfosBanner = new UnitInfosBanner(this).setVisible(false);
-    this.combatForecast = new CombatForecast(this).setVisible(false);
-    this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
-    const toolbar = this.add.container(0, this.background.getBottomCenter().y);
-    this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
-    // const button = new Button(this, "test");
-    // this.actionsTray.addAction(button);
-    this.footer = new Footer(this, 0, this.actionsTray.getBounds().bottom, 1);
-    this.add.existing(this.footer);
-    this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
-    this.tilesLayer = this.add.layer();
-    this.movementUI = this.add.layer();
-    this.heroesLayer = this.add.layer();
-    this.miscUIElements = this.add.layer();
-    this.miscUIElements.add(this.interactionsIndicator);
-    this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
-    this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
-    this.movementIndicator = new GameObjects.Image(this, 0, 0, "movement-indicators", "movement-indicator").setVisible(false);
-    this.actionIndicator = new GameObjects.Image(this, 0, 0, "movement-indicators", "movement-indicator").setVisible(false);
-    this.movementUI.add(this.movementIndicator);
-    this.movementUI.add(this.actionIndicator);
-    this.movementUI.add(this.endRosary);
-    this.movementUI.add(this.startRosary);
+  enableHeroes() {
+    this.heroesLayer.getChildren().forEach((hero: Hero) => {
+    });
+  }
 
-    this.add.existing(this.unitInfosBanner);
-    this.add.existing(this.combatForecast);
+  enableDragging(hero: Hero) {
+    hero.on("drag", (_, dragX: number, dragY: number) => {
+      hero.x = dragX;
+      hero.y = dragY;
+    });
 
-    for (let entityId in entities.heroes) {
-      const entity = entities.heroes[entityId];
-      const hero = this.addHero(entity).setInteractive();
-      hero.setName(entityId);
-      hero.on("pointerdown", () => {
-        this.sound.playAudioSprite("sfx", "tap");
-        this.heroesLayer.getChildren().forEach((child: Hero) => {
-          child.disableMovementIndicator();
+    hero.on("dragenter", (_, target) => {
+      if (target.type === "Rectangle") {
+        this.interactionsIndicator.disable();
+        const gridCell = pixelsToGrid(target.x, target.y);
+        const savedPosition = hero.getInternalHero().Position[0];
+        const { x, y } = gridToPixels(gridCell.x, gridCell.y);
+
+        switch (target.name) {
+          case "attack":
+            this.socket.emit("request preview battle", {
+              x: gridCell.x,
+              y: gridCell.y,
+              unit: hero.name,
+              position: hero.temporaryPosition
+            });
+
+            this.actionIndicator.setFrame("attack-indicator").setVisible(true);
+            this.actionIndicator.setX(x).setY(y);
+            break;
+          case "movement":
+            hero.temporaryPosition = gridCell;
+            this.combatForecast.setVisible(false);
+            const path = this.pathfinder.findPath(savedPosition, gridCell);
+            this.storedPath = path;
+            const pathCopy = [...path];
+            this.drawPath(pathCopy);
+            this.movementIndicator.setX(x).setY(y);
+            this.movementIndicator.setFrame("movement-indicator");
+            this.actionIndicator.setVisible(false);
+            this.sound.playAudioSprite("sfx", "hover");
+
+            break;
+          case "warp":
+            this.actionIndicator.setX(x).setY(y);
+            this.combatForecast.setVisible(false);
+            this.actionIndicator.setFrame("movement-indicator").setVisible(true);
+            this.sound.playAudioSprite("sfx", "hover");
+            break;
+          case "assist":
+            this.actionIndicator.setX(x).setY(y);
+            this.combatForecast.setVisible(false);
+            this.actionIndicator.setFrame("assist-indicator").setVisible(true);
+            this.sound.playAudioSprite("sfx", "hover");
+            break;
+        }
+      }
+    });
+
+    hero.on("dragstart", () => {
+      this.startRosary.setVisible(true).setX(hero.x).setY(hero.y);
+      this.movementIndicator.setVisible(true).setX(hero.x).setY(hero.y);
+      hero.setDepth(hero.depth + 1);
+    });
+
+    hero.on("drop", (_, target) => {
+      this.clearMovementLayer();
+      hero.setDepth(hero.depth - 1);
+      const gridCell = pixelsToGrid(hero.x, hero.y);
+      this.startRosary.setVisible(false);
+      this.endRosary.setVisible(false);
+      this.movementIndicator.setVisible(false);
+
+      switch (target.name) {
+        case "assist": {
+          this.socket.emit("request confirm assist", {
+
+          })
+        }
+      }
+      if (target.name !== "attack") {
+        this.socket.emit("request confirm movement", {
+          unitId: hero.name,
+          ...gridCell,
         });
-        this.socket.emit("request preview movement", {
-          unitId: hero.name
+      } else {
+        this.socket.emit("request confirm combat", {
+          unitId: hero.name,
+          attackerCoordinates: hero.temporaryPosition,
+          ...gridCell,
+          path: this.storedPath.map(([x, y]) => ({
+            x,
+            y
+          }))
         });
-        this.socket.sendBuffer = [];
-        const isDoubleTap = this.doubleClick(this.time.now);
-        if (isDoubleTap) {
-          const internal = hero.getInternalHero();
-          this.socket.emit("request freeze unit", {
-            unitId: hero.name,
-            ...internal.Position[0]
-          });
+      }
+      this.socket.sendBuffer = [];
+      this.storedPath = [];
+    });
+
+    hero.enableMovementIndicator();
+
+    this.input.setDraggable([hero], true);
+  }
+
+  changeTurns() {
+    if (this.currentTurn !== this.side) {
+      this.heroesLayer.getChildren().forEach((child: Hero) => {
+        this.disableDragging(child);
+        child.sprite.postFX.clear();
+      });
+    } else {
+      this.heroesLayer.getChildren().forEach((child: Hero) => {
+        const { Side: [{ value: side }] } = child.getInternalHero();
+        if (side === this.side) {
+          this.enableDragging(child);
         } else {
-          this.playHeroQuote(hero);
+          this.disableDragging(child);
         }
       });
+    }
+  }
 
-      hero.on("drag", (_, dragX: number, dragY: number) => {
-        hero.x = dragX;
-        hero.y = dragY;
+  disableDragging(hero: Hero) {
+    this.input.setDraggable([hero], false);
+    hero.off("drag");
+    hero.off("dragstart");
+    hero.off("dragenter");
+    hero.off("drop");
+    hero.disableMovementIndicator();
+  }
+
+  create() {
+    this.socket.emit("loading");
+    this.socket.on("allow-control", ({ ids, id }) => {
+      this.side = id;
+      this.teamIds = ids;
+      this.sound.pauseOnBlur = false;
+      this.add.image(0, 0, "marginals", "header").setOrigin(0);
+      const entities = this.game.registry.list.world;
+      this.unitInfosBanner = new UnitInfosBanner(this, id).setVisible(false);
+      this.combatForecast = new CombatForecast(this).setVisible(false);
+      this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
+      const toolbar = this.add.container(0, this.background.getBottomCenter().y);
+      this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
+      // const button = new Button(this, "test");
+      // this.actionsTray.addAction(button);
+      this.footer = new Footer(this, 0, this.actionsTray.getBounds().bottom, 1);
+      this.add.existing(this.footer);
+      this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
+      this.tilesLayer = this.add.layer();
+      this.movementUI = this.add.layer();
+      this.heroesLayer = this.add.layer();
+      this.miscUIElements = this.add.layer();
+      this.miscUIElements.add(this.interactionsIndicator);
+      this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
+      this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
+      this.movementIndicator = new GameObjects.Image(this, 0, 0, "movement-indicators", "movement-indicator").setVisible(false);
+      this.actionIndicator = new GameObjects.Image(this, 0, 0, "movement-indicators", "movement-indicator").setVisible(false);
+      this.movementUI.add(this.movementIndicator);
+      this.movementUI.add(this.actionIndicator);
+      this.movementUI.add(this.endRosary);
+      this.movementUI.add(this.startRosary);
+
+      this.add.existing(this.unitInfosBanner);
+      this.add.existing(this.combatForecast);
+
+      for (let entityId in entities.heroes) {
+        const entity = entities.heroes[entityId];
+        const hero = this.addHero(entity).setInteractive();
+        hero.setName(entityId);
+        hero.on("pointerdown", () => {
+          this.sound.playAudioSprite("sfx", "tap");
+          this.heroesLayer.getChildren().forEach((child: Hero) => {
+            child.disableMovementIndicator();
+          });
+          this.socket.emit("request preview movement", {
+            unitId: hero.name
+          });
+          this.socket.sendBuffer = [];
+          if (!hero.getInternalHero().FinishedAction && hero.getInternalHero().Side[0].value === this.side && this.side === this.currentTurn) {
+            const isDoubleTap = this.doubleClick(this.time.now);
+            if (isDoubleTap) {
+              const internal = hero.getInternalHero();
+              this.socket.emit("request freeze unit", {
+                unitId: hero.name,
+                ...internal.Position[0]
+              });
+            } else {
+              this.playHeroQuote(hero);
+            }
+          }
+        });
+        if (!hero.getInternalHero().FinishedAction && hero.getInternalHero().Side[0].value === this.side && this.side === this.currentTurn) {
+          this.enableDragging(hero);
+        } else {
+          this.disableDragging(hero);
+        }
+      }
+
+      this.background.on("pointerdown", () => {
+        this.sound.playAudioSprite("sfx", "cancel");
+
+        if (this.side === this.currentTurn) {
+          this.movementIndicator.setVisible(false);
+          this.heroesLayer.getChildren().forEach((child: Hero) => {
+            if (!child.getInternalHero().Finished && child.getInternalHero().Side[0].value === this.side) child.enableMovementIndicator();
+          });
+          this.heroesLayer.getChildren().forEach((child: Hero) => {
+            child.effectivenessImage.iconsList = [];
+            child.setInteractive(undefined, undefined, false);
+          });
+        }
+
+        this.tilesLayer.removeAll();
+        this.unitInfosBanner.closeTextbox();
       });
 
-      if (!hero.getInternalHero().FinishedAction) {
-        hero.on("dragenter", (_, target) => {
-          if (target.type === "Rectangle") {
-            this.interactionsIndicator.disable();
-            const gridCell = pixelsToGrid(target.x, target.y);
-            const savedPosition = hero.getInternalHero().Position[0];
-            const { x, y } = gridToPixels(gridCell.x, gridCell.y);
-
-            switch (target.name) {
-              case "attack":
-                this.socket.emit("request preview battle", {
-                  x: gridCell.x,
-                  y: gridCell.y,
-                  unit: hero.name,
-                  position: hero.temporaryPosition
-                });
-
-                this.actionIndicator.setFrame("attack-indicator").setVisible(true);
-                this.actionIndicator.setX(x).setY(y);
-                break;
-              case "movement":
-                hero.temporaryPosition = gridCell;
-                this.combatForecast.setVisible(false);
-                const path = this.pathfinder.findPath(savedPosition, gridCell);
-                this.storedPath = path;
-                const pathCopy = [...path];
-                this.drawPath(pathCopy);
-                this.movementIndicator.setX(x).setY(y);
-                this.movementIndicator.setFrame("movement-indicator");
-                this.actionIndicator.setVisible(false);
-                this.sound.playAudioSprite("sfx", "hover");
-
-                break;
-              case "warp":
-                this.actionIndicator.setX(x).setY(y);
-                this.combatForecast.setVisible(false);
-                this.actionIndicator.setFrame("movement-indicator").setVisible(true);
-                this.sound.playAudioSprite("sfx", "hover");
-                break;
-              case "assist":
-                this.actionIndicator.setX(x).setY(y);
-                this.combatForecast.setVisible(false);
-                this.actionIndicator.setFrame("assist-indicator").setVisible(true);
-                this.sound.playAudioSprite("sfx", "hover");
-                break;
-            }
-          }
-        });
-
-        hero.on("dragstart", () => {
-          this.startRosary.setVisible(true).setX(hero.x).setY(hero.y);
-          this.movementIndicator.setVisible(true).setX(hero.x).setY(hero.y);
-          hero.setDepth(hero.depth + 1);
-        });
-
-        hero.on("drop", (_, target) => {
-          this.clearMovementLayer();
-          hero.setDepth(hero.depth - 1);
-          const gridCell = pixelsToGrid(hero.x, hero.y);
-          this.startRosary.setVisible(false);
-          this.endRosary.setVisible(false);
-          this.movementIndicator.setVisible(false);
-
-          switch (target.name) {
-            case "assist": {
-              this.socket.emit("request confirm assist", {
-
-              })
-            }
-          }
-          if (target.name !== "attack") {
-            this.socket.emit("request confirm movement", {
-              unitId: hero.name,
-              ...gridCell,
-            });
-          } else {
-            this.socket.emit("request confirm combat", {
-              unitId: hero.name,
-              attackerCoordinates: hero.temporaryPosition,
-              ...gridCell,
-              path: this.storedPath.map(([x, y]) => ({
-                x,
-                y
-              }))
-            });
-          }
-          this.socket.sendBuffer = [];
-          this.storedPath = [];
-        });
-
-        this.input.setDraggable([hero], true);
-      }
-    }
+      const layer = this.add.rectangle(0, 0, +this.game.config.width, +this.game.config.height, 0xD8BA94, 1).setOrigin(0);
+      const startGameButton = new GameObjects.Rectangle(this, layer.getCenter().x, layer.getCenter().y - 50, 240, 120, 0x00AF81).setInteractive();
+      const startGameText = renderText(this, startGameButton.getCenter().x, startGameButton.getCenter().y, "Start Game", {
+        fontSize: 26
+      }).setOrigin(0.5);
+      startGameButton.on("pointerdown", () => {
+        layer.destroy();
+        startGameText.destroy();
+        startGameButton.destroy();
+        this.socket.emit("ready");
+      });
+      this.add.existing(startGameButton);
+      this.add.existing(startGameText);
+    });
 
     this.socket.on("update-entities", (dict) => {
       for (let heroId in dict) {
@@ -318,8 +398,7 @@ export default class MainScene extends Phaser.Scene {
     });
 
     this.socket.on("response preview movement", ({ movement = [], assistArray = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness }) => {
-      const childrenTiles = this.tilesLayer.getChildren();
-      while (childrenTiles.length) childrenTiles.pop().destroy();
+      while (this.tilesLayer.getChildren().length) this.tilesLayer.getChildren().pop().destroy();
       this.pathfinder.reset();
 
       for (let tile of movement) {
@@ -456,35 +535,8 @@ export default class MainScene extends Phaser.Scene {
       internalHero[type] = Array.isArray(data) ? data : [data];
     });
 
-    this.background.on("pointerdown", () => {
-      this.movementIndicator.setVisible(false);
-      this.sound.playAudioSprite("sfx", "cancel");
-      this.heroesLayer.getChildren().forEach((child: Hero) => {
-        if (!child.getInternalHero().Finished) child.enableMovementIndicator();
-      });
-      const tiles = this.tilesLayer.getChildren();
-      while (tiles.length) tiles.pop().destroy();
-      this.heroesLayer.getChildren().forEach((child: Hero) => {
-        child.effectivenessImage.iconsList = [];
-        child.setInteractive(undefined, undefined, false);
-      });
-      this.unitInfosBanner.closeTextbox();
-    });
-    // this.startBackgroundMusic(0.13);
 
-    const layer = this.add.rectangle(0, 0, +this.game.config.width, +this.game.config.height, 0xD8BA94, 1).setOrigin(0);
-    const startGameButton = new GameObjects.Rectangle(this, layer.getCenter().x, layer.getCenter().y - 50, 240, 120, 0x00AF81).setInteractive();
-    const startGameText = renderText(this, startGameButton.getCenter().x, startGameButton.getCenter().y, "Start Game", {
-      fontSize: 26
-    }).setOrigin(0.5);
-    startGameButton.on("pointerdown", () => {
-      layer.destroy();
-      startGameText.destroy();
-      startGameButton.destroy();
-      this.socket.emit("ready");
-    });
-    this.add.existing(startGameButton);
-    this.add.existing(startGameText);
+    // this.startBackgroundMusic(0.13);
   }
 
   update(_, delta) {
@@ -492,10 +544,12 @@ export default class MainScene extends Phaser.Scene {
     const ONE_SECOND = 1000;
     if (timer >= 1.5 * ONE_SECOND) {
       timer = 0;
-      this.heroesLayer.getChildren().forEach((hero: Hero) => {
-        hero.toggleStatuses();
-        hero.toggleEffectivenessImages();
-      });
+      if (this.heroesLayer) {
+        this.heroesLayer.getChildren().forEach((hero: Hero) => {
+          hero.toggleStatuses();
+          hero.toggleEffectivenessImages();
+        });
+      }
     }
   }
 
@@ -532,15 +586,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 };
 
 // export default class MainScene extends Phaser.Scene {
-//   heroBackground: Phaser.GameObjects.Rectangle;
-//   movementAllowedTween: Phaser.Tweens.Tween;
-//   combatForecast: CombatForecast;
-//   interactionIndicator: InteractionIndicator;
-//   interactionIndicatorTween: Tweens.Tween
-//   actionsTray = new ActionsTray(this);
-//   tileHighlight: GameObjects.Image;
-//   updateDelta = 0;
-//   timeline: Time.Timeline;
 //   states: {
 //     preparation: PreparationState;
 //     fighting: FightingState;
@@ -555,52 +600,6 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
 //     };
 
 //     this.currentState = this.states.preparation;
-//   }
-
-//   processAction(action: UIAction) {
-//     switch (action.type) {
-//       case "display-enemy-range": {
-//         const { enabled } = action;
-//         this.displayEnemyRange(enabled);
-//         break;
-//       };
-
-//         break;
-//       case "attack": {
-//         const { args } = action;
-//         this.runCombat(args.outcome);
-//       }
-//         break;
-//       case "switch": {
-//         const { args } = action;
-//         const { firstHero, secondHero } = args;
-//         const firstHeroPx = gridToPixels(firstHero.coordinates.x, firstHero.coordinates.y);
-//         const secondHeroPx = gridToPixels(secondHero.coordinates.x, secondHero.coordinates.y);
-//         battle.switchHeroes(firstHero, secondHero);
-//         this.add.timeline([{
-//           at: 0,
-//           tween: {
-//             targets: this.children.getByName(firstHero.id),
-//             x: secondHeroPx.x,
-//             y: secondHeroPx.y,
-//             duration: 75
-//           }
-//         }, {
-//           at: 0,
-//           tween: {
-//             targets: this.children.getByName(secondHero.id),
-//             x: firstHeroPx.x,
-//             y: firstHeroPx.y,
-//             duration: 75,
-//           }
-//         }]).play();
-//         break;
-//       }
-//       case "swap-spaces": {
-//         this.switchPositionsMode();
-//         break;
-//       }
-//     }
 //   }
 
 //   createDamageText(turn: CombatOutcome["turns"][number]) {

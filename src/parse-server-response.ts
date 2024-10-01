@@ -30,7 +30,8 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
             const args = effect.split(" ");
             switch (args[0]) {
                 case "turn": {
-                    const isCurrentSide = "bonjour" === args[1];
+                    scene.currentTurn = args[1];
+                    const isCurrentSide = scene.side === args[1];
                     const newTurnAnimation = isCurrentSide ? playerPhase : enemyPhase;
                     const timeline = newTurnAnimation(scene, +args[2]);
                     timelineArray.push(timeline);
