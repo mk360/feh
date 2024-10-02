@@ -70,7 +70,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(this.heroPortrait);
         this.createStats();
 
-        this.textbox = new Textbox(scene, 0, 0).setVisible(false);
+        this.textbox = new Textbox(scene, 0, 0, playerSide).setVisible(false);
         this.nameplate = new HeroNameplate(scene, blockX - 170, 25, {
             name: "",
             weaponType: "",
@@ -206,7 +206,7 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.textbox.x = label.getRightCenter().x + 400;
                 this.textbox.y = label.getBottomLeft().y + 10;
                 this.textbox.setContent(content);
-                this.textbox.display();
+                this.textbox.display(internalHero.Side[0].value);
             }
 
             if (statKey !== "hp") {
@@ -261,13 +261,14 @@ class UnitInfosBanner extends GameObjects.Container {
                 const textboxLines = this.textbox.weaponTextbox({
                     might: weapon.might,
                     description: weapon.description,
-                    range: weaponIdentity.range
+                    range: weaponIdentity.range,
+                    effectiveness: internalHero.Effectiveness?.map((i) => i.value) ?? []
                 });
 
                 this.textbox.setContent(textboxLines);
                 this.textbox.x = this.weaponBg.getRightCenter().x;
                 this.textbox.y = this.weaponBg.getBottomCenter().y + 5;
-                this.textbox.open();
+                this.textbox.display(internalHero.Side[0].value);
             }
         });
 
@@ -284,7 +285,7 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.textbox.x = this.assistBg.getRightCenter().x;
                 this.textbox.y = this.assistBg.getBottomCenter().y + 5;
                 this.textbox.setContent(lines);
-                this.textbox.open();
+                this.textbox.display(internalHero.Side[0].value);
             }
         });
 
@@ -305,7 +306,7 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.textbox.setContent(textboxLines);
                 this.textbox.x = this.specialBg.getRightCenter().x;
                 this.textbox.y = this.specialBg.getBottomCenter().y + 5;
-                this.textbox.open();
+                this.textbox.display(internalHero.Side[0].value);
             }
         });
     }
@@ -342,7 +343,7 @@ class UnitInfosBanner extends GameObjects.Container {
 
                 this.textbox.x = this.C.getRightCenter().x;
                 this.textbox.y = this.C.getBottomCenter().y + 5;
-                this.textbox.open();
+                this.textbox.display(internalHero.Side[0].value);
             });
         }
     }
@@ -374,7 +375,8 @@ class UnitInfosBanner extends GameObjects.Container {
         let skills: Partial<{
             [k in "weapon" | "assist" | "special" | "A" | "B" | "C"]: Array<{
                 name: string;
-                description: string
+                description: string;
+                displayName?: string;
             }>;
         }> = {};
 
@@ -392,7 +394,7 @@ class UnitInfosBanner extends GameObjects.Container {
         if (Assist) this.assist.setText(Assist[0].name);
         else this.assist.setText("-");
 
-        if (skills.weapon) this.weaponName.setText(skills.weapon[0].name);
+        if (skills.weapon) this.weaponName.setText(skills.weapon[0].displayName ?? skills.weapon[0].name);
         else this.weaponName.setText("-");
 
         for (let statKey in this.stats) {

@@ -542,7 +542,7 @@ export default class MainScene extends Phaser.Scene {
   update(_, delta) {
     timer += delta;
     const ONE_SECOND = 1000;
-    if (timer >= 1.5 * ONE_SECOND) {
+    if (timer >= 1.2 * ONE_SECOND) {
       timer = 0;
       if (this.heroesLayer) {
         this.heroesLayer.getChildren().forEach((hero: Hero) => {

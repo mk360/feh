@@ -14,6 +14,6 @@ export const STATS = {
     hp: "A unit is defeated if its Hit Points reach 0.",
     def: "The higher a unit's Defense is, the less damage it takes from physical attacks (swords, axes, lances, etc.).",
     res: "The higher a unit's Resistance is, the less damage it takes from magical attacks (spells, staves, breath effects, etc.).",
-    spd: "A unit will attack twice if its Spd is at least 5 more than its foe.",
+    spd: "A unit will attack twice if its Speed is at least 5 more than its foe.",
     atk: "The higher a unit's Atk, the more damage it will inflict on foes.",
 } as const;

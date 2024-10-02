@@ -4,23 +4,46 @@ import { renderBaneText, renderBoonText, renderLabelText, renderText } from "../
 import TextColors from "../utils/text-colors";
 import Stats from "../../interfaces/stats";
 
+function getEffectivenessIcons(effectiveness: string) {
+    if (["cavalry", "flier", "infantry", "armored"].includes(effectiveness)) {
+        return [{ sheet: "movement-types", icon: effectiveness }];
+    } else {
+        if (["bow", "breath", "tome", "breath"].includes(effectiveness)) {
+            return ["red", "blue", "green", "colorless"].map((i) => ({
+                sheet: "weapons",
+                icon: `${i}-${effectiveness}`
+            }));
+        }
+    }
+};
+
+const PADDING = 10;
+
 class Textbox extends GameObjects.Container {
     private contentContainer: GameObjects.Rectangle;
     private children: GameObjects.GameObject[] = [];
+    private playerSide = "";
 
-    constructor(scene: Scene, x: number, y: number) {
+    constructor(scene: Scene, x: number, y: number, side: string) {
         super(scene, x, y);
-        this.contentContainer = new GameObjects.Rectangle(scene, 0, 0, 450, 500, 0x13353F).setOrigin(1, 0).setAlpha(0.9).setStrokeStyle(2, 0x7FD2E0);
+        this.playerSide = side;
+        this.contentContainer = new GameObjects.Rectangle(scene, 0, 0, 450, 500, 0x32070C).setOrigin(1, 0).setAlpha(0.9);
         this.add(this.contentContainer);
     }
 
-    display() {
+    display(side: string) {
+        if (side === this.playerSide) {
+            this.contentContainer.setFillStyle(0x13353F).setStrokeStyle(4, 0x7FD2E0);
+        } else {
+            this.contentContainer.setFillStyle(0x32070C).setStrokeStyle(4, 0xD7768D);
+        }
+
         this.setVisible(true).setScale(0);
         this.scene.sound.playAudioSprite("sfx", "tap");
         this.scene.tweens.add({
             targets: [this],
             scale: 1,
-            duration: 50
+            duration: 50,
         }).play();
     }
 
@@ -50,18 +73,6 @@ class Textbox extends GameObjects.Container {
         return skillInfosLines;
     }
 
-    open() {
-        this.scene.sound.playAudioSprite("sfx", "tap");
-        this.scene.tweens.add({
-            targets: [this],
-            scale: 1,
-            duration: 50,
-            onStart: () => {
-                this.setVisible(true);
-            }
-        }).play();
-    }
-
     createDescriptionTextbox(content: string) {
         const lines: GameObjects.Text[][] = [];
         const singleLine = [renderText(this.scene, 0, 0, content).setWordWrapWidth(430)];
@@ -72,20 +83,19 @@ class Textbox extends GameObjects.Container {
 
     setContent(contentLines: TextboxContent[][]) {
         this.clearContent();
-        let padding = 10;
         let lowestHeight = 0;
 
         for (let line of contentLines) {
             for (let element of line) {
                 this.add(element);
                 this.children.push(element);
-                element.y += padding + this.contentContainer.getTopCenter().y;
-                element.x += padding + this.contentContainer.getLeftCenter().x;
+                element.y += PADDING + this.contentContainer.getTopCenter().y;
+                element.x += PADDING + this.contentContainer.getLeftCenter().x;
                 lowestHeight = Math.max(lowestHeight, element.getBottomCenter().y);
             }
         }
 
-        this.contentContainer.setDisplaySize(this.contentContainer.displayWidth, lowestHeight + padding - this.contentContainer.getTopCenter().y);
+        this.contentContainer.setDisplaySize(this.contentContainer.displayWidth, lowestHeight + PADDING - this.contentContainer.getTopCenter().y);
         return this;
     };
 
@@ -202,7 +212,8 @@ class Textbox extends GameObjects.Container {
         const descLine: GameObjects.Text[] = [];
         const descriptionText = renderText(this.scene, 0, lines[lines.length - 1][0].y + 30, description, {
             fontSize: "18px",
-        }).setWordWrapWidth(396);
+        }).setWordWrapWidth(280);
+
         descLine.push(descriptionText);
         lines.push(descLine);
 
@@ -231,31 +242,71 @@ class Textbox extends GameObjects.Container {
         return textLines;
     }
 
-    weaponTextbox({ might, range, description }: { might: number, range: number, description: string }) {
-        const firstLine = [
-            renderLabelText({
-                scene: this.scene,
-                content: "Mt",
-                x: 0,
-                y: 0
-            }),
-            renderText(this.scene, 30, 0, might).setFontSize(18),
-            renderLabelText({
-                scene: this.scene,
-                content: "Rng",
-                x: 70,
-                y: 0
-            }),
-            renderText(this.scene, 110, 0, range).setFontSize(18)
+    fitContent() {
+        let contentHeight = 0;
+        let contentWidth = 0;
+
+        for (let child of this.children as TextboxContent[]) {
+
+        }
+    }
+
+    weaponTextbox({ might, range, description, effectiveness: effectivenessList }: { might: number, range: number, description: string, effectiveness: string[] }) {
+        const mightLabel = renderLabelText({
+            scene: this.scene,
+            content: "Mt",
+            x: 0,
+            y: 0
+        });
+
+        const mightValue = renderText(this.scene, mightLabel.getBottomRight().x + 4, 0, might).setFontSize(18);
+
+        const rangeLabel = renderLabelText({
+            scene: this.scene,
+            content: "Rng",
+            x: mightValue.getBottomRight().x + 10,
+            y: 0
+        });
+
+        const rangeValue = renderText(this.scene, rangeLabel.getBottomRight().x + 4, 0, range).setFontSize(18);
+
+        const firstLine: TextboxContent[] = [
+            mightLabel,
+            mightValue,
+            rangeLabel,
+            rangeValue
         ];
 
         const linesArray = [firstLine];
+
+        if (effectivenessList) {
+            const effectivenessLabel = renderLabelText({
+                scene: this.scene,
+                content: "Eff",
+                x: rangeValue.getBottomRight().x + 10,
+                y: 0
+            });
+
+            firstLine.push(effectivenessLabel);
+
+            const images = effectivenessList.map((effectiveness) => {
+                const icons = getEffectivenessIcons(effectiveness);
+                return icons.map((icon) => new GameObjects.Image(this.scene, 0, effectivenessLabel.getCenter().y, icon.sheet, icon.icon).setOrigin(0, 0.5));
+            }).flat();
+
+            let previousItem: TextboxContent = effectivenessLabel;
+
+            for (let image of images) {
+                image.x = previousItem.getRightCenter().x + 4;
+                firstLine.push(image);
+                previousItem = image;
+            }
+        }
 
         if (description) {
             const secondLine = [renderText(this.scene, 0, 30, description).setWordWrapWidth(440).setFontSize(18)];
             linesArray.push(secondLine);
         }
-
 
         return linesArray;
     }
