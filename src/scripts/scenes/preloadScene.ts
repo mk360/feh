@@ -33,6 +33,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audio("effect-trigger", "/assets/audio/effect-trigger.mp3");
     this.load.atlas("skills", "/assets/sheets/skills.webp", "/assets/sheets/skills.json");
     this.load.atlas("weapons", "/assets/sheets/weapons.webp", "/assets/sheets/weapons.json");
+    this.load.atlas("movement-types", "/assets/sheets/movement-types.png", "/assets/sheets/movement-types.json");
     this.load.atlas("interactions", "/assets/sheets/interactions.webp", "/assets/sheets/interactions.json");
     this.load.atlas("skills-ui", "/assets/sheets/skills-ui.webp", "/assets/sheets/skills-ui.json");
     this.load.atlas("statuses", "/assets/sheets/statuses.webp", "/assets/sheets/statuses.json");
