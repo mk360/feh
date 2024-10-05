@@ -279,7 +279,7 @@ class Textbox extends GameObjects.Container {
 
         const linesArray = [firstLine];
 
-        if (effectivenessList) {
+        if (effectivenessList.length) {
             const effectivenessLabel = renderLabelText({
                 scene: this.scene,
                 content: "Eff",
