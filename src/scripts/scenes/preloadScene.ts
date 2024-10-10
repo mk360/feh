@@ -28,7 +28,6 @@ export default class PreloadScene extends Phaser.Scene {
         }
       };
     };
-    // if (!world) world = DEBUG_ENTITIES;
     this.load.image("map", `/assets/maps/${world.mapId}.webp`);
     this.load.audio("effect-trigger", "/assets/audio/effect-trigger.mp3");
     this.load.atlas("skills", "/assets/sheets/skills.webp", "/assets/sheets/skills.json");
@@ -55,6 +54,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audio("bonus", "/assets/audio/statuses/bonus.ogg");
     this.load.audio("penalty", "/assets/audio/statuses/penalty.ogg");
     this.load.image("effect", "/assets/effect.png");
+    this.load.image("offensive-special-effect", "/assets/offensive-special-effect.png");
     this.load.image("effect-blur", "/assets/effect-blur.png");
     this.load.image("effective-against-enemy", "/assets/effective-against-enemy.png");
     this.load.image("enemy-effective", "/assets/enemy-effective.png");

@@ -20,6 +20,7 @@ interface ForecastHeroData {
     remainingHP: number;
     turns: number;
     entity: Hero;
+    damageBeforeCombat: number;
     statMods: {
         [k in keyof Stats]: {
             buff?: number;
@@ -43,6 +44,7 @@ interface RenderedSide {
     damageLine: GameObjects.Image;
     roundCount: GameObjects.Text;
     damage: GameObjects.Text;
+    damageBeforeCombat: GameObjects.Text;
     arrow: GameObjects.Text;
 };
 
@@ -63,6 +65,7 @@ class CombatForecast extends GameObjects.Container {
         roundCount: null,
         damage: null,
         arrow: null,
+        damageBeforeCombat: null,
     };
     private secondHero: RenderedSide = {
         portrait: null,
@@ -74,6 +77,7 @@ class CombatForecast extends GameObjects.Container {
         nameplate: null,
         roundCount: null,
         damage: null,
+        damageBeforeCombat: null,
     };
     private koTween: Tweens.Tween;
 
@@ -116,9 +120,18 @@ class CombatForecast extends GameObjects.Container {
             },
             content: ""
         });
-        this.firstHero.damage = renderNumberText({
+        this.firstHero.damageBeforeCombat = renderNumberText({
             scene: this.scene,
             x: this.firstHero.arrow.getBottomCenter().x - 30,
+            y: 100,
+            content: "",
+            style: {
+                fontSize: "18px"
+            }
+        });
+        this.firstHero.damage = renderNumberText({
+            scene: this.scene,
+            x: this.firstHero.damageBeforeCombat.getRightCenter().x + 1,
             y: 100,
             content: "",
             style: {
@@ -179,10 +192,19 @@ class CombatForecast extends GameObjects.Container {
                 fontSize: "26px"
             }
         });
-        this.secondHero.damage = renderNumberText({
+        this.secondHero.damageBeforeCombat = renderNumberText({
             scene: this.scene,
             x: this.secondHero.arrow.getCenter().x,
             y: this.firstHero.damage.getTopCenter().y,
+            content: "-",
+            style: {
+                fontSize: "18px"
+            }
+        });
+        this.secondHero.damage = renderNumberText({
+            scene: this.scene,
+            x: this.secondHero.damageBeforeCombat.getCenter().x,
+            y: this.firstHero.damageBeforeCombat.getTopCenter().y,
             content: "-",
             style: {
                 fontSize: "18px"
@@ -219,11 +241,18 @@ class CombatForecast extends GameObjects.Container {
         xShift: number;
     }) {
         side.statMods.clear(true, true);
-        console.log([...side.statMods.getChildren()]);
         side.damage.setText(hero.turns === 0 ? "-" : hero.damage.toString()).setColor(hero.effectiveness ? TextColors.effective : TextColors.numbers);
+        if (hero.damageBeforeCombat) {
+            side.damageBeforeCombat.setText(hero.damageBeforeCombat + "+");
+            side.damage.setX(side.damageBeforeCombat.getRightCenter().x + 2);
+        } else {
+            side.damageBeforeCombat.setText("");
+            side.damage.setX(side.damageBeforeCombat.getRightCenter().x);
+        }
+
+        side.roundCount.setX(side.damage.getRightCenter().x);
         if (hero.turns >= 2) {
             side.roundCount.setText("×" + hero.turns);
-            side.roundCount.setX(side.damage.getRightCenter().x);
         } else {
             side.roundCount.setText("");
         }

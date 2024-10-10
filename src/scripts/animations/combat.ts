@@ -19,7 +19,7 @@ function combatAnimation(scene: MainScene, payload: string) {
         const defenderPosition = gridToPixels(defenderCoordinates.x, defenderCoordinates.y);
 
         tweens.push({
-            from: i ? 400 : 100,
+            from: i ? 700 : 100,
             tween: {
                 targets: [attackerObject],
                 x: (defenderPosition.x + attackerPosition.x) / 2,
@@ -44,7 +44,7 @@ function combatAnimation(scene: MainScene, payload: string) {
                 onComplete: () => {
                     attackerObject.x = attackerPosition.x;
                     attackerObject.y = attackerPosition.y;
-                }
+                },
             }
         });
     }

@@ -73,6 +73,7 @@ export default class MainScene extends Phaser.Scene {
   private playHeroQuote = createHeroQuoter(this);
   private movementUI: GameObjects.Layer;
   private miscUIElements: GameObjects.Layer;
+  private aoeLayer: GameObjects.Layer;
   private startRosary: GameObjects.Image;
   private endRosary: GameObjects.Image;
   private background: GameObjects.Image;
@@ -169,6 +170,7 @@ export default class MainScene extends Phaser.Scene {
         const gridCell = pixelsToGrid(target.x, target.y);
         const savedPosition = hero.getInternalHero().Position[0];
         const { x, y } = gridToPixels(gridCell.x, gridCell.y);
+        this.aoeLayer.removeAll();
 
         switch (target.name) {
           case "attack":
@@ -206,6 +208,11 @@ export default class MainScene extends Phaser.Scene {
             this.combatForecast.setVisible(false);
             this.actionIndicator.setFrame("assist-indicator").setVisible(true);
             this.sound.playAudioSprite("sfx", "hover");
+            this.socket.emit("request preview assist", {
+              source: hero.name,
+              sourceCoordinates: hero.temporaryPosition,
+              targetCoordinates: gridCell
+            })
             break;
         }
       }
@@ -295,10 +302,11 @@ export default class MainScene extends Phaser.Scene {
       this.unitInfosBanner = new UnitInfosBanner(this, id).setVisible(false);
       this.combatForecast = new CombatForecast(this).setVisible(false);
       this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
-      const toolbar = this.add.container(0, this.background.getBottomCenter().y);
       this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
-      // const button = new Button(this, "test");
-      // this.actionsTray.addAction(button);
+      const endTurn = new Button(this, "End Turn");
+      this.actionsTray.addAction(endTurn, () => {
+        this.socket.emit("request end turn");
+      });
       this.footer = new Footer(this, 0, this.actionsTray.getBounds().bottom, 1);
       this.add.existing(this.footer);
       this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
@@ -306,6 +314,7 @@ export default class MainScene extends Phaser.Scene {
       this.movementUI = this.add.layer();
       this.heroesLayer = this.add.layer();
       this.miscUIElements = this.add.layer();
+      this.aoeLayer = this.add.layer();
       this.miscUIElements.add(this.interactionsIndicator);
       this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
       this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
@@ -397,8 +406,9 @@ export default class MainScene extends Phaser.Scene {
       this.unitInfosBanner.setVisible(true).setHero(hero, stats);
     });
 
-    this.socket.on("response preview movement", ({ movement = [], assistArray = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness }) => {
-      while (this.tilesLayer.getChildren().length) this.tilesLayer.getChildren().pop().destroy();
+    this.socket.on("response preview movement", ({ movement = [], assistArray = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, unitId }) => {
+      this.tilesLayer.removeAll();
+
       this.pathfinder.reset();
 
       for (let tile of movement) {
@@ -408,6 +418,9 @@ export default class MainScene extends Phaser.Scene {
         this.pathfinder.setWalkable(x, y);
         const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x0000FF, 0.5).setInteractive(undefined, undefined, true).setName("movement");
         this.tilesLayer.add(rec);
+        rec.on("removedfromscene", () => {
+          console.log("bonjour");
+        })
       }
 
       for (let tile of attack) {
@@ -422,7 +435,8 @@ export default class MainScene extends Phaser.Scene {
         const x = Math.floor(tile / 10);
         const y = tile - Math.floor(tile / 10) * 10;
         const pxPosition = gridToPixels(x, y);
-        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.7).setInteractive(undefined, undefined, true).setName("attack");
+        const isAlly = (this.heroesLayer.getByName(unitId) as Hero).getInternalHero().Side[0].value === this.side;
+        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.7).setInteractive(undefined, undefined, isAlly).setName("attack");
         this.tilesLayer.add(rec);
       }
 
@@ -511,7 +525,8 @@ export default class MainScene extends Phaser.Scene {
           startHP: previewAttacker.previousHP,
           effectiveness: previewAttacker.effectiveness,
           remainingHP: previewAttacker.newHP,
-          statMods: previewAttacker.combatBuffs
+          statMods: previewAttacker.combatBuffs,
+          damageBeforeCombat: previewAttacker.beforeCombat,
         },
         defender: {
           entity: defender,
@@ -520,11 +535,20 @@ export default class MainScene extends Phaser.Scene {
           startHP: previewDefender.previousHP,
           effectiveness: previewDefender.effectiveness,
           remainingHP: previewDefender.newHP,
-          statMods: previewDefender.combatBuffs
+          statMods: previewDefender.combatBuffs,
+          damageBeforeCombat: 0,
         }
       });
       this.combatForecast.setVisible(true);
       const tween = this.interactionsIndicator.setVisible(true).hover(defender).tween();
+      if (preview.aoeTargets.length) {
+        for (let target of preview.aoeTargets) {
+          const object = this.heroesLayer.getByName(target) as Hero;
+          const spriteCoords = object.getAbsoluteCoordinates();
+          const aoeSpecialIcon = new GameObjects.Image(this, spriteCoords.x, spriteCoords.y, "skills-ui", "special-icon").setScale(0.65);
+          this.aoeLayer.add(aoeSpecialIcon);
+        }
+      }
 
       tween.play();
     });
@@ -584,54 +608,3 @@ function getTilesDirection(tile1: [number, number], tile2: [number, number]) {
     return tile1[0] < tile2[0] ? "right" : "left";
   }
 };
-
-// export default class MainScene extends Phaser.Scene {
-//   states: {
-//     preparation: PreparationState;
-//     fighting: FightingState;
-//   };
-//   currentState: State;
-
-//   constructor() {
-//     super({ key: 'MainScene' });
-//     this.states = {
-//       preparation: new PreparationState(this),
-//       fighting: new FightingState(this)
-//     };
-
-//     this.currentState = this.states.preparation;
-//   }
-
-//   createDamageText(turn: CombatOutcome["turns"][number]) {
-//     const isAdvantage = turn.effective || turn.advantage === "advantage";
-//     const isDisadvantage = turn.advantage === "disadvantage" && !turn.effective;
-//     const damageFontSize = isDisadvantage ? 28 : isAdvantage ? 44 : 36;
-//     const defenderObject = this.getByName<Hero>(turn.defender.id);
-//     const coordinatesVector = this.getHeroCoordinates(defenderObject).subtract({ x: 30, y: 30 });
-//     const damageText = renderDamageText({
-//       scene: this,
-//       x: coordinatesVector.x,
-//       y: coordinatesVector.y,
-//       content: turn.damage,
-//       style: {
-//         fontSize: damageFontSize,
-//       }
-//     }).setDepth(4);
-
-//     return damageText;
-//   }
-
-//   displayEnemyRange(enabled: boolean) {
-//     const otherTeam = this.turn === "team1" ? "team2" : "team1";
-//     const enemyRangeTiles = battle.getEnemyRange(otherTeam);
-//     if (enabled) {
-//       this.enemyRangeCoords = enemyRangeTiles;
-//       for (let tile of enemyRangeTiles) {
-//         const { x, y } = gridToPixels(+tile[0], +tile[2]);
-//         const enemyRangeTile = new GameObjects.Rectangle(this, x, y, squareSize, squareSize, 0x540000, 0.6);
-//         this.enemyRangeLayer.add(enemyRangeTile);
-//       }
-//     } else {
-//       this.enemyRangeLayer.removeAll();
-//     }
-//   }

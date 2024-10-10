@@ -15,8 +15,8 @@ class Hero extends GameObjects.Container {
     hpBarBackground: GameObjects.Rectangle;
     weaponType: GameObjects.Image;
     sprite: GameObjects.Image;
-    private specialText: GameObjects.Text;
-    private specialImage: GameObjects.Image;
+    specialText: GameObjects.Text;
+    specialImage: GameObjects.Image;
     glowingSprite: GameObjects.Image;
     hpText: GameObjects.Text;
     movementIndicator: GameObjects.Image;
@@ -109,7 +109,7 @@ class Hero extends GameObjects.Container {
     createSpecial(startingCooldown: number, scene: MainScene) {
         const { value: team } = this.getInternalHero().Side[0];
         const isLeftSided = team === scene.side;
-        this.specialImage = new GameObjects.Image(this.scene, isLeftSided ? -40 : 20, -20, "skills-ui", "special-icon").setScale(0.35).setOrigin(0);
+        this.specialImage = new GameObjects.Image(this.scene, isLeftSided ? -40 : 20, -20, "skills-ui", "special-icon").setScale(0.4).setOrigin(0);
         this.specialText = renderSpecialText({
             scene,
             x: isLeftSided ? -40 : 20,

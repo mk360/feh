@@ -26,8 +26,16 @@ function damageAnimation(scene: MainScene, target: Hero, amount: number) {
             scene.sound.playAudioSprite("battle-sfx", "hit");
         },
         onComplete: () => {
-            scene.children.remove(damageText);
-            damageText.destroy(true);
+            scene.tweens.add({
+                targets: [damageText],
+                alpha: 0,
+                delay: 100,
+                duration: 100,
+                onComplete() {
+                    scene.children.remove(damageText);
+                    damageText.destroy(true);
+                }
+            }).play();
         }
     }) as Tweens.Tween;
 

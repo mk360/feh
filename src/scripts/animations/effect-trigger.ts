@@ -9,7 +9,8 @@ function effectTriggerAnimation(scene: MainScene, hero: Hero) {
     const tweens: Types.Time.TimelineEventConfig[] = [{
         tween: {
             targets: [effectCircle, effectGleam],
-            scale: 1.1,
+            scale: 1.2,
+            alpha: 0,
             duration: 120,
             onStart: () => {
                 scene.add.existing(effectCircle);

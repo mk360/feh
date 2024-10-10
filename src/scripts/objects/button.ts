@@ -3,27 +3,26 @@ import { renderText } from "../utils/text-renderer";
 
 class Button extends GameObjects.Container {
     private label: GameObjects.Text;
+    private boundsArea: GameObjects.Rectangle;
 
     constructor(scene: Scene, label: string) {
         super(scene);
-        const button = new GameObjects.Image(scene, 0, 0, "ui-button").setScale(0.9);
-        this.label = renderText(scene, -30, -35, label, {
-            fontSize: 20
-        });
-        this.setSize(120, 120).setInteractive();
-        this.add(button);
+        const buttonImage = new GameObjects.Image(scene, 0, 0, "ui-button").setScale(0.70);
+        buttonImage.setOrigin(0);
+        this.boundsArea = new GameObjects.Rectangle(scene, buttonImage.getCenter().x, buttonImage.getCenter().y, buttonImage.displayWidth * 0.75, buttonImage.displayHeight * 0.75, 0xFF0000, 0);
+        this.boundsArea.setInteractive();
+        this.label = renderText(scene, buttonImage.getCenter().x, buttonImage.getCenter().y, label, {
+            fontSize: 16
+        }).setOrigin(0.5);
+        this.add(buttonImage);
         this.add(this.label);
-        this.label.setWordWrapWidth(90, true);
-        this.on("pointerdown", () => {
-            button.setTexture("ui-button-pressed");
-            this.label.x += 5;
-            this.label.y += 10;
-        });
-        this.on("pointerup", () => {
-            button.setTexture("ui-button");
-            this.label.x -= 5;
-            this.label.y -= 10;
-        });
+        this.add(this.boundsArea);
+        this.setSize(100, 100).setInteractive();
+        this.label.setWordWrapWidth(60);
+    }
+
+    addAction(fn: () => void) {
+        this.boundsArea.on("pointerdown", fn);
     }
 
     setLabel(newText: string) {
