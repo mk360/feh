@@ -205,8 +205,8 @@ class UnitInfosBanner extends GameObjects.Container {
 
                 this.textbox.x = label.getRightCenter().x + 400;
                 this.textbox.y = label.getBottomLeft().y + 10;
-                this.textbox.setContent(content);
                 this.textbox.display(internalHero.Side[0].value);
+                this.textbox.setContent(content);
             }
 
             if (statKey !== "hp") {
@@ -266,9 +266,9 @@ class UnitInfosBanner extends GameObjects.Container {
                 });
 
                 this.textbox.setContent(textboxLines);
+                this.textbox.display(internalHero.Side[0].value);
                 this.textbox.x = this.weaponBg.getRightCenter().x;
                 this.textbox.y = this.weaponBg.getBottomCenter().y + 5;
-                this.textbox.display(internalHero.Side[0].value);
             }
         });
 
@@ -284,8 +284,8 @@ class UnitInfosBanner extends GameObjects.Container {
                 });
                 this.textbox.x = this.assistBg.getRightCenter().x;
                 this.textbox.y = this.assistBg.getBottomCenter().y + 5;
-                this.textbox.setContent(lines);
                 this.textbox.display(internalHero.Side[0].value);
+                this.textbox.setContent(lines);
             }
         });
 
@@ -303,10 +303,10 @@ class UnitInfosBanner extends GameObjects.Container {
                     baseCooldown: specialData.baseCooldown
                 });
 
+                this.textbox.display(internalHero.Side[0].value);
                 this.textbox.setContent(textboxLines);
                 this.textbox.x = this.specialBg.getRightCenter().x;
                 this.textbox.y = this.specialBg.getBottomCenter().y + 5;
-                this.textbox.display(internalHero.Side[0].value);
             }
         });
     }
@@ -331,6 +331,7 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.scene.sound.playAudioSprite("sfx", "tap");
                 const internalHero = this.displayedHero.getInternalHero();
                 const passive = internalHero.Skill?.find((s) => s.slot === skillSlot);
+
                 if (passive) {
                     const passiveContent = this.textbox.createPassiveTextbox({
                         name: passive.name,
@@ -341,9 +342,9 @@ class UnitInfosBanner extends GameObjects.Container {
                     this.textbox.setContent([[renderText(this.scene, 0, 0, "None")]]);
                 }
 
+                this.textbox.display(internalHero.Side[0].value);
                 this.textbox.x = this.C.getRightCenter().x;
                 this.textbox.y = this.C.getBottomCenter().y + 5;
-                this.textbox.display(internalHero.Side[0].value);
             });
         }
     }

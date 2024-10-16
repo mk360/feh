@@ -95,7 +95,8 @@ class Textbox extends GameObjects.Container {
             }
         }
 
-        this.contentContainer.setDisplaySize(this.contentContainer.displayWidth, lowestHeight + PADDING - this.contentContainer.getTopCenter().y);
+        this.contentContainer.setDisplaySize(this.contentContainer.displayWidth, lowestHeight + PADDING);
+
         return this;
     };
 
@@ -225,13 +226,14 @@ class Textbox extends GameObjects.Container {
         const firstLine: TextboxContent[] = [];
         const secondLine: TextboxContent[] = [];
         const specialIcon = new GameObjects.Image(this.scene, 0, 0, "skills-ui", "special-icon").setOrigin(0).setScale(0.5);
-        const cooldownText = renderText(this.scene, 30, 2, cooldown, {
-            fontSize: "18px"
-        });
-        cooldownText.setColor(baseCooldown > cooldown ? TextColors.boon : baseCooldown < cooldown ? TextColors.bane : "white");
-        cooldownText.setColor(cooldown < baseCooldown ? TextColors.boon : cooldown > baseCooldown ? TextColors.bane : "white");
         firstLine.push(specialIcon);
-        firstLine.push(cooldownText);
+        if (cooldown) {
+            const cooldownText = renderText(this.scene, 30, 2, cooldown, {
+                fontSize: "18px"
+            });
+            cooldownText.setColor(baseCooldown > cooldown ? TextColors.boon : baseCooldown < cooldown ? TextColors.bane : "white");
+            firstLine.push(cooldownText);
+        }
 
         secondLine.push(renderText(this.scene, 0, 32, description, {
             fontSize: "18px"
@@ -240,15 +242,6 @@ class Textbox extends GameObjects.Container {
         textLines.push(secondLine);
 
         return textLines;
-    }
-
-    fitContent() {
-        let contentHeight = 0;
-        let contentWidth = 0;
-
-        for (let child of this.children as TextboxContent[]) {
-
-        }
     }
 
     weaponTextbox({ might, range, description, effectiveness: effectivenessList }: { might: number, range: number, description: string, effectiveness: string[] }) {
