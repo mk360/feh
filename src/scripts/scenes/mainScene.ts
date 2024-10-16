@@ -4,7 +4,7 @@
  * implement bonuses
  */
 
-import { Display, GameObjects, Time } from 'phaser';
+import { GameObjects, Time } from 'phaser';
 import Hero from '../objects/hero';
 import UnitInfosBanner from '../objects/unit-infos-banner';
 import socket from "../../default-socket";
@@ -140,7 +140,10 @@ export default class MainScene extends Phaser.Scene {
   }
 
   clearTiles() {
-    this.tilesLayer.removeAll();
+    for (let tile of this.tilesLayer.getChildren() as GameObjects.Rectangle[]) {
+      tile.disableInteractive();
+      tile.setAlpha(0);
+    }
     this.heroesLayer.getChildren().forEach((child: Hero) => {
       child.effectivenessImage.iconsList = [];
       child.setInteractive(undefined, undefined, false);
@@ -164,7 +167,7 @@ export default class MainScene extends Phaser.Scene {
       hero.y = dragY;
     });
 
-    hero.on("dragenter", (_, target) => {
+    hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
       if (target.type === "Rectangle") {
         this.interactionsIndicator.disable();
         const gridCell = pixelsToGrid(target.x, target.y);
@@ -172,8 +175,8 @@ export default class MainScene extends Phaser.Scene {
         const { x, y } = gridToPixels(gridCell.x, gridCell.y);
         this.aoeLayer.removeAll();
 
-        switch (target.name) {
-          case "attack":
+        switch (target.getData("type")) {
+          case "target":
             this.socket.emit("request preview battle", {
               x: gridCell.x,
               y: gridCell.y,
@@ -224,37 +227,43 @@ export default class MainScene extends Phaser.Scene {
       hero.setDepth(hero.depth + 1);
     });
 
-    hero.on("drop", (_, target) => {
+    hero.on("drop", (_, target: GameObjects.Rectangle) => {
       this.clearMovementLayer();
+      this.aoeLayer.removeAll();
       hero.setDepth(hero.depth - 1);
       const gridCell = pixelsToGrid(hero.x, hero.y);
       this.startRosary.setVisible(false);
       this.endRosary.setVisible(false);
       this.movementIndicator.setVisible(false);
+      const tileType = target.getData("type");
 
-      switch (target.name) {
+      switch (tileType) {
         case "assist": {
           this.socket.emit("request confirm assist", {
 
           })
         }
+          break;
+        case "target": {
+          this.socket.emit("request confirm combat", {
+            unitId: hero.name,
+            attackerCoordinates: hero.temporaryPosition,
+            ...gridCell,
+            path: this.storedPath.map(([x, y]) => ({
+              x,
+              y
+            }))
+          });
+        }
+          break;
+        default: {
+          this.socket.emit("request confirm movement", {
+            unitId: hero.name,
+            ...gridCell,
+          });
+        }
       }
-      if (target.name !== "attack") {
-        this.socket.emit("request confirm movement", {
-          unitId: hero.name,
-          ...gridCell,
-        });
-      } else {
-        this.socket.emit("request confirm combat", {
-          unitId: hero.name,
-          attackerCoordinates: hero.temporaryPosition,
-          ...gridCell,
-          path: this.storedPath.map(([x, y]) => ({
-            x,
-            y
-          }))
-        });
-      }
+
       this.socket.sendBuffer = [];
       this.storedPath = [];
     });
@@ -307,6 +316,10 @@ export default class MainScene extends Phaser.Scene {
       this.actionsTray.addAction(endTurn, () => {
         this.socket.emit("request end turn");
       });
+      const enemyRange = new Button(this, "Enemy Range");
+      this.actionsTray.addAction(enemyRange, () => {
+
+      });
       this.footer = new Footer(this, 0, this.actionsTray.getBounds().bottom, 1);
       this.add.existing(this.footer);
       this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);
@@ -324,6 +337,15 @@ export default class MainScene extends Phaser.Scene {
       this.movementUI.add(this.actionIndicator);
       this.movementUI.add(this.endRosary);
       this.movementUI.add(this.startRosary);
+
+      for (let i = 1; i < 7; i++) {
+        for (let j = 1; j < 9; j++) {
+          const px = gridToPixels(i, j);
+          const rec = new GameObjects.Rectangle(this, px.x, px.y, squareSize, squareSize, 0, 0);
+          rec.setName((i * 10 + j).toString());
+          this.tilesLayer.add(rec);
+        }
+      }
 
       this.add.existing(this.unitInfosBanner);
       this.add.existing(this.combatForecast);
@@ -363,11 +385,16 @@ export default class MainScene extends Phaser.Scene {
 
       this.background.on("pointerdown", () => {
         this.sound.playAudioSprite("sfx", "cancel");
+        this.aoeLayer.removeAll();
+        for (let child of this.tilesLayer.getChildren() as GameObjects.Rectangle[]) {
+          child.disableInteractive();
+          child.setAlpha(0);
+        }
 
         if (this.side === this.currentTurn) {
           this.movementIndicator.setVisible(false);
           this.heroesLayer.getChildren().forEach((child: Hero) => {
-            if (!child.getInternalHero().Finished && child.getInternalHero().Side[0].value === this.side) child.enableMovementIndicator();
+            if (!child.getInternalHero().FinishedAction && child.getInternalHero().Side[0].value === this.side) child.enableMovementIndicator();
           });
           this.heroesLayer.getChildren().forEach((child: Hero) => {
             child.effectivenessImage.iconsList = [];
@@ -375,7 +402,6 @@ export default class MainScene extends Phaser.Scene {
           });
         }
 
-        this.tilesLayer.removeAll();
         this.unitInfosBanner.closeTextbox();
       });
 
@@ -407,53 +433,52 @@ export default class MainScene extends Phaser.Scene {
     });
 
     this.socket.on("response preview movement", ({ movement = [], assistArray = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, unitId }) => {
-      this.tilesLayer.removeAll();
+      for (let child of this.tilesLayer.getChildren() as GameObjects.Rectangle[]) {
+        child.disableInteractive();
+        child.setAlpha(0);
+      }
+
+      const targetHero = this.heroesLayer.getByName(unitId) as Hero;
+      const isAlly = targetHero.getInternalHero().Side[0].value === this.side;
+      const isActive = !targetHero.getInternalHero().FinishedAction;
+      const shouldInteract = isActive && isAlly;
 
       this.pathfinder.reset();
 
       for (let tile of movement) {
         const x = Math.floor(tile / 10);
         const y = tile - Math.floor(tile / 10) * 10;
-        const pxPosition = gridToPixels(x, y);
+        const rec = this.tilesLayer.getByName(tile.toString()) as GameObjects.Rectangle;
         this.pathfinder.setWalkable(x, y);
-        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x0000FF, 0.5).setInteractive(undefined, undefined, true).setName("movement");
-        this.tilesLayer.add(rec);
-        rec.on("removedfromscene", () => {
-          console.log("bonjour");
-        })
+        rec.setFillStyle(0x0000FF).setAlpha(0.5);
+        rec.setData("type", "movement");
+        rec.setInteractive(undefined, undefined, shouldInteract);
       }
 
       for (let tile of attack) {
-        const x = Math.floor(tile / 10);
-        const y = tile - Math.floor(tile / 10) * 10;
-        const pxPosition = gridToPixels(x, y);
-        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.3);
-        this.tilesLayer.add(rec);
+        const rec = this.tilesLayer.getByName(tile.toString()) as GameObjects.Rectangle;
+        rec.setFillStyle(0xFF0000).setAlpha(0.3);
       }
 
       for (let tile of targetableTiles) {
-        const x = Math.floor(tile / 10);
-        const y = tile - Math.floor(tile / 10) * 10;
-        const pxPosition = gridToPixels(x, y);
-        const isAlly = (this.heroesLayer.getByName(unitId) as Hero).getInternalHero().Side[0].value === this.side;
-        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0xFF0000, 0.7).setInteractive(undefined, undefined, isAlly).setName("attack");
-        this.tilesLayer.add(rec);
+        const rec = this.tilesLayer.getByName(tile.toString()) as GameObjects.Rectangle;
+        rec.setFillStyle(0xFF0000).setAlpha(0.7);
+        rec.setInteractive(undefined, undefined, shouldInteract);
+        rec.setData("type", "target");
       }
 
       for (let tile of warpTiles) {
-        const x = Math.floor(tile / 10);
-        const y = tile - Math.floor(tile / 10) * 10;
-        const pxPosition = gridToPixels(x, y);
-        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x00FFFF, 0.5).setInteractive(undefined, undefined, true).setName("warp");
-        this.tilesLayer.add(rec);
+        const rec = this.tilesLayer.getByName(tile.toString()) as GameObjects.Rectangle;
+        rec.setFillStyle(0x00FFFF).setAlpha(0.5);
+        rec.setInteractive(undefined, undefined, shouldInteract);
+        rec.setData("type", "warp");
       }
 
       for (let tile of assistArray) {
-        const x = Math.floor(tile / 10);
-        const y = tile - Math.floor(tile / 10) * 10;
-        const pxPosition = gridToPixels(x, y);
-        const rec = new GameObjects.Rectangle(this, pxPosition.x, pxPosition.y, squareSize, squareSize, 0x00FF00, 0.5).setInteractive(undefined, undefined, true).setName("assist");
-        this.tilesLayer.add(rec);
+        const rec = this.tilesLayer.getByName(tile.toString()) as GameObjects.Rectangle;
+        rec.setFillStyle(0x00FF00).setAlpha(0.5);
+        rec.setData("type", "assist");
+        rec.setInteractive(undefined, undefined, shouldInteract);
       }
 
       for (let character of this.heroesLayer.getAll() as Hero[]) {
@@ -505,8 +530,6 @@ export default class MainScene extends Phaser.Scene {
         duration: 100,
       });
       this.sound.play("confirm");
-      const tiles = this.tilesLayer.getChildren();
-      while (tiles.length) tiles.pop().destroy();
       this.heroesLayer.getChildren().forEach((child: Hero) => {
         child.effectivenessImage.iconsList = [];
       });
