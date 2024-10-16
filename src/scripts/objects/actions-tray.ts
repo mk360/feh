@@ -1,9 +1,9 @@
 import { GameObjects, Scene } from "phaser";
 import Button from "./button";
 
-const buttonsSpacing = 0;
 const yPosition = 0;
-const xPadding = 30;
+const xPadding = 10;
+const spacing = 100;
 
 class ActionsTray extends GameObjects.Container {
     constructor(scene: Scene, x: number, y: number) {
@@ -11,7 +11,7 @@ class ActionsTray extends GameObjects.Container {
     }
 
     addAction(action: Button, fn: () => void) {
-        action.x = 20 * buttonsSpacing + xPadding;
+        action.x = spacing * this.list.length + xPadding;
         action.y = yPosition;
         action.addAction(fn);
         this.add(action);

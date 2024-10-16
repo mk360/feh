@@ -22,7 +22,7 @@ class Button extends GameObjects.Container {
     }
 
     addAction(fn: () => void) {
-        this.boundsArea.on("pointerdown", fn);
+        this.boundsArea.on("pointerup", fn);
     }
 
     setLabel(newText: string) {
