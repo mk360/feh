@@ -2,12 +2,12 @@
 
 This is an attempt to recreate Fire Emblem Heroes, with the help of the <a href="https://github.com/photonstorm/phaser">Phaser</a> Framework.
 
-<h2>Scope</h2>
+This is the UI Repo, which is part of a group that includes:
+
 <ul>
-  <li>Turn-to-turn movement management.</li>
-  <li>Attacks, with the appropriate animations and UI.</li>
-  <li>As-faithful-as-possible UI recreation<a href="#notes">*</a>.</li>
-  <li>Basic skills and weapon effects.</li>
+<li>The <a href="https://github.com/mk360/feh-battles">Game Engine</a>, in which all the meat and potatoes lie.</li>
+<li>The <a href="https://github.com/mk360/feh-server">HTTP Server</a> that handles connections and acts as a relay between the Engine and the UI.</li>
+<li>The <a href="https://github.com/mk360/feh-showdown">Web App</a> that will be the website where you'll be able to play.
 </ul>
 
 <h2 id="notes">Notes</h2>
@@ -16,10 +16,6 @@ I did my best to create a UI (and game in general) that's as accurate as possibl
 <li>IntSys uses assets that don't match 100% with the way they're used in-game. There are a few elements I couldn't find or recreate.</li>
 <li>FEH stores animation files (characters in their idle stance, damaged, etc.) in a proprietary format, and I'm not really keen on implementing them. That might change in the future, but for now I'll stick with static images for the sake of simplicity.</li>
 </ul>
-
-<h2>Want to lend a hand?</h2>
-
-Hit me up by adding me (N_tonio36#5530) on Discord.
 
 <h2>Credits and thanks</h2>
 <ul>
