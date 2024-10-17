@@ -68,14 +68,23 @@ class Textbox extends GameObjects.Container {
             content: name
         })]);
 
-        skillInfosLines.push([renderText(this.scene, 0, 30, description).setWordWrapWidth(430)]);
+        skillInfosLines.push([renderText({
+            scene: this.scene,
+            x: 0,
+            y: 30,
+            content: description
+        }).setWordWrapWidth(430)]);
 
         return skillInfosLines;
     }
 
     createDescriptionTextbox(content: string) {
         const lines: GameObjects.Text[][] = [];
-        const singleLine = [renderText(this.scene, 0, 0, content).setWordWrapWidth(430)];
+        const singleLine = [renderText({
+            scene: this.scene,
+            x: 0,
+            y: 0, content
+        }).setWordWrapWidth(430)];
         lines.push(singleLine);
 
         return lines;
@@ -118,12 +127,24 @@ class Textbox extends GameObjects.Container {
             content: "Rng"
         });
 
-        const rangeText = renderText(this.scene, rangeLabel.getRightCenter().x + 10, 0, range, {
-            fontSize: "18px"
+        const rangeText = renderText({
+            scene: this.scene,
+            x: rangeLabel.getRightCenter().x + 10,
+            y: 0,
+            content: range,
+            style: {
+                fontSize: "18px"
+            }
         });
 
-        const descText = renderText(this.scene, 0, 30, description, {
-            fontSize: "18px"
+        const descText = renderText({
+            scene: this.scene,
+            x: 0,
+            y: 30,
+            content: description,
+            style: {
+                fontSize: "18px"
+            }
         });
 
         const lines: TextboxContent[][] = [[rangeLabel, rangeText], [descText]];
@@ -140,8 +161,14 @@ class Textbox extends GameObjects.Container {
             y: 0,
             content: "Base Value"
         });
-        const baseValueText = renderText(this.scene, baseValueLabel.getRightCenter().x + 10, 0, baseValue, {
-            fontSize: "18px"
+        const baseValueText = renderText({
+            scene: this.scene,
+            x: baseValueLabel.getRightCenter().x + 10,
+            y: 0,
+            content: baseValue,
+            style: {
+                fontSize: "18px"
+            }
         });
         valuesLines.push(baseValueLabel);
         valuesLines.push(baseValueText);
@@ -211,8 +238,14 @@ class Textbox extends GameObjects.Container {
         if (modifiersLine.length) lines.push(modifiersLine);
 
         const descLine: GameObjects.Text[] = [];
-        const descriptionText = renderText(this.scene, 0, lines[lines.length - 1][0].y + 30, description, {
-            fontSize: "18px",
+        const descriptionText = renderText({
+            scene: this.scene,
+            x: 0,
+            y: lines[lines.length - 1][0].y + 30,
+            content: description,
+            style: {
+                fontSize: "18px",
+            }
         }).setWordWrapWidth(280);
 
         descLine.push(descriptionText);
@@ -228,15 +261,27 @@ class Textbox extends GameObjects.Container {
         const specialIcon = new GameObjects.Image(this.scene, 0, 0, "skills-ui", "special-icon").setOrigin(0).setScale(0.5);
         firstLine.push(specialIcon);
         if (cooldown) {
-            const cooldownText = renderText(this.scene, 30, 2, cooldown, {
-                fontSize: "18px"
+            const cooldownText = renderText({
+                scene: this.scene,
+                x: 30,
+                y: 2,
+                content: cooldown,
+                style: {
+                    fontSize: "18px"
+                }
             });
             cooldownText.setColor(baseCooldown > cooldown ? TextColors.boon : baseCooldown < cooldown ? TextColors.bane : "white");
             firstLine.push(cooldownText);
         }
 
-        secondLine.push(renderText(this.scene, 0, 32, description, {
-            fontSize: "18px"
+        secondLine.push(renderText({
+            scene: this.scene,
+            x: 0,
+            y: 32,
+            content: description,
+            style: {
+                fontSize: "18px"
+            }
         }).setWordWrapWidth(this.contentContainer.displayWidth - 4));
         textLines.push(firstLine);
         textLines.push(secondLine);
@@ -252,7 +297,12 @@ class Textbox extends GameObjects.Container {
             y: 0
         });
 
-        const mightValue = renderText(this.scene, mightLabel.getBottomRight().x + 4, 0, might).setFontSize(18);
+        const mightValue = renderText({
+            scene: this.scene,
+            x: mightLabel.getBottomRight().x + 4,
+            y: 0,
+            content: might
+        }).setFontSize(18);
 
         const rangeLabel = renderLabelText({
             scene: this.scene,
@@ -261,7 +311,12 @@ class Textbox extends GameObjects.Container {
             y: 0
         });
 
-        const rangeValue = renderText(this.scene, rangeLabel.getBottomRight().x + 4, 0, range).setFontSize(18);
+        const rangeValue = renderText({
+            scene: this.scene,
+            x: rangeLabel.getBottomRight().x + 4,
+            y: 0,
+            content: range
+        }).setFontSize(18);
 
         const firstLine: TextboxContent[] = [
             mightLabel,
@@ -297,7 +352,12 @@ class Textbox extends GameObjects.Container {
         }
 
         if (description) {
-            const secondLine = [renderText(this.scene, 0, 30, description).setWordWrapWidth(440).setFontSize(18)];
+            const secondLine = [renderText({
+                scene: this.scene,
+                x: 0,
+                y: 30,
+                content: description
+            }).setWordWrapWidth(440).setFontSize(18)];
             linesArray.push(secondLine);
         }
 

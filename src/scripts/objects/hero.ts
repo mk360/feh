@@ -50,8 +50,14 @@ class Hero extends GameObjects.Container {
         this.statusesImage = new IconsSwitcher(scene, 35, 35, []).setScale(0.4);
         this.effectivenessImage = new IconsSwitcher(scene, 0, 0, []);
         const hpBarHeight = this.statusesImage.getCenter().y;
-        this.hpText = renderText(scene, -25, hpBarHeight, stats.hp, {
-            fontSize: "14px"
+        this.hpText = renderText({
+            scene,
+            x: -25,
+            y: hpBarHeight,
+            content: stats.hp,
+            style: {
+                fontSize: "14px"
+            }
         }).setOrigin(1, 0.5);
         this.hpBar = new GameObjects.Rectangle(scene, this.hpText.getRightCenter().x, hpBarHeight, hpBarWidth, 5, isLeftSided ? parseInt(TextColors.player.replace("#", ""), 16) : parseInt(TextColors.enemy.replace("#", ""), 16)).setOrigin(0, 0).setDepth(2);
         this.weaponType = new GameObjects.Image(scene, isLeftSided ? -30 : 30, -30, "weapons", `${weapon.color}-${weapon.weaponType}`).setScale(1);

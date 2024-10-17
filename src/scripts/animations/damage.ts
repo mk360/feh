@@ -23,7 +23,20 @@ function damageAnimation(scene: MainScene, target: Hero, amount: number) {
         onStart: () => {
             scene.add.existing(damageText);
             damageText.setVisible(true);
+        },
+        onYoyo: () => {
+            target.sprite.setAlpha(0);
+            target.glowingSprite.setAlpha(1);
             scene.sound.playAudioSprite("battle-sfx", "hit");
+
+            scene.tweens.add({
+                targets: [target.sprite],
+                alpha: 1,
+                duration: 150,
+                onComplete: () => {
+                    target.glowingSprite.setAlpha(0);
+                }
+            }).play();
         },
         onComplete: () => {
             scene.tweens.add({

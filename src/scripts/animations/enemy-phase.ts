@@ -10,8 +10,14 @@ function enemyPhase(scene: MainScene, turnCount: number) {
     const glowingEnemyPhaseText = new GameObjects.Image(scene, 20, phaseGleam.y, "enemy-phase", "glow-title").setScale(1, 0.4).setAlpha(0);
     const chains1 = new GameObjects.Image(scene, 400, enemyPhaseText.getCenter().y - 200, "enemy-phase", "chains").setAlpha(0.1, 1, 0.1, 1);
     const chains2 = new GameObjects.Image(scene, 400, enemyPhaseText.getCenter().y + 200, "enemy-phase", "chains").setAlpha(0.1, 1, 0.1, 1);
-    const turnText = renderText(scene, enemyPhaseText.getCenter().x, enemyPhaseText.getCenter().y + 100, `Turn ${turnCount}`, {
-        fontSize: 40
+    const turnText = renderText({
+        scene,
+        x: enemyPhaseText.getCenter().x,
+        y: enemyPhaseText.getCenter().y + 100,
+        content: `Turn ${turnCount}`,
+        style: {
+            fontSize: 40
+        }
     }).setOrigin(0.5);
 
     return new Time.Timeline(scene, [{

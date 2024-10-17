@@ -36,8 +36,14 @@ class Footer extends GameObjects.Container {
 
         const center = (this.enemyPhaseText.getRightCenter().x + this.playerPhaseText.getLeftCenter().x) / 2;
 
-        this.turnCount = renderText(this.scene, center, background.y + 16, `Turn ${turnCount}`, {
-            fontSize: 12
+        this.turnCount = renderText({
+            scene: this.scene,
+            x: center,
+            y: background.y + 16,
+            content: `Turn ${turnCount}`,
+            style: {
+                fontSize: 12
+            }
         }).setOrigin(0.5, 0);
         this.add(footer);
         this.add(background);

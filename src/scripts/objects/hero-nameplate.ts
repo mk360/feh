@@ -22,7 +22,13 @@ class HeroNameplate extends GameObjects.Container {
         this.weaponIcon = new GameObjects.Image(scene, this.nameplate.getLeftCenter().x + 22, this.nameplate.getLeftCenter().y, "weapons", `${informations.weaponColor}-${informations.weaponType}`).setScale(1.1).setInteractive().on("pointerdown", function (this: GameObjects.Image) {
             informations.tapCallbacks.weaponType(this);
         });
-        this.heroName = renderText(scene, this.nameplate.getCenter().x, this.nameplate.getCenter().y, informations.name, { fontSize: "19px" }).setOrigin(0.5).setInteractive();
+        this.heroName = renderText({
+            scene,
+            x: this.nameplate.getCenter().x,
+            y: this.nameplate.getCenter().y,
+            content: informations.name,
+            style: { fontSize: "19px" }
+        }).setOrigin(0.5).setInteractive();
         this.heroName.on("pointerdown", function (this: GameObjects.Text) {
             informations.tapCallbacks.name(this);
         });
