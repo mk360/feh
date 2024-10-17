@@ -407,8 +407,14 @@ export default class MainScene extends Phaser.Scene {
 
       const layer = this.add.rectangle(0, 0, +this.game.config.width, +this.game.config.height, 0xD8BA94, 1).setOrigin(0);
       const startGameButton = new GameObjects.Rectangle(this, layer.getCenter().x, layer.getCenter().y - 50, 240, 120, 0x00AF81).setInteractive();
-      const startGameText = renderText(this, startGameButton.getCenter().x, startGameButton.getCenter().y, "Start Game", {
-        fontSize: 26
+      const startGameText = renderText({
+        scene: this,
+        x: startGameButton.getCenter().x,
+        y: startGameButton.getCenter().y,
+        content: "Start Game",
+        style: {
+          fontSize: 26
+        }
       }).setOrigin(0.5);
       startGameButton.on("pointerdown", () => {
         layer.destroy();

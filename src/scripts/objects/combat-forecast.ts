@@ -210,8 +210,14 @@ class CombatForecast extends GameObjects.Container {
                 fontSize: "18px"
             }
         });
-        this.secondHero.roundCount = renderText(this.scene, this.secondHero.damage.getRightCenter().x, this.secondHero.damage.getTopCenter().y, "", {
-            fontSize: "18px"
+        this.secondHero.roundCount = renderText({
+            scene: this.scene,
+            x: this.secondHero.damage.getRightCenter().x,
+            y: this.secondHero.damage.getTopCenter().y,
+            content: "",
+            style: {
+                fontSize: "18px"
+            }
         });
         this.secondHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damageLine.x + 200, this.firstHero.damageLine.y, "top-banner", "separator").setOrigin(0.5, 0).setScale(0.2, 0.5).setTint(0xff0000);
         const { statMods, ...ui } = this.secondHero;
@@ -228,8 +234,14 @@ class CombatForecast extends GameObjects.Container {
         this.createFirstHero();
         this.createSecondHero();
 
-        this.add(renderText(scene, this.forecastBackground.getCenter().x, hpLineHeight - 10, "HP", {
-            fontSize: "22px",
+        this.add(renderText({
+            scene,
+            x: this.forecastBackground.getCenter().x,
+            y: hpLineHeight - 10,
+            content: "HP",
+            style: {
+                fontSize: "22px",
+            }
         }).setOrigin(0.5, 0));
     }
 
@@ -262,10 +274,21 @@ class CombatForecast extends GameObjects.Container {
         for (let stat in hero.statMods) {
             if (hero.statMods[stat]) {
                 const statValue = hero.statMods[stat];
-                const statChangeValue = renderText(this.scene, xOffset, 140, `${statValue > 0 ? "+" : ""}${statValue}`, {
-                    color: statValue < 0 ? TextColors.bane : TextColors.boon
+                const statChangeValue = renderText({
+                    scene: this.scene,
+                    x: xOffset,
+                    y: 140,
+                    content: `${statValue > 0 ? "+" : ""}${statValue}`,
+                    style: {
+                        color: statValue < 0 ? TextColors.bane : TextColors.boon
+                    }
                 }).setOrigin(1, 0);
-                const changedStat = renderText(this.scene, statChangeValue.getLeftCenter().x - 35, 140, capitalize(stat));
+                const changedStat = renderText({
+                    scene: this.scene,
+                    x: statChangeValue.getLeftCenter().x - 35,
+                    y: 140,
+                    content: capitalize(stat)
+                });
                 side.statMods.add(changedStat).add(statChangeValue);
                 this.add(side.statMods.getChildren());
                 if (team === "attacker") {

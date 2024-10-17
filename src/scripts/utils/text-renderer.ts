@@ -9,9 +9,11 @@ interface TextRenderingConfig {
     style?: Partial<GameObjects.TextStyle>;
 }
 
-export function renderText(scene: Scene, x: number, y: number, content: string | number, style?: Partial<Phaser.GameObjects.TextStyle>) {
+export function renderText(config: TextRenderingConfig) {
+    const { content, scene, x, y, style } = config;
+
     return new Phaser.GameObjects.Text(scene, x, y, content.toString(), {
-        fontFamily: "'FEH'",
+        fontFamily: "FEH",
         stroke: "black",
         strokeThickness: 2,
         ...style,
@@ -96,7 +98,7 @@ export function renderRegularHPText(config: TextRenderingConfig) {
 }
 
 function renderTextWith2DContext(config: TextRenderingConfig) {
-    const text = renderText(config.scene, config.x, config.y, config.content, config.style);
+    const text = renderText(config);
     const gradient = text.context.createLinearGradient(0, 0, 0, text.height);
     return {
         text,
