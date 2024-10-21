@@ -5,6 +5,12 @@ class HeroPortrait extends GameObjects.Image {
         super(scene, x, 0, `${unit} battle`);
         this.setOrigin(0);
     }
+
+    setPortrait(name: string, hp: number, maxHP: number) {
+        const damagedPortrait = hp / maxHP < 0.5;
+        const frame = `portrait${damagedPortrait ? "-damage" : ""}`;
+        this.setTexture(name, frame);
+    }
 };
 
 export default HeroPortrait;

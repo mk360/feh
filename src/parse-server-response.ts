@@ -65,6 +65,11 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
                     break;
                 }
 
+                case "map-damage": {
+                    const payload = line.split("|");
+                    console.log(payload);
+                }
+
                 case "attack": {
                     scene.clearMovementLayer();
                     scene.interactionsIndicator.disable();
