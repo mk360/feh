@@ -9,8 +9,9 @@ import MoveSingleUnit from "./scripts/animations/move-single-unit";
 import MoveMultipleUnits from "./scripts/animations/move-multiple-units";
 import combatAnimation from "./scripts/animations/combat";
 import finishAnimation from "./scripts/animations/finish";
-import { Time } from "phaser";
+import { Time, Types } from "phaser";
 import killAnimation from "./scripts/animations/kill";
+import damageAnimation from "./scripts/animations/damage";
 
 const animationKeys = {
     "trigger": effectTriggerAnimation,
@@ -28,6 +29,7 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
         const timelineArray: Time.Timeline[] = [];
         for (let effect of effects) {
             const args = effect.split(" ");
+            console.log(args[0]);
             switch (args[0]) {
                 case "turn": {
                     scene.currentTurn = args[1];
@@ -67,7 +69,26 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
 
                 case "map-damage": {
                     const payload = line.split("|");
-                    console.log(payload);
+                    const damageAnimations = payload.map((entry) => {
+                        const [, targetId, damage, remainingHP] = entry.split(" ");
+                        const target = scene.heroesLayer.getByName(targetId) as Hero;
+                        const displayedDamage = damageAnimation(scene, target, +damage, "medium", +remainingHP);
+
+                        return {
+                            tween: displayedDamage,
+                        };
+                    });
+
+                    const timeline = new Time.Timeline(scene, damageAnimations);
+                    timelineArray.push(timeline);
+                    const pauseTimeline = new Time.Timeline(scene, [{
+                        from: 300,
+                        run() {
+                            // bonjour
+                        }
+                    }]);
+                    timelineArray.push(pauseTimeline);
+                    break;
                 }
 
                 case "attack": {

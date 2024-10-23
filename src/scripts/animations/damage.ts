@@ -3,13 +3,21 @@ import Hero from "../objects/hero";
 import MainScene from "../scenes/mainScene";
 import { renderDamageText } from "../utils/text-renderer";
 
-function damageAnimation(scene: MainScene, target: Hero, amount: number) {
+function getDamageFontSize(format: "small" | "medium" | "big") {
+    switch (format) {
+        case "small": return 18;
+        case "medium": return 25;
+        case "big": return 36;
+    }
+}
+
+function damageAnimation(scene: MainScene, target: Hero, amount: number, size: "small" | "medium" | "big", remainingHP: number) {
     const damageText = renderDamageText({
         scene,
         ...target.getAbsoluteCoordinates(),
         content: amount,
         style: {
-            fontSize: 25
+            fontSize: getDamageFontSize(size)
         }
     });
 
@@ -28,6 +36,8 @@ function damageAnimation(scene: MainScene, target: Hero, amount: number) {
             target.sprite.setAlpha(0);
             target.glowingSprite.setAlpha(1);
             scene.sound.playAudioSprite("battle-sfx", "hit");
+
+            target.updateHP(remainingHP);
 
             scene.tweens.add({
                 targets: [target.sprite],
