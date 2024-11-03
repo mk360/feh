@@ -81,7 +81,7 @@ class AssistPreview extends GameObjects.Container {
 
     updateSides(args: UpdateArguments) {
         const { Name, Stats } = args.assister.hero.getInternalHero();
-        const { Name: AssistedName, Stats: AssistedStats } = args.assister.hero.getInternalHero();
+        const { Name: AssistedName, Stats: AssistedStats } = args.assisted.hero.getInternalHero();
         this.assister.portrait.setPortrait(Name[0].value, Stats[0].hp, Stats[0].maxHP);
         this.assisted.portrait.setPortrait(AssistedName[0].value, AssistedStats[0].hp, AssistedStats[0].maxHP);
 

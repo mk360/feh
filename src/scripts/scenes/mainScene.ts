@@ -18,6 +18,7 @@ import { gridToPixels, squareSize } from '../utils/grid-functions';
 import { pixelsToGrid } from '../utils/grid-functions';
 import ActionsTray from '../objects/actions-tray';
 import Button from '../objects/button';
+import AssistPreview from '../objects/assist-preview';
 
 function createHeroQuoter(scene: MainScene) {
   let previousQuote = "";
@@ -60,16 +61,19 @@ export default class MainScene extends Phaser.Scene {
   rng = new Phaser.Math.RandomDataGenerator();
   heroesLayer: GameObjects.Layer;
   interactionsIndicator: InteractionIndicator;
+  assistPreview: AssistPreview;
   socket = socket;
   currentTurn = "";
   side = "";
   footer: Footer;
+  combatForecast: CombatForecast;
+  teamIds: string[] = [];
+  actionsTray: ActionsTray;
+  actionBlockingLayer: GameObjects.Rectangle;
   private tilesLayer: GameObjects.Layer;
   private unitInfosBanner: UnitInfosBanner;
-  teamIds: string[] = [];
   private storedPath: [number, number][] = [];
   private fpsText: GameObjects.Text;
-  combatForecast: CombatForecast;
   private playHeroQuote = createHeroQuoter(this);
   private movementUI: GameObjects.Layer;
   private miscUIElements: GameObjects.Layer;
@@ -81,7 +85,6 @@ export default class MainScene extends Phaser.Scene {
   private actionIndicator: GameObjects.Image;
   private pathfinder = new Pathfinder();
   private doubleClick = createDoubleTapHandler();
-  private actionsTray: ActionsTray;
 
   drawPath(path: [number, number][]) {
     this.clearMovementLayer();
@@ -312,6 +315,7 @@ export default class MainScene extends Phaser.Scene {
       this.combatForecast = new CombatForecast(this).setVisible(false);
       this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
       this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
+      this.assistPreview = this.add.existing(new AssistPreview(this).setVisible(false));
       const endTurn = new Button(this, "End Turn");
       this.actionsTray.addAction(endTurn, () => {
         this.socket.emit("request end turn");
@@ -320,6 +324,10 @@ export default class MainScene extends Phaser.Scene {
       this.actionsTray.addAction(enemyRange, () => {
 
       });
+
+      const actionsTrayBounds = this.actionsTray.getBounds();
+      this.actionBlockingLayer = new GameObjects.Rectangle(this, this.actionsTray.x, this.actionsTray.y, this.game.canvas.width, actionsTrayBounds.height, 0, 1).setOrigin(0);
+      this.add.existing(this.actionBlockingLayer);
       this.footer = new Footer(this, 0, this.actionsTray.getBounds().bottom, 1);
       this.add.existing(this.footer);
       this.interactionsIndicator = new InteractionIndicator(this, 0, 0).setVisible(false);

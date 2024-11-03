@@ -25,6 +25,7 @@ function enemyPhase(scene: MainScene, turnCount: number) {
             targets: [chains1, chains2],
             scaleY: 1,
             onStart: () => {
+                scene.actionBlockingLayer.setAlpha(0.7).setInteractive();
                 scene.tweens.add({
                     targets: [scene.footer.enemyPhaseText],
                     alpha: 1,

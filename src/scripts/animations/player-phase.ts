@@ -29,6 +29,7 @@ function playerPhase(scene: MainScene, turnCount: number) {
             scaleY: 1,
             onStart: () => {
                 scene.game.input.enabled = false;
+                scene.actionBlockingLayer.setAlpha(0).disableInteractive();
                 scene.footer.turnCount.setText(`Turn ${turnCount}`);
                 scene.tweens.add({
                     targets: [scene.footer.playerPhaseText],
