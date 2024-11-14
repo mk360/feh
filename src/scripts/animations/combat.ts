@@ -17,6 +17,7 @@ function combatAnimation(scene: MainScene, payload: string) {
         attackerObject.y = attackerPosition.y;
         const defenderCoordinates = defenderObject.getInternalHero().Position[0];
         const defenderPosition = gridToPixels(defenderCoordinates.x, defenderCoordinates.y);
+        const damageTween = damageAnimation(scene, defenderObject, +damage, "medium", +defenderHP);
 
         tweens.push({
             from: i ? 700 : 100,
@@ -25,9 +26,8 @@ function combatAnimation(scene: MainScene, payload: string) {
                 x: (defenderPosition.x + attackerPosition.x) / 2,
                 y: (defenderPosition.y + attackerPosition.y) / 2,
                 yoyo: true,
-                duration: 200,
+                duration: 250,
                 onYoyo: () => {
-                    const damageTween = damageAnimation(scene, defenderObject, +damage, "medium", +defenderHP);
                     damageTween.play();
                     scene.sound.playAudioSprite("battle-sfx", "hit");
                     attackerObject.updateHP(+attackerHP);

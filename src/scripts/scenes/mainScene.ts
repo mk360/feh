@@ -193,6 +193,7 @@ export default class MainScene extends Phaser.Scene {
           case "movement":
             hero.temporaryPosition = gridCell;
             this.combatForecast.setVisible(false);
+            this.assistPreview.setVisible(false);
             const path = this.pathfinder.findPath(savedPosition, gridCell);
             this.storedPath = path;
             const pathCopy = [...path];
@@ -206,6 +207,7 @@ export default class MainScene extends Phaser.Scene {
           case "warp":
             this.actionIndicator.setX(x).setY(y);
             this.combatForecast.setVisible(false);
+            this.assistPreview.setVisible(false);
             this.actionIndicator.setFrame("movement-indicator").setVisible(true);
             this.sound.playAudioSprite("sfx", "hover");
             break;
@@ -309,13 +311,12 @@ export default class MainScene extends Phaser.Scene {
       this.side = id;
       this.teamIds = ids;
       this.sound.pauseOnBlur = false;
-      this.add.image(0, 0, "marginals", "header").setOrigin(0);
+      const header = this.add.image(0, 0, "marginals", "header").setOrigin(0);
       const entities = this.game.registry.list.world;
-      this.unitInfosBanner = new UnitInfosBanner(this, id).setVisible(false);
+      this.unitInfosBanner = new UnitInfosBanner(this, id, header.getBottomCenter().y).setVisible(false);
       this.combatForecast = new CombatForecast(this).setVisible(false);
       this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
       this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
-      this.assistPreview = this.add.existing(new AssistPreview(this).setVisible(false));
       const endTurn = new Button(this, "End Turn");
       this.actionsTray.addAction(endTurn, () => {
         this.socket.emit("request end turn");
@@ -357,6 +358,7 @@ export default class MainScene extends Phaser.Scene {
 
       this.add.existing(this.unitInfosBanner);
       this.add.existing(this.combatForecast);
+      this.assistPreview = this.add.existing(new AssistPreview(this, header.getBottomCenter().y).setVisible(false));
 
       for (let entityId in entities.heroes) {
         const entity = entities.heroes[entityId];
@@ -445,6 +447,8 @@ export default class MainScene extends Phaser.Scene {
       const hero = this.heroesLayer.getByName(unitId) as Hero;
       this.unitInfosBanner.setVisible(true).setHero(hero, stats);
     });
+
+
 
     this.socket.on("response preview movement", ({ movement = [], assistArray = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, unitId }) => {
       for (let child of this.tilesLayer.getChildren() as GameObjects.Rectangle[]) {
@@ -548,6 +552,12 @@ export default class MainScene extends Phaser.Scene {
         child.effectivenessImage.iconsList = [];
       });
       this.clearMovementLayer();
+    });
+
+    this.socket.on("response preview assist", (preview) => {
+      preview.assisting.id = this.heroesLayer.getByName(preview.assisting.id) as Hero;
+      preview.assisted.id = this.heroesLayer.getByName(preview.assisted.id) as Hero;
+      this.assistPreview.updateSides(preview).setVisible(true);
     });
 
     this.socket.on("response preview battle", (preview) => {

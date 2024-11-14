@@ -1,11 +1,3 @@
-// import { GameObjects, Tweens } from "phaser";
-// import HeroData from "feh-battles/dec/hero";
-// import HeroNameplate from "./hero-nameplate";
-// import { renderCritHPText, renderRegularHPText, renderText } from "../utils/text-renderer";
-// import HeroPortrait from "./hero-portrait";
-// import TextColors from "../utils/text-colors";
-// import renderHP from "../utils/render-hp";
-
 import { GameObjects, Scene, Tweens } from "phaser";
 import HeroNameplate from "./hero-nameplate";
 import HeroPortrait from "./hero-portrait";
@@ -83,6 +75,7 @@ class CombatForecast extends GameObjects.Container {
 
     private createFirstHero() {
         this.firstHero.statMods = new GameObjects.Group(this.scene);
+        //
         this.firstHero.portrait = new HeroPortrait(this.scene, -100, "").setOrigin(0).setScale(0.6);
         this.firstHero.nameplate = new HeroNameplate(this.scene, 60, 20, {
             name: "",

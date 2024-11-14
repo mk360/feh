@@ -57,8 +57,8 @@ class UnitInfosBanner extends GameObjects.Container {
     private statChanges: StatChanges;
     private playerSide = "";
 
-    constructor(scene: Phaser.Scene, playerSide: string) {
-        super(scene, 0, 71);
+    constructor(scene: Phaser.Scene, playerSide: string, y: number) {
+        super(scene, 0, y);
         const blockX = 290;
         this.playerSide = playerSide;
         this.bannerBg = new GameObjects.Image(scene, 0, 0, "top-banner", "unit-banner-bg").setOrigin(0, 0).setInteractive();
@@ -278,15 +278,14 @@ class UnitInfosBanner extends GameObjects.Container {
                     bane: internalHero.Bane?.[0].value,
                     buff: this.statChanges.buffs[castKey],
                     penalty: this.statChanges.debuffs[castKey],
-                    // buff: hero.mapBoosts[statKey],
                     description
                 });
 
 
                 this.textbox.x = label.getRightCenter().x + 400;
                 this.textbox.y = label.getBottomLeft().y + 10;
-                this.textbox.display(internalHero.Side[0].value);
                 this.textbox.setContent(content);
+                this.textbox.display(internalHero.Side[0].value);
             }
 
             if (statKey !== "hp") {
