@@ -1,14 +1,3 @@
-interface Component {
-  type: string;
-  [k: string]: any;
-}
-
-interface JSONEntity {
-  id: string;
-  tags: string[];
-  components: Component[];
-}
-
 function formatName(name: string) {
   return name.replace(/: /, "_").replace(/ /g, "_");
 };
@@ -29,7 +18,6 @@ export default class PreloadScene extends Phaser.Scene {
       };
     };
     this.load.image("map", `/assets/maps/${world.mapId}.webp`);
-    this.load.audio("effect-trigger", "/assets/audio/effect-trigger.mp3");
     this.load.atlas("skills", "/assets/sheets/skills.webp", "/assets/sheets/skills.json");
     this.load.atlas("weapons", "/assets/sheets/weapons.webp", "/assets/sheets/weapons.json");
     this.load.atlas("movement-types", "/assets/sheets/movement-types.png", "/assets/sheets/movement-types.json");
@@ -47,6 +35,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("enemy-phase-gfx", "/assets/enemy-phase.png");
     this.load.audio("player-phase", "/assets/audio/player-phase.ogg");
     this.load.audio("enemy-phase", "/assets/audio/enemy-phase.ogg");
+    this.load.image("banner", "/assets/base-banner2.png");
     this.load.atlas("top-banner", "/assets/sheets/top-banner.webp", "/assets/sheets/top-banner.json");
     this.load.audioSprite("sfx", "/assets/audio/sfx.json", "/assets/audio/sfx.ogg");
     this.load.audioSprite("battle-sfx", "/assets/audio/battle-sfx.json", "/assets/audio/battle-sfx.ogg");
@@ -74,19 +63,5 @@ export default class PreloadScene extends Phaser.Scene {
 
   create() {
     this.scene.start('MainScene');
-
-    /**
-     * This is how you would dynamically import the mainScene class (with code splitting),
-     * add the mainScene to the Scene Manager
-     * and start the scene.
-     * The name of the chunk would be 'mainScene.chunk.js
-     * Find more about code splitting here: https://webpack.js.org/guides/code-splitting/
-     */
-    // let someCondition = true
-    // if (someCondition)
-    //   import(/* webpackChunkName: "mainScene" */ './mainScene').then(mainScene => {
-    //     this.scene.add('MainScene', mainScene.default, true)
-    //   })
-    // else console.log('The mainScene class will not even be loaded by the browser')
   }
 }

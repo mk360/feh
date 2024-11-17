@@ -314,6 +314,8 @@ export default class MainScene extends Phaser.Scene {
       const header = this.add.image(0, 0, "marginals", "header").setOrigin(0);
       const entities = this.game.registry.list.world;
       this.unitInfosBanner = new UnitInfosBanner(this, id, header.getBottomCenter().y).setVisible(false);
+      var img = this.add.image(this.game.canvas.width / 2, header.getBottomCenter().y, "banner").setScale(0.5);
+      // img.setDisplaySize(img.)
       this.combatForecast = new CombatForecast(this).setVisible(false);
       this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
       this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
