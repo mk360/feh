@@ -50,6 +50,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("ui-button", "/assets/ui-button.png");
     this.load.image("ui-button-pressed", "/assets/ui-button-pressed.png");
     this.load.image("effect-shine", "/assets/effect.png");
+    this.load.image("note", "/assets/note.png");
     this.load.audio("bgm", "/assets/audio/bgm/roy's departure.m4a");
 
     for (let heroId in world.heroes) {

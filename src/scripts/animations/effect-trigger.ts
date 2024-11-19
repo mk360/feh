@@ -15,7 +15,7 @@ function effectTriggerAnimation(scene: MainScene, hero: Hero) {
             onStart: () => {
                 scene.add.existing(effectCircle);
                 scene.add.existing(effectGleam);
-                scene.sound.play("effect-trigger");
+                scene.sound.playAudioSprite("battle-sfx", "effect-trigger");
             },
         }
     }, {

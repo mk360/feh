@@ -16,7 +16,7 @@ function specialTriggerAnimation(scene: MainScene, hero: Hero, postSpecialCooldo
             onStart: () => {
                 scene.add.existing(effectCircle);
                 scene.add.existing(effectGleam);
-                scene.sound.play("effect-trigger");
+                scene.sound.playAudioSprite("battle-sfx", "effect-trigger");
             },
         }
     }, {

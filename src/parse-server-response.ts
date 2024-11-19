@@ -9,7 +9,8 @@ import MoveSingleUnit from "./scripts/animations/move-single-unit";
 import MoveMultipleUnits from "./scripts/animations/move-multiple-units";
 import combatAnimation from "./scripts/animations/combat";
 import finishAnimation from "./scripts/animations/finish";
-import { Time, Types } from "phaser";
+import { Time } from "phaser";
+import refreshAnimation from "./scripts/animations/refresh";
 import killAnimation from "./scripts/animations/kill";
 import damageAnimation from "./scripts/animations/damage";
 
@@ -19,6 +20,7 @@ const animationKeys = {
     "Bonus": mapBuffAnimation,
     "finish": finishAnimation,
     "kill": killAnimation,
+    refresh: refreshAnimation
 };
 
 function parseServerResponse(scene: MainScene, lines: string[]) {
