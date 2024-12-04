@@ -1,4 +1,4 @@
-import { GameObjects, Time, Types } from "phaser";
+import { GameObjects, Types } from "phaser";
 import Hero from "../objects/hero";
 import MainScene from "../scenes/mainScene";
 

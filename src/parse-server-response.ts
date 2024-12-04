@@ -13,6 +13,13 @@ import { Time } from "phaser";
 import refreshAnimation from "./scripts/animations/refresh";
 import killAnimation from "./scripts/animations/kill";
 import damageAnimation from "./scripts/animations/damage";
+import gravityAnimation from "./scripts/animations/gravity";
+
+import PivotAssist from "./scripts/animations/assists/pivot";
+import SwapAssist from "./scripts/animations/assists/swap";
+import SmiteAssist from "./scripts/animations/assists/smite";
+import ShoveAssist from "./scripts/animations/assists/shove";
+import DrawBack from "./scripts/animations/assists/draw-back";
 
 const animationKeys = {
     "trigger": effectTriggerAnimation,
@@ -20,8 +27,17 @@ const animationKeys = {
     "Bonus": mapBuffAnimation,
     "finish": finishAnimation,
     "kill": killAnimation,
+    "Gravity": gravityAnimation,
     refresh: refreshAnimation
 };
+
+const assistAnimations = {
+    "Pivot": PivotAssist,
+    "Swap": SwapAssist,
+    "Smite": SmiteAssist,
+    "Shove": ShoveAssist,
+    "Draw Back": DrawBack,
+}
 
 function parseServerResponse(scene: MainScene, lines: string[]) {
     const animations: Time.Timeline[][] = [];
@@ -31,7 +47,7 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
         const timelineArray: Time.Timeline[] = [];
         for (let effect of effects) {
             const args = effect.split(" ");
-            console.log(args[0]);
+
             switch (args[0]) {
                 case "turn": {
                     scene.currentTurn = args[1];
@@ -50,22 +66,17 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
                     break;
                 }
 
-                case "move-multiple": {
-                    args.shift();
-                    const stringified = args.join("");
-                    const affectedEntities = stringified.split("|");
-                    const mapped = affectedEntities.map((message) => {
-                        const [target, targetX, targetY] = message.split(" ");
-                        return {
-                            target,
-                            coords: {
-                                x: +targetX,
-                                y: +targetY
-                            }
-                        }
-                    });
-                    const animation = MoveMultipleUnits(scene, mapped);
-                    timelineArray.push(animation);
+                case "assist-movement": {
+                    const [, assistName, source, target, sourceHeroCoordinates, targetHeroCoordinates] = args;
+                    if (assistName in assistAnimations) {
+                        const targetHero = scene.heroesLayer.getByName(target) as Hero;
+                        const sourceHero = scene.heroesLayer.getByName(source) as Hero;
+                        const animation = assistAnimations[assistName as keyof typeof assistAnimations](scene, sourceHero, targetHero, sourceHeroCoordinates, targetHeroCoordinates);
+                        const animationTimeline = new Time.Timeline(scene, animation);
+                        timelineArray.push(animationTimeline);
+                    } else {
+                        console.warn(`No animation was found for ${assistName}`);
+                    }
                     break;
                 }
 

@@ -52,6 +52,9 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image("effect-shine", "/assets/effect.png");
     this.load.image("note", "/assets/note.png");
     this.load.audio("bgm", "/assets/audio/bgm/roy's departure.m4a");
+    this.load.image("gravity-ring", "/assets/gravity-ring.png");
+    this.load.image("dust", "/assets/dust.png");
+    this.load.audio("gravity", "/assets/audio/statuses/gravity.wav");
 
     for (let heroId in world.heroes) {
       const heroData = world.heroes[heroId];

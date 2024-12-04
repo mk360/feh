@@ -40,6 +40,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private A: GameObjects.Image;
     private B: GameObjects.Image;
     private C: GameObjects.Image;
+    private S: GameObjects.Image;
     private displayedHero: Hero;
     private highlighter = new HighlightRectangle(this.scene);
     //     private S: GameObjects.Image;
@@ -394,17 +395,14 @@ class UnitInfosBanner extends GameObjects.Container {
         this.A = new GameObjects.Image(this.scene, lvText.getBottomRight().x + 10, lvText.getCenter().y - 10, "").setScale(0.6).setOrigin(0, 0.5).setInteractive();
         this.B = new GameObjects.Image(this.scene, this.A.getRightCenter().x + 15, this.A.getCenter().y, "").setScale(0.6).setOrigin(0, 0.5).setInteractive();
         this.C = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 15, this.A.getCenter().y, "").setScale(0.6).setOrigin(0, 0.5).setInteractive();
-        // this.A.setSize(this.A.displayWidth, this.A.displayHeight);
-        // this.B.setSize(this.B.displayWidth, this.B.displayHeight);
-        // this.C.setSize(this.C.displayWidth, this.C.displayHeight);
+        this.S = new GameObjects.Image(this.scene, this.C.getRightCenter().x + 15, this.A.getCenter().y, "").setScale(0.6).setOrigin(0, 0.5);
         const A_Letter = new GameObjects.Image(this.scene, this.A.getBottomRight().x + 3, this.A.getBottomRight().y + 10, "skills-ui", "A").setOrigin(0, 1).setScale(0.5);
         const B_Letter = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 3, this.B.getBottomRight().y + 10, "skills-ui", "B").setOrigin(0, 1).setScale(0.5);
         const C_Letter = new GameObjects.Image(this.scene, this.C.getBottomRight().x + 3, this.C.getBottomRight().y + 10, "skills-ui", "C").setOrigin(0, 1).setScale(0.5);
-        // this.S = new GameObjects.Image(this.scene, this.C.getRightCenter().x + 15, lvText.getCenter().y, "").setScale(0.5).setOrigin(0, 0.5);
-        // const S_Letter = new GameObjects.Image(this.scene, this.S.getBottomRight().x + 3, this.S.getBottomRight().y + 10, "skills-ui", "S").setOrigin(0, 1).setScale(0.5);
-        this.add([this.C, C_Letter, this.B, B_Letter, this.A, A_Letter,]);
+        const S_Letter = new GameObjects.Image(this.scene, this.S.getBottomRight().x + 3, this.S.getBottomRight().y + 10, "skills-ui", "S").setOrigin(0, 1).setScale(0.5);
+        this.add([this.C, C_Letter, this.B, B_Letter, this.A, A_Letter, this.S, S_Letter]);
 
-        for (let skillSlot of ["A", "B", "C"] as const) {
+        for (let skillSlot of ["A", "B", "C", "S"] as const) {
             this[skillSlot].on("pointerdown", () => {
                 this.highlighter.highlightElement(this[skillSlot]);
                 this.scene.sound.playAudioSprite("sfx", "tap");
@@ -433,8 +431,8 @@ class UnitInfosBanner extends GameObjects.Container {
 
     private updatePassives(hero: Hero) {
         const internalHero = hero.getInternalHero();
-        const skills = Object.groupBy(internalHero.Skill.filter((i) => ["A", "B", "C"].includes(i.slot)) as { name: string, slot: "A" | "B" | "C" }[], (s) => s.slot);
-        const skillSlots = ["A", "B", "C"] as const;
+        const skills = Object.groupBy(internalHero.Skill as { name: string, slot: "A" | "B" | "C" | "S" }[], (s) => s.slot);
+        const skillSlots = ["A", "B", "C", "S"] as const;
 
         for (let skillSlot of skillSlots) {
             const usedSkill = skills[skillSlot]?.[0];
@@ -456,7 +454,7 @@ class UnitInfosBanner extends GameObjects.Container {
         const stats = Stats[0];
         const weapon = Weapon[0];
         let skills: Partial<{
-            [k in "weapon" | "assist" | "special" | "A" | "B" | "C"]: Array<{
+            [k in "weapon" | "assist" | "special" | "A" | "B" | "C" | "S"]: Array<{
                 name: string;
                 description: string;
                 displayName?: string;
@@ -524,10 +522,6 @@ class UnitInfosBanner extends GameObjects.Container {
 
             this.updatePassives(hero);
         }
-
-        // if (Side[0].value === "team1") {
-        //     this.bannerBg.setFrame("")
-        // }
 
         this.displayedHero = hero;
     }

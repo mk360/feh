@@ -245,7 +245,9 @@ export default class MainScene extends Phaser.Scene {
       switch (tileType) {
         case "assist": {
           this.socket.emit("request confirm assist", {
-
+            source: hero.name,
+            targetCoordinates: gridCell,
+            sourceCoordinates: hero.temporaryPosition
           })
         }
           break;
@@ -314,10 +316,9 @@ export default class MainScene extends Phaser.Scene {
       const header = this.add.image(0, 0, "marginals", "header").setOrigin(0);
       const entities = this.game.registry.list.world;
       this.unitInfosBanner = new UnitInfosBanner(this, id, header.getBottomCenter().y).setVisible(false);
-      var img = this.add.image(this.game.canvas.width / 2, header.getBottomCenter().y, "banner").setScale(0.5);
-      // img.setDisplaySize(img.)
       this.combatForecast = new CombatForecast(this).setVisible(false);
-      this.background = this.add.image(0, 250, "map").setOrigin(0).setInteractive();
+      const ornateBanner = this.add.image(this.game.canvas.width / 2, header.getBottomCenter().y, "banner").setScale(0.6).setOrigin(0.5, 0);
+      this.background = this.add.image(0, ornateBanner.getBottomCenter().y, "map").setOrigin(0).setInteractive();
       this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
       const endTurn = new Button(this, "End Turn");
       this.actionsTray.addAction(endTurn, () => {
@@ -360,7 +361,7 @@ export default class MainScene extends Phaser.Scene {
 
       this.add.existing(this.unitInfosBanner);
       this.add.existing(this.combatForecast);
-      this.assistPreview = this.add.existing(new AssistPreview(this, header.getBottomCenter().y).setVisible(false));
+      this.assistPreview = new AssistPreview(this, header.getBottomCenter().y).setVisible(false);
 
       for (let entityId in entities.heroes) {
         const entity = entities.heroes[entityId];
@@ -449,8 +450,6 @@ export default class MainScene extends Phaser.Scene {
       const hero = this.heroesLayer.getByName(unitId) as Hero;
       this.unitInfosBanner.setVisible(true).setHero(hero, stats);
     });
-
-
 
     this.socket.on("response preview movement", ({ movement = [], assistArray = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, unitId }) => {
       for (let child of this.tilesLayer.getChildren() as GameObjects.Rectangle[]) {
@@ -611,6 +610,7 @@ export default class MainScene extends Phaser.Scene {
 
     // this.startBackgroundMusic(0.13);
   }
+
 
   update(_, delta) {
     timer += delta;
