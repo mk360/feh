@@ -25,13 +25,7 @@ const fileContents = JSON.parse(fs.readFileSync(path.join(__dirname, filename), 
         }).then((path) => {
             finalizeCompiledFile(Name, path);
         });
-    }))
-    // for (let { Name: name } of fileContents) {
-    //     await downloadAssets(name);
-    //     await compileAudio(name);
-    //     const compiledPath = await compileImages(name);
-    //     await finalizeCompiledFile(name, compiledPath);
-    // }
+    }));
 
     if (fs.existsSync(path.join(__dirname, "../../temp"))) {
         fs.rmSync(path.join(__dirname, "../../temp"), { force: true, recursive: true });

@@ -19,6 +19,7 @@ import { pixelsToGrid } from '../utils/grid-functions';
 import ActionsTray from '../objects/actions-tray';
 import Button from '../objects/button';
 import AssistPreview from '../objects/assist-preview';
+import "../debug/debug";
 
 function createHeroQuoter(scene: MainScene) {
   let previousQuote = "";
