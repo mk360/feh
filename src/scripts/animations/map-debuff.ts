@@ -90,7 +90,7 @@ function mapDebuffAnimation(scene: MainScene, target: Hero) {
             targets: [statChangeAura, firstParticle, rightParticle, leftParticle, fourthParticle, fifthParticle]
         }
     }, {
-        from: 1000,
+        from: 400,
         run: () => {
             statChangeAura.destroy();
             firstParticle.destroy();

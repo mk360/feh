@@ -505,11 +505,11 @@ export default class MainScene extends Phaser.Scene {
         character.effectivenessImage.iconsList = [];
       }
 
-      for (let enemy in effectiveness) {
-        const enemyHero = this.heroesLayer.getByName(enemy) as Hero;
+      for (let character in effectiveness) {
+        const enemyHero = this.heroesLayer.getByName(character) as Hero;
         enemyHero.effectivenessImage.iconsList = [];
-        const [heroIsEffective, enemyIsEffective] = effectiveness[enemy];
-
+        const [heroIsEffective, enemyIsEffective] = effectiveness[character];
+        // switch displays depending on the clicked hero and the player's side
         if (heroIsEffective) {
           enemyHero.effectivenessImage.iconsList.push("effective-against-enemy");
         }

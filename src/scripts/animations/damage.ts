@@ -28,6 +28,7 @@ function damageAnimation(scene: MainScene, target: Hero, amount: number, size: "
         y: "-=20",
         duration: 150,
         yoyo: true,
+        paused: true,
         onStart: () => {
             scene.add.existing(damageText);
             damageText.setVisible(true);

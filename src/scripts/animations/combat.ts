@@ -44,7 +44,7 @@ function combatAnimation(scene: MainScene, payload: string) {
                     attackerObject.x = attackerPosition.x;
                     attackerObject.y = attackerPosition.y;
                 },
-            }
+            },
         });
     }
 
