@@ -506,19 +506,28 @@ export default class MainScene extends Phaser.Scene {
       }
 
       for (let character in effectiveness) {
-        const enemyHero = this.heroesLayer.getByName(character) as Hero;
-        enemyHero.effectivenessImage.iconsList = [];
+        const heroObject = this.heroesLayer.getByName(character) as Hero;
+        heroObject.effectivenessImage.iconsList = [];
         const [heroIsEffective, enemyIsEffective] = effectiveness[character];
-        // switch displays depending on the clicked hero and the player's side
+        const isAlly = this.side === heroObject.getInternalHero().Side[0].value;
+
         if (heroIsEffective) {
-          enemyHero.effectivenessImage.iconsList.push("effective-against-enemy");
+          if (isAlly) {
+            heroObject.effectivenessImage.iconsList.push("enemy-effective");
+          } else {
+            heroObject.effectivenessImage.iconsList.push("effective-against-enemy");
+          }
         }
 
         if (enemyIsEffective) {
-          enemyHero.effectivenessImage.iconsList.push("enemy-effective");
+          if (isAlly) {
+            heroObject.effectivenessImage.iconsList.push("effective-against-enemy");
+          } else {
+            heroObject.effectivenessImage.iconsList.push("enemy-effective");
+          }
         }
 
-        enemyHero.toggleEffectivenessImages();
+        heroObject.toggleEffectivenessImages();
       }
     });
 

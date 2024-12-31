@@ -12,7 +12,7 @@ interface TextRenderingConfig {
 export function renderText(config: TextRenderingConfig) {
     const { content, scene, x, y, style } = config;
 
-    return new Phaser.GameObjects.Text(scene, x, y, content.toString(), {
+    return new GameObjects.Text(scene, x, y, content.toString(), {
         fontFamily: "FEH",
         stroke: "black",
         strokeThickness: 2,
