@@ -28,7 +28,7 @@ function combatAnimation(scene: MainScene, payload: string) {
                 yoyo: true,
                 duration: 250,
                 onYoyo: () => {
-                    damageTween.play();
+                    scene.tweens.existing(damageTween);
                     scene.sound.playAudioSprite("battle-sfx", "hit");
                     attackerObject.updateHP(+attackerHP);
                     attackerObject.updateSpecial(+attackerCooldown);

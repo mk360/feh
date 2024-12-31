@@ -1,7 +1,6 @@
 /**
  * TODO:
  * start implementing battle preview requests
- * implement bonuses
  */
 
 import { GameObjects, Time } from 'phaser';
@@ -19,7 +18,7 @@ import { pixelsToGrid } from '../utils/grid-functions';
 import ActionsTray from '../objects/actions-tray';
 import Button from '../objects/button';
 import AssistPreview from '../objects/assist-preview';
-import "../debug/debug";
+import Debugger from '../debug/debug';
 
 function createHeroQuoter(scene: MainScene) {
   let previousQuote = "";
@@ -66,6 +65,7 @@ export default class MainScene extends Phaser.Scene {
   socket = socket;
   currentTurn = "";
   side = "";
+  private debugger = new Debugger(this);
   footer: Footer;
   combatForecast: CombatForecast;
   teamIds: string[] = [];
@@ -158,11 +158,6 @@ export default class MainScene extends Phaser.Scene {
     const ui = this.movementUI.getChildren().filter((child) => !([this.startRosary, this.movementIndicator, this.actionIndicator] as GameObjects.GameObject[]).includes(child));
     while (ui.length) ui.pop().destroy();
     this.actionIndicator.setVisible(false);
-  }
-
-  enableHeroes() {
-    this.heroesLayer.getChildren().forEach((hero: Hero) => {
-    });
   }
 
   enableDragging(hero: Hero) {
@@ -419,8 +414,8 @@ export default class MainScene extends Phaser.Scene {
         this.unitInfosBanner.closeTextbox();
       });
 
-      const layer = this.add.rectangle(0, 0, +this.game.config.width, +this.game.config.height, 0xD8BA94, 1).setOrigin(0);
-      const startGameButton = new GameObjects.Rectangle(this, layer.getCenter().x, layer.getCenter().y - 50, 240, 120, 0x00AF81).setInteractive();
+      const layer = this.add.rectangle(0, 0, +this.game.config.width, +this.game.config.height, 0x0f0540, 1).setOrigin(0);
+      const startGameButton = new GameObjects.Rectangle(this, layer.getCenter().x, layer.getCenter().y - 50, 240, 120, 0x0066ae).setInteractive();
       const startGameText = renderText({
         scene: this,
         x: startGameButton.getCenter().x,
@@ -541,6 +536,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     this.socket.on("response", async (args) => {
+      this.debugger.logMessage(args);
       const responseAnimations = parseServerResponse(this, args);
       for (let eventLine of responseAnimations) {
         await Promise.all(eventLine.map(promiseAnimation));

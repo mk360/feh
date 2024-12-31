@@ -23,12 +23,11 @@ function damageAnimation(scene: MainScene, target: Hero, amount: number, size: "
 
     damageText.setOrigin(0.5);
 
-    const damageTween = scene.tweens.add({
+    const damageTween = scene.tweens.create({
         targets: [damageText],
         y: "-=20",
         duration: 150,
         yoyo: true,
-        paused: true,
         onStart: () => {
             scene.add.existing(damageText);
             damageText.setVisible(true);
