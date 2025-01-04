@@ -21,15 +21,20 @@
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
     column-gap: 2vw;
-    grid-template-rows: 10% auto;
-    height: 20rem;
+    row-gap: 10px;
+    grid-template-rows: 10% 45% 10% auto;
+    height: 40rem;
     padding: 1rem;
 
     h3 {
-        margin: 0;
         font-size: 26px;
         color: #F7F4F3;
     }
+}
+
+#messages {
+    background-color: #F7F4F3;
+    grid-area: 4 / 1 / 4 / 4;
 }
 
 #units-list {

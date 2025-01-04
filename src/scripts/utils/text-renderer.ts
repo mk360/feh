@@ -97,6 +97,15 @@ export function renderRegularHPText(config: TextRenderingConfig) {
     return text;
 }
 
+export function renderHealingText(config: TextRenderingConfig) {
+    const { text, gradient } = renderTextWith2DContext(config);
+    text.style.stroke = "white";
+    gradient.addColorStop(0, "#499059");
+    gradient.addColorStop(0.5, "#187455");
+    text.setFill(gradient);
+    return text;
+}
+
 function renderTextWith2DContext(config: TextRenderingConfig) {
     const text = renderText(config);
     const gradient = text.context.createLinearGradient(0, 0, 0, text.height);

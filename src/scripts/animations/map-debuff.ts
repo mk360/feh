@@ -16,10 +16,10 @@ function mapDebuffAnimation(scene: MainScene, target: Hero) {
     const fifthParticle = new GameObjects.Image(scene, heroCoordinates.x - 10, heroCoordinates.y - 30, "stat-change-particle").setScale(0.1).setRotation(Math.PI / 2).setOrigin(0.5, 0).setTint(0x1496FF);
     const statChangeParticles = Array.from<GameObjects.Image>({ length: 4 }).fill(new GameObjects.Image(scene, heroCoordinates.x - 10, heroCoordinates.y - 10, "stat-change-particle").setScale(0.1).setRotation(Math.PI / 2));
     const animation: Types.Time.TimelineEventConfig[] = [{
-        from: 0,
+        from: 100,
         tween: {
             onStart: () => {
-                scene.sound.play("penalty");
+                scene.sound.playAudioSprite("status-audio", "penalty");
                 scene.add.existing(firstParticle);
                 scene.add.existing(rightParticle);
                 scene.add.existing(leftParticle);

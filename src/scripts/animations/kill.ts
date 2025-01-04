@@ -19,9 +19,9 @@ function killAnimation(scene: MainScene, hero: Hero) {
                     delay: 100,
                     duration: fadeDuration
                 }).play();
+                scene.sound.playAudioSprite("battle-sfx", "ko");
             },
             onComplete() {
-                scene.sound.playAudioSprite("battle-sfx", "ko");
                 scene.heroesLayer.remove(hero);
                 hero.destroy();
             }

@@ -15,7 +15,7 @@ function gravityAnimation(scene: MainScene, hero: Hero) {
             ease: Tweens.Builders.GetEaseFunction("Sine"),
             onStart: () => {
                 scene.add.existing(gravityRing);
-                scene.sound.play("gravity");
+                scene.sound.playAudioSprite("status-audio", "gravity");
             },
             onComplete: () => {
                 gravityRing.destroy();

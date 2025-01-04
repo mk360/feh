@@ -1,6 +1,7 @@
 import 'phaser'
 import PreloadScene from './scenes/preloadScene'
 import MainScene from './scenes/mainScene';
+import UIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 
 const DEFAULT_WIDTH = 540
 const DEFAULT_HEIGHT = 1136;
@@ -11,6 +12,13 @@ const config: Phaser.Types.Core.GameConfig = {
   fps: {
     target: 15,
     min: 15,
+  },
+  plugins: {
+    scene: [{
+      key: "rexUI",
+      plugin: UIPlugin,
+      mapping: "rexUI"
+    }]
   },
   scale: {
     parent: 'game',

@@ -19,6 +19,7 @@ import ActionsTray from '../objects/actions-tray';
 import Button from '../objects/button';
 import AssistPreview from '../objects/assist-preview';
 import Debugger from '../debug/debug';
+import getEdges from '../utils/get-edges';
 
 function createHeroQuoter(scene: MainScene) {
   let previousQuote = "";
@@ -180,7 +181,11 @@ export default class MainScene extends Phaser.Scene {
               x: gridCell.x,
               y: gridCell.y,
               unit: hero.name,
-              position: hero.temporaryPosition
+              position: hero.temporaryPosition,
+              path: this.storedPath.map(([x, y]) => ({
+                x,
+                y
+              }))
             });
 
             this.actionIndicator.setFrame("attack-indicator").setVisible(true);
@@ -337,8 +342,8 @@ export default class MainScene extends Phaser.Scene {
       this.miscUIElements = this.add.layer();
       this.aoeLayer = this.add.layer();
       this.miscUIElements.add(this.interactionsIndicator);
-      this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
-      this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(95, 95);
+      this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(squareSize, squareSize);
+      this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(squareSize, squareSize);
       this.movementIndicator = new GameObjects.Image(this, 0, 0, "movement-indicators", "movement-indicator").setVisible(false);
       this.actionIndicator = new GameObjects.Image(this, 0, 0, "movement-indicators", "movement-indicator").setVisible(false);
       this.movementUI.add(this.movementIndicator);
@@ -405,11 +410,11 @@ export default class MainScene extends Phaser.Scene {
           this.heroesLayer.getChildren().forEach((child: Hero) => {
             if (!child.getInternalHero().FinishedAction && child.getInternalHero().Side[0].value === this.side) child.enableMovementIndicator();
           });
-          this.heroesLayer.getChildren().forEach((child: Hero) => {
-            child.effectivenessImage.iconsList = [];
-            child.setInteractive(undefined, undefined, false);
-          });
         }
+        this.heroesLayer.getChildren().forEach((child: Hero) => {
+          child.effectivenessImage.iconsList = [];
+          child.setInteractive(undefined, undefined, false);
+        });
 
         this.unitInfosBanner.closeTextbox();
       });
@@ -568,9 +573,17 @@ export default class MainScene extends Phaser.Scene {
     });
 
     this.socket.on("response preview battle", (preview) => {
-      const { attacker: previewAttacker, defender: previewDefender } = preview;
+      const { attacker: previewAttacker, defender: previewDefender, attackerTile } = preview;
       const attacker = this.heroesLayer.getByName(previewAttacker.id) as Hero;
       const defender = this.heroesLayer.getByName(previewDefender.id) as Hero;
+      const { x, y } = gridToPixels(attackerTile.x, attackerTile.y);
+      const storedPath = [...this.storedPath];
+      const attackerTileIndex = storedPath.findIndex((tile) => {
+        return tile[0] === attackerTile.x && tile[1] === attackerTile.y;
+      });
+      const pathStoppingAtAttackerTile = storedPath.slice(0, attackerTileIndex + 1);
+      this.drawPath(pathStoppingAtAttackerTile);
+      this.movementIndicator.setX(x).setY(y);
       this.combatForecast.setForecastData({
         attacker: {
           entity: attacker,
@@ -621,7 +634,7 @@ export default class MainScene extends Phaser.Scene {
   update(_, delta) {
     timer += delta;
     const ONE_SECOND = 1000;
-    if (timer >= 1.2 * ONE_SECOND) {
+    if (timer >= 0.8 * ONE_SECOND) {
       timer = 0;
       if (this.heroesLayer) {
         this.heroesLayer.getChildren().forEach((hero: Hero) => {

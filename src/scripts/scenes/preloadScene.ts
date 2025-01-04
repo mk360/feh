@@ -26,22 +26,21 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.atlas("statuses", "/assets/sheets/statuses.webp", "/assets/sheets/statuses.json");
     this.load.atlas("movement-indicators", "/assets/sheets/movement-indicators.webp", "/assets/sheets/movement-indicators.json");
     this.load.atlas("path", "/assets/sheets/movement/movement.webp", "/assets/sheets/movement/movement.json");
-    this.load.image("chains", "/assets/chains.png");
     this.load.image("stat-change-aura", "/assets/stat-change-aura.webp");
     this.load.image("stat-change-particle", "/assets/stat-change-particle.webp");
+    // maybe create an atlas for statuses and skills vfx ? we could optimize away 9+ requests
+    // rn we're doing 36 requests for 1.78 mb
     this.load.atlas("marginals", "/assets/sheets/marginals.webp", "/assets/sheets/marginals.json");
     this.load.atlas("player-phase", "/assets/sheets/player-phase.webp", "/assets/sheets/player-phase.json");
     this.load.atlas("enemy-phase", "/assets/sheets/enemy-phase.webp", "/assets/sheets/enemy-phase.json");
-    this.load.image("enemy-phase-gfx", "/assets/enemy-phase.png");
     this.load.audio("player-phase", "/assets/audio/player-phase.ogg");
     this.load.audio("enemy-phase", "/assets/audio/enemy-phase.ogg");
     this.load.image("banner", "/assets/base-banner2.png");
     this.load.atlas("top-banner", "/assets/sheets/top-banner.webp", "/assets/sheets/top-banner.json");
     this.load.audioSprite("sfx", "/assets/audio/sfx.json", "/assets/audio/sfx.ogg");
-    this.load.audioSprite("battle-sfx", "/assets/audio/battle-sfx.json", "/assets/audio/battle-sfx.ogg");
-    this.load.audio("confirm", "/assets/audio/confirm.mp3");
-    this.load.audio("bonus", "/assets/audio/statuses/bonus.ogg");
-    this.load.audio("penalty", "/assets/audio/statuses/penalty.ogg");
+    this.load.audioSprite("status-audio", "/assets/audio/sheets/statuses.json", "/assets/audio/sheets/statuses.ogg");
+    this.load.audioSprite("battle-sfx", "/assets/audio/sheets/battle-sfx.json", "/assets/audio/sheets/battle-sfx.ogg");
+    this.load.audio("confirm", "/assets/audio/confirm.mp3"); // this can be optimized away
     this.load.image("effect", "/assets/effect.png");
     this.load.image("offensive-special-effect", "/assets/offensive-special-effect.png");
     this.load.image("effect-blur", "/assets/effect-blur.png");
@@ -54,7 +53,8 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audio("bgm", "/assets/audio/bgm/roy's departure.m4a");
     this.load.image("gravity-ring", "/assets/gravity-ring.png");
     this.load.image("dust", "/assets/dust.png");
-    this.load.audio("gravity", "/assets/audio/statuses/gravity.wav");
+    // we could also experiment with dynamic asset loading instead of static asset loading
+    // ie loading assets only when they're required by an animation or some logic
 
     for (let heroId in world.heroes) {
       const heroData = world.heroes[heroId];

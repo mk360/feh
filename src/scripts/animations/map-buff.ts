@@ -16,7 +16,7 @@ function mapBuffAnimation(scene: MainScene, target: Hero) {
         from: 0,
         tween: {
             onStart: () => {
-                scene.sound.play("bonus");
+                scene.sound.playAudioSprite("status-audio", "bonus");
                 scene.add.existing(firstParticle);
                 scene.add.existing(rightParticle);
                 scene.add.existing(leftParticle);
