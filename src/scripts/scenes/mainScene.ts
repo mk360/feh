@@ -21,6 +21,8 @@ import AssistPreview from '../objects/assist-preview';
 import Debugger from '../debug/debug';
 import getEdges from '../utils/get-edges';
 
+const uuid = localStorage.getItem("pid");
+
 function createHeroQuoter(scene: MainScene) {
   let previousQuote = "";
 
@@ -170,32 +172,34 @@ export default class MainScene extends Phaser.Scene {
     hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
       if (target.type === "Rectangle") {
         this.interactionsIndicator.disable();
-        const gridCell = pixelsToGrid(target.x, target.y);
+        const targetCell = pixelsToGrid(target.x, target.y);
         const savedPosition = hero.getInternalHero().Position[0];
-        const { x, y } = gridToPixels(gridCell.x, gridCell.y);
+        const { x, y } = gridToPixels(targetCell.x, targetCell.y);
         this.aoeLayer.removeAll();
 
         switch (target.getData("type")) {
           case "target":
-            this.socket.emit("request preview battle", {
-              x: gridCell.x,
-              y: gridCell.y,
-              unit: hero.name,
-              position: hero.temporaryPosition,
-              path: this.storedPath.map(([x, y]) => ({
-                x,
-                y
-              }))
-            });
-
-            this.actionIndicator.setFrame("attack-indicator").setVisible(true);
-            this.actionIndicator.setX(x).setY(y);
+            if (targetCell.x !== savedPosition.x || targetCell.y !== savedPosition.y) {
+              this.socket.emit("request preview battle", {
+                x: targetCell.x,
+                y: targetCell.y,
+                uuid,
+                unit: hero.name,
+                position: hero.temporaryPosition,
+                path: this.storedPath.map(([x, y]) => ({
+                  x,
+                  y
+                }))
+              });
+              this.actionIndicator.setFrame("attack-indicator").setVisible(true);
+              this.actionIndicator.setX(x).setY(y);
+            }
             break;
           case "movement":
-            hero.temporaryPosition = gridCell;
+            hero.temporaryPosition = targetCell;
             this.combatForecast.setVisible(false);
             this.assistPreview.setVisible(false);
-            const path = this.pathfinder.findPath(savedPosition, gridCell);
+            const path = this.pathfinder.findPath(savedPosition, targetCell);
             this.storedPath = path;
             const pathCopy = [...path];
             this.drawPath(pathCopy);
@@ -213,15 +217,18 @@ export default class MainScene extends Phaser.Scene {
             this.sound.playAudioSprite("sfx", "hover");
             break;
           case "assist":
-            this.actionIndicator.setX(x).setY(y);
-            this.combatForecast.setVisible(false);
-            this.actionIndicator.setFrame("assist-indicator").setVisible(true);
-            this.sound.playAudioSprite("sfx", "hover");
-            this.socket.emit("request preview assist", {
-              source: hero.name,
-              sourceCoordinates: hero.temporaryPosition,
-              targetCoordinates: gridCell
-            })
+            if (targetCell.x !== savedPosition.x || targetCell.y !== savedPosition.y) {
+              this.actionIndicator.setX(x).setY(y);
+              this.combatForecast.setVisible(false);
+              this.actionIndicator.setFrame("assist-indicator").setVisible(true);
+              this.sound.playAudioSprite("sfx", "hover");
+              this.socket.emit("request preview assist", {
+                source: hero.name,
+                uuid,
+                sourceCoordinates: hero.temporaryPosition,
+                targetCoordinates: targetCell
+              })
+            }
             break;
         }
       }
@@ -247,6 +254,7 @@ export default class MainScene extends Phaser.Scene {
         case "assist": {
           this.socket.emit("request confirm assist", {
             source: hero.name,
+            uuid,
             targetCoordinates: gridCell,
             sourceCoordinates: hero.temporaryPosition
           })
@@ -255,6 +263,7 @@ export default class MainScene extends Phaser.Scene {
         case "target": {
           this.socket.emit("request confirm combat", {
             unitId: hero.name,
+            uuid,
             attackerCoordinates: hero.temporaryPosition,
             ...gridCell,
             path: this.storedPath.map(([x, y]) => ({
@@ -267,6 +276,7 @@ export default class MainScene extends Phaser.Scene {
         default: {
           this.socket.emit("request confirm movement", {
             unitId: hero.name,
+            uuid,
             ...gridCell,
           });
         }
@@ -290,7 +300,7 @@ export default class MainScene extends Phaser.Scene {
     } else {
       this.heroesLayer.getChildren().forEach((child: Hero) => {
         const { Side: [{ value: side }] } = child.getInternalHero();
-        if (side === this.side) {
+        if (side === this.side && !child.getInternalHero().FinishedAction) {
           this.enableDragging(child);
         } else {
           this.disableDragging(child);
@@ -309,7 +319,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    this.socket.emit("loading");
+    this.socket.emit("loading-complete", { uuid });
     this.socket.on("allow-control", ({ ids, id }) => {
       this.side = id;
       this.teamIds = ids;
@@ -323,7 +333,7 @@ export default class MainScene extends Phaser.Scene {
       this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
       const endTurn = new Button(this, "End Turn");
       this.actionsTray.addAction(endTurn, () => {
-        this.socket.emit("request end turn");
+        this.socket.emit("request end turn", { uuid });
       });
       const enemyRange = new Button(this, "Enemy Range");
       this.actionsTray.addAction(enemyRange, () => {
@@ -374,7 +384,8 @@ export default class MainScene extends Phaser.Scene {
             child.disableMovementIndicator();
           });
           this.socket.emit("request preview movement", {
-            unitId: hero.name
+            unitId: hero.name,
+            uuid,
           });
           this.socket.sendBuffer = [];
           if (!hero.getInternalHero().FinishedAction && hero.getInternalHero().Side[0].value === this.side && this.side === this.currentTurn) {
@@ -383,7 +394,8 @@ export default class MainScene extends Phaser.Scene {
               const internal = hero.getInternalHero();
               this.socket.emit("request freeze unit", {
                 unitId: hero.name,
-                ...internal.Position[0]
+                ...internal.Position[0],
+                uuid,
               });
             } else {
               this.playHeroQuote(hero);
@@ -434,7 +446,7 @@ export default class MainScene extends Phaser.Scene {
         layer.destroy();
         startGameText.destroy();
         startGameButton.destroy();
-        this.socket.emit("ready");
+        this.socket.emit("ready", { uuid });
       });
       this.add.existing(startGameButton);
       this.add.existing(startGameText);
@@ -547,7 +559,7 @@ export default class MainScene extends Phaser.Scene {
         await Promise.all(eventLine.map(promiseAnimation));
       }
 
-      this.socket.emit("request update");
+      this.socket.emit("request update", { uuid });
     });
 
     this.socket.on("response confirm movement", (response: { unitId: string, x: number, y: number }) => {
@@ -661,7 +673,7 @@ export default class MainScene extends Phaser.Scene {
     const { x: gridX, y: gridY } = entity.components.Position[0];
     const { x, y } = gridToPixels(gridX, gridY);
     const heroObject = new Hero(this, x, y, entity);
-    heroObject.setSize(90, 90);
+    heroObject.setSize(squareSize, squareSize);
     this.heroesLayer.add(heroObject);
     return heroObject;
   }

@@ -1,13 +1,11 @@
-// const commandLineArgs = require("command-line-args");
-// const audiosprite = require("audiosprite");
-// const fs = require("fs");
 import commandLineArgs from "command-line-args";
 import audiosprite from "audiosprite";
 import * as fs from "fs"
 
 const parsed = commandLineArgs([
     { name: "files", alias: "f", multiple: true },
-    { name: "output", alias: "o" }
+    { name: "output", alias: "o" },
+    { name: "directory", alias: "d", defaultValue: "compile-audio/temp" }
 ], {
     caseInsensitive: true,
     camelCase: true,
@@ -25,7 +23,7 @@ await new Promise((res, rej) => {
     gap: 0.01
 }, (err, obj) => {
     delete obj.resources;
-    fs.writeFileSync(`compile-audio/temp/${parsed.output}.json`, JSON.stringify(obj));
+    fs.writeFileSync(`${parsed.directory}/${parsed.output}.json`, JSON.stringify(obj));
     res();
 });
 });
