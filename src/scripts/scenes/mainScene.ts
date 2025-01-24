@@ -336,6 +336,7 @@ export default class MainScene extends Phaser.Scene {
         this.socket.emit("request end turn", { uuid });
       });
       const enemyRange = new Button(this, "Enemy Range");
+      enemyRange.label.setFontSize(16);
       this.actionsTray.addAction(enemyRange, () => {
 
       });

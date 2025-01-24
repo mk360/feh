@@ -2,7 +2,7 @@ import { GameObjects, Scene } from "phaser";
 import { renderText } from "../utils/text-renderer";
 
 class Button extends GameObjects.Container {
-    private label: GameObjects.Text;
+    label: GameObjects.Text;
     private boundsArea: GameObjects.Rectangle;
 
     constructor(scene: Scene, label: string) {

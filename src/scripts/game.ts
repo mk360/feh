@@ -36,9 +36,19 @@ const config: Phaser.Types.Core.GameConfig = {
 
 const gameId = new URLSearchParams(location.search).get("id");
 
-fetch(`${import.meta.env.VITE_API_URL}/worlds/${gameId}`).then((s) => s.json()).then((data) => {
-  const game = new Phaser.Game(config);
-  game.registry.set("world", data);
+fetch(`${import.meta.env.VITE_API_URL}/worlds/${gameId}`).then((response) => {
+  console.log(response.status, response.ok)
+  if (response.ok) {
+    return response.json()
+  } else if (response.status === 404) {
+    location.href = "/";
+    return null
+  }
+}).then((data) => {
+  if (data) {
+    const game = new Phaser.Game(config);
+    game.registry.set("world", data);
+  }
 });
 
 // export default game;

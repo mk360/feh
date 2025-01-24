@@ -20,6 +20,7 @@ import SwapAssist from "./scripts/animations/assists/swap";
 import SmiteAssist from "./scripts/animations/assists/smite";
 import ShoveAssist from "./scripts/animations/assists/shove";
 import DrawBack from "./scripts/animations/assists/draw-back";
+import RepositionAssist from "./scripts/animations/assists/reposition";
 
 const animationKeys = {
     "trigger": effectTriggerAnimation,
@@ -36,6 +37,7 @@ const assistAnimations = {
     "Swap": SwapAssist,
     "Smite": SmiteAssist,
     "Shove": ShoveAssist,
+    "Reposition": RepositionAssist,
     "Draw Back": DrawBack,
 }
 
