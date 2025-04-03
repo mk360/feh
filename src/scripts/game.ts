@@ -36,7 +36,11 @@ const config: Phaser.Types.Core.GameConfig = {
 
 const gameId = new URLSearchParams(location.search).get("id");
 
-fetch(`${import.meta.env.VITE_API_URL}/worlds/${gameId}`).then((response) => {
+fetch(`${import.meta.env.VITE_API_URL}/worlds/${gameId}`, {
+  headers: {
+    authorization: localStorage.getItem("pid")
+  }
+}).then((response) => {
   console.log(response.status, response.ok)
   if (response.ok) {
     return response.json()

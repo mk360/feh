@@ -21,8 +21,6 @@ import AssistPreview from '../objects/assist-preview';
 import Debugger from '../debug/debug';
 import getEdges from '../utils/get-edges';
 
-const uuid = localStorage.getItem("pid");
-
 function createHeroQuoter(scene: MainScene) {
   let previousQuote = "";
 
@@ -55,6 +53,8 @@ interface HeroUpdatePayload {
 }
 
 let timer = 0;
+
+const roomId = new URLSearchParams(location.search).get("id");
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -183,7 +183,8 @@ export default class MainScene extends Phaser.Scene {
               this.socket.emit("request preview battle", {
                 x: targetCell.x,
                 y: targetCell.y,
-                uuid,
+
+                roomId,
                 unit: hero.name,
                 position: hero.temporaryPosition,
                 path: this.storedPath.map(([x, y]) => ({
@@ -199,7 +200,8 @@ export default class MainScene extends Phaser.Scene {
             hero.temporaryPosition = targetCell;
             this.combatForecast.setVisible(false);
             this.assistPreview.setVisible(false);
-            const path = this.pathfinder.findPath(savedPosition, targetCell);
+            let path = this.pathfinder.findPath(savedPosition, targetCell);
+            if (!path.length) path = [[hero.temporaryPosition.x, hero.temporaryPosition.y]];
             this.storedPath = path;
             const pathCopy = [...path];
             this.drawPath(pathCopy);
@@ -224,7 +226,7 @@ export default class MainScene extends Phaser.Scene {
               this.sound.playAudioSprite("sfx", "hover");
               this.socket.emit("request preview assist", {
                 source: hero.name,
-                uuid,
+
                 sourceCoordinates: hero.temporaryPosition,
                 targetCoordinates: targetCell
               })
@@ -254,7 +256,7 @@ export default class MainScene extends Phaser.Scene {
         case "assist": {
           this.socket.emit("request confirm assist", {
             source: hero.name,
-            uuid,
+
             targetCoordinates: gridCell,
             sourceCoordinates: hero.temporaryPosition
           })
@@ -263,7 +265,8 @@ export default class MainScene extends Phaser.Scene {
         case "target": {
           this.socket.emit("request confirm combat", {
             unitId: hero.name,
-            uuid,
+
+            roomId,
             attackerCoordinates: hero.temporaryPosition,
             ...gridCell,
             path: this.storedPath.map(([x, y]) => ({
@@ -276,7 +279,8 @@ export default class MainScene extends Phaser.Scene {
         default: {
           this.socket.emit("request confirm movement", {
             unitId: hero.name,
-            uuid,
+
+            roomId,
             ...gridCell,
           });
         }
@@ -319,7 +323,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    this.socket.emit("loading-complete", { uuid });
+    this.socket.emit("loading-complete", { roomId });
     this.socket.on("allow-control", ({ ids, id }) => {
       this.side = id;
       this.teamIds = ids;
@@ -333,7 +337,7 @@ export default class MainScene extends Phaser.Scene {
       this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
       const endTurn = new Button(this, "End Turn");
       this.actionsTray.addAction(endTurn, () => {
-        this.socket.emit("request end turn", { uuid });
+        this.socket.emit("request end turn", { roomId });
       });
       const enemyRange = new Button(this, "Enemy Range");
       enemyRange.label.setFontSize(16);
@@ -386,7 +390,8 @@ export default class MainScene extends Phaser.Scene {
           });
           this.socket.emit("request preview movement", {
             unitId: hero.name,
-            uuid,
+
+            roomId,
           });
           this.socket.sendBuffer = [];
           if (!hero.getInternalHero().FinishedAction && hero.getInternalHero().Side[0].value === this.side && this.side === this.currentTurn) {
@@ -396,7 +401,7 @@ export default class MainScene extends Phaser.Scene {
               this.socket.emit("request freeze unit", {
                 unitId: hero.name,
                 ...internal.Position[0],
-                uuid,
+
               });
             } else {
               this.playHeroQuote(hero);
@@ -447,7 +452,7 @@ export default class MainScene extends Phaser.Scene {
         layer.destroy();
         startGameText.destroy();
         startGameButton.destroy();
-        this.socket.emit("ready", { uuid });
+        this.socket.emit("ready", { roomId });
       });
       this.add.existing(startGameButton);
       this.add.existing(startGameText);
@@ -560,7 +565,7 @@ export default class MainScene extends Phaser.Scene {
         await Promise.all(eventLine.map(promiseAnimation));
       }
 
-      this.socket.emit("request update", { uuid });
+      this.socket.emit("request update", { roomId });
     });
 
     this.socket.on("response confirm movement", (response: { unitId: string, x: number, y: number }) => {

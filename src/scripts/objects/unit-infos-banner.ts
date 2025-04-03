@@ -378,7 +378,7 @@ class UnitInfosBanner extends GameObjects.Container {
                 const specialData = special[0];
                 this.highlighter.highlightElement(this.specialBg);
                 const textboxLines = this.textbox.specialTextbox({
-                    cooldown: specialData.cooldown,
+                    cooldown: specialData.maxCooldown,
                     description: specialData.description,
                     baseCooldown: specialData.baseCooldown
                 });
