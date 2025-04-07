@@ -401,7 +401,7 @@ export default class MainScene extends Phaser.Scene {
               this.socket.emit("request freeze unit", {
                 unitId: hero.name,
                 ...internal.Position[0],
-
+                roomId,
               });
             } else {
               this.playHeroQuote(hero);
