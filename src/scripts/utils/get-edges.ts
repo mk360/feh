@@ -1,6 +1,9 @@
 interface Edge {
     coordinate: number;
-    sides: [boolean, boolean, boolean, boolean] // up, down, left, right
+    /**
+     * up, down, left, right
+     */
+    sides: [boolean, boolean, boolean, boolean];
 }
 
 function getEdges(coordinates: number[]) {

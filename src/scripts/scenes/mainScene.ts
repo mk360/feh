@@ -4,21 +4,20 @@
  */
 
 import { GameObjects, Time } from 'phaser';
-import Hero from '../objects/hero';
-import UnitInfosBanner from '../objects/unit-infos-banner';
 import socket from "../../default-socket";
-import InteractionIndicator from '../objects/interaction-indicator';
+import parseServerResponse from '../../parse-server-response';
 import Pathfinder from '../classes/path-finder';
-import { renderText } from '../utils/text-renderer';
+import Debugger from '../debug/debug';
+import ActionsTray from '../objects/actions-tray';
+import AssistPreview from '../objects/assist-preview';
+import Button from '../objects/button';
 import CombatForecast from '../objects/combat-forecast';
 import Footer from '../objects/footer';
-import parseServerResponse from '../../parse-server-response';
-import { gridToPixels, squareSize } from '../utils/grid-functions';
-import { pixelsToGrid } from '../utils/grid-functions';
-import ActionsTray from '../objects/actions-tray';
-import Button from '../objects/button';
-import AssistPreview from '../objects/assist-preview';
-import Debugger from '../debug/debug';
+import Hero from '../objects/hero';
+import InteractionIndicator from '../objects/interaction-indicator';
+import UnitInfosBanner from '../objects/unit-infos-banner';
+import { getTileCoordinates, gridToPixels, squareSize } from '../utils/grid-functions';
+import { renderText } from '../utils/text-renderer';
 import getEdges from '../utils/get-edges';
 
 function createHeroQuoter(scene: MainScene) {
@@ -30,7 +29,7 @@ function createHeroQuoter(scene: MainScene) {
     if (previousQuote) scene.sound.stopByKey(previousQuote);
     const heroName = internalHero.Name[0].value;
     const heroSprite = heroName + " quotes";
-    scene.sound.playAudioSprite(heroSprite, n.toString(), { volume: 0.2 });
+    scene.sound.playAudioSprite(heroSprite, n.toString());
     previousQuote = heroSprite;
   };
 }
@@ -69,6 +68,7 @@ export default class MainScene extends Phaser.Scene {
   currentTurn = "";
   side = "";
   private debugger = new Debugger(this);
+  private displayEnemyRange = false;
   footer: Footer;
   combatForecast: CombatForecast;
   teamIds: string[] = [];
@@ -82,6 +82,7 @@ export default class MainScene extends Phaser.Scene {
   private movementUI: GameObjects.Layer;
   private miscUIElements: GameObjects.Layer;
   private aoeLayer: GameObjects.Layer;
+  private enemyRangeLayer: GameObjects.Layer;
   private startRosary: GameObjects.Image;
   private endRosary: GameObjects.Image;
   private background: GameObjects.Image;
@@ -171,19 +172,19 @@ export default class MainScene extends Phaser.Scene {
 
     hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
       if (target.type === "Rectangle") {
+        this.movementIndicator.setVisible(true);
         this.interactionsIndicator.disable();
-        const targetCell = pixelsToGrid(target.x, target.y);
         const savedPosition = hero.getInternalHero().Position[0];
-        const { x, y } = gridToPixels(targetCell.x, targetCell.y);
+        const { x, y } = getTileCoordinates(target.name);
+        const { x: pxX, y: pxY } = gridToPixels(x, y);
         this.aoeLayer.removeAll();
 
         switch (target.getData("type")) {
           case "target":
-            if (targetCell.x !== savedPosition.x || targetCell.y !== savedPosition.y) {
+            if (x !== savedPosition.x || y !== savedPosition.y) {
               this.socket.emit("request preview battle", {
-                x: targetCell.x,
-                y: targetCell.y,
-
+                x,
+                y,
                 roomId,
                 unit: hero.name,
                 position: hero.temporaryPosition,
@@ -193,19 +194,20 @@ export default class MainScene extends Phaser.Scene {
                 }))
               });
               this.actionIndicator.setFrame("attack-indicator").setVisible(true);
-              this.actionIndicator.setX(x).setY(y);
+              this.actionIndicator.setX(pxX).setY(pxY);
             }
             break;
           case "movement":
-            hero.temporaryPosition = targetCell;
+            hero.temporaryPosition = { x, y };
             this.combatForecast.setVisible(false);
             this.assistPreview.setVisible(false);
-            let path = this.pathfinder.findPath(savedPosition, targetCell);
+            let path = this.pathfinder.findPath(savedPosition, { x, y });
             if (!path.length) path = [[hero.temporaryPosition.x, hero.temporaryPosition.y]];
             this.storedPath = path;
             const pathCopy = [...path];
             this.drawPath(pathCopy);
-            this.movementIndicator.setX(x).setY(y);
+            this.endRosary.setVisible(true).setX(pxX).setY(pxY);
+            this.movementIndicator.setX(pxX).setY(pxY);
             this.movementIndicator.setFrame("movement-indicator");
             this.actionIndicator.setVisible(false);
             this.sound.playAudioSprite("sfx", "hover");
@@ -219,17 +221,17 @@ export default class MainScene extends Phaser.Scene {
             this.sound.playAudioSprite("sfx", "hover");
             break;
           case "assist":
-            if (targetCell.x !== savedPosition.x || targetCell.y !== savedPosition.y) {
+            if (x !== savedPosition.x || y !== savedPosition.y) {
               this.actionIndicator.setX(x).setY(y);
               this.combatForecast.setVisible(false);
               this.actionIndicator.setFrame("assist-indicator").setVisible(true);
               this.sound.playAudioSprite("sfx", "hover");
               this.socket.emit("request preview assist", {
                 source: hero.name,
-
+                roomId,
                 sourceCoordinates: hero.temporaryPosition,
-                targetCoordinates: targetCell
-              })
+                targetCoordinates: { x, y }
+              });
             }
             break;
         }
@@ -246,7 +248,8 @@ export default class MainScene extends Phaser.Scene {
       this.clearMovementLayer();
       this.aoeLayer.removeAll();
       hero.setDepth(hero.depth - 1);
-      const gridCell = pixelsToGrid(hero.x, hero.y);
+      const gridCell = getTileCoordinates(target.name);
+
       this.startRosary.setVisible(false);
       this.endRosary.setVisible(false);
       this.movementIndicator.setVisible(false);
@@ -256,7 +259,7 @@ export default class MainScene extends Phaser.Scene {
         case "assist": {
           this.socket.emit("request confirm assist", {
             source: hero.name,
-
+            roomId,
             targetCoordinates: gridCell,
             sourceCoordinates: hero.temporaryPosition
           })
@@ -265,7 +268,6 @@ export default class MainScene extends Phaser.Scene {
         case "target": {
           this.socket.emit("request confirm combat", {
             unitId: hero.name,
-
             roomId,
             attackerCoordinates: hero.temporaryPosition,
             ...gridCell,
@@ -296,21 +298,9 @@ export default class MainScene extends Phaser.Scene {
   }
 
   changeTurns() {
-    if (this.currentTurn !== this.side) {
-      this.heroesLayer.getChildren().forEach((child: Hero) => {
-        this.disableDragging(child);
-        child.sprite.postFX.clear();
-      });
-    } else {
-      this.heroesLayer.getChildren().forEach((child: Hero) => {
-        const { Side: [{ value: side }] } = child.getInternalHero();
-        if (side === this.side && !child.getInternalHero().FinishedAction) {
-          this.enableDragging(child);
-        } else {
-          this.disableDragging(child);
-        }
-      });
-    }
+    this.heroesLayer.getChildren().forEach((child: Hero) => {
+      this.toggleHeroState(child);
+    });
   }
 
   disableDragging(hero: Hero) {
@@ -324,8 +314,9 @@ export default class MainScene extends Phaser.Scene {
 
   create() {
     this.socket.emit("loading-complete", { roomId });
-    this.socket.on("allow-control", ({ ids, id }) => {
+    this.socket.on("allow-control", ({ ids, id, currentSide }) => {
       this.side = id;
+      this.currentTurn = currentSide;
       this.teamIds = ids;
       this.sound.pauseOnBlur = false;
       const header = this.add.image(0, 0, "marginals", "header").setOrigin(0);
@@ -342,7 +333,11 @@ export default class MainScene extends Phaser.Scene {
       const enemyRange = new Button(this, "Enemy Range");
       enemyRange.label.setFontSize(16);
       this.actionsTray.addAction(enemyRange, () => {
-
+        this.displayEnemyRange = !this.displayEnemyRange;
+        this.socket.emit("request enemy range", {
+          roomId,
+          state: this.displayEnemyRange
+        });
       });
 
       const actionsTrayBounds = this.actionsTray.getBounds();
@@ -356,6 +351,7 @@ export default class MainScene extends Phaser.Scene {
       this.heroesLayer = this.add.layer();
       this.miscUIElements = this.add.layer();
       this.aoeLayer = this.add.layer();
+      this.enemyRangeLayer = this.add.layer();
       this.miscUIElements.add(this.interactionsIndicator);
       this.startRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(squareSize, squareSize);
       this.endRosary = new GameObjects.Image(this, 0, 0, "path", "rosary").setVisible(false).setDisplaySize(squareSize, squareSize);
@@ -390,7 +386,6 @@ export default class MainScene extends Phaser.Scene {
           });
           this.socket.emit("request preview movement", {
             unitId: hero.name,
-
             roomId,
           });
           this.socket.sendBuffer = [];
@@ -408,11 +403,8 @@ export default class MainScene extends Phaser.Scene {
             }
           }
         });
-        if (!hero.getInternalHero().FinishedAction && hero.getInternalHero().Side[0].value === this.side && this.side === this.currentTurn) {
-          this.enableDragging(hero);
-        } else {
-          this.disableDragging(hero);
-        }
+
+        this.toggleHeroState(hero);
       }
 
       this.background.on("pointerdown", () => {
@@ -426,7 +418,7 @@ export default class MainScene extends Phaser.Scene {
         if (this.side === this.currentTurn) {
           this.movementIndicator.setVisible(false);
           this.heroesLayer.getChildren().forEach((child: Hero) => {
-            if (!child.getInternalHero().FinishedAction && child.getInternalHero().Side[0].value === this.side) child.enableMovementIndicator();
+            this.toggleHeroState(child);
           });
         }
         this.heroesLayer.getChildren().forEach((child: Hero) => {
@@ -462,6 +454,20 @@ export default class MainScene extends Phaser.Scene {
       for (let heroId in dict) {
         const hero = this.heroesLayer.getByName(heroId) as Hero;
         hero.updateHero(dict[heroId]);
+      }
+    });
+
+    this.socket.on("response enemy range", (enemyRange: number[]) => {
+      this.enemyRangeLayer.removeAll();
+      const edges = getEdges(enemyRange);
+      console.log(edges);
+      edges[0].sides
+      for (let item of enemyRange) {
+        const { x, y } = getTileCoordinates(item);
+        const { x: pxX, y: pxY } = gridToPixels(x, y);
+        const rec = new GameObjects.Rectangle(this, pxX, pxY, squareSize, squareSize, 0x0, 0.4);
+
+        this.enemyRangeLayer.add(rec);
       }
     });
 
@@ -566,6 +572,7 @@ export default class MainScene extends Phaser.Scene {
       }
 
       this.socket.emit("request update", { roomId });
+      // after each action, emit the "request enemy range"
     });
 
     this.socket.on("response confirm movement", (response: { unitId: string, x: number, y: number }) => {
@@ -682,6 +689,26 @@ export default class MainScene extends Phaser.Scene {
     heroObject.setSize(squareSize, squareSize);
     this.heroesLayer.add(heroObject);
     return heroObject;
+  }
+
+  /**
+   * Controls whether a hero can be dragged or not,
+   * depending on its side and its current state.
+  */
+  toggleHeroState(hero: Hero) {
+    const { Side: [{ value }], FinishedAction } = hero.getInternalHero();
+    if (this.currentTurn === this.side && value === this.side) {
+      if (FinishedAction) {
+        this.disableDragging(hero);
+        const matrix = hero.sprite.postFX.addColorMatrix();
+        matrix.blackWhite(true);
+      } else {
+        this.enableDragging(hero);
+      }
+    } else {
+      hero.sprite.clearFX();
+      this.disableDragging(hero);
+    }
   }
 }
 

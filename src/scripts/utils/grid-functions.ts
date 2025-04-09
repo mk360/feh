@@ -15,3 +15,9 @@ export function gridToPixels(x: number, y: number) {
         y: y * squareSize + fixedY,
     }
 };
+
+export function getTileCoordinates(tileName: string | number) {
+    const x = Math.floor(+tileName / 10);
+    const y = +tileName - x * 10;
+    return { x, y };
+}
