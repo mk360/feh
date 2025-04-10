@@ -214,7 +214,7 @@ export default class MainScene extends Phaser.Scene {
 
             break;
           case "warp":
-            this.actionIndicator.setX(x).setY(y);
+            this.actionIndicator.setX(pxX).setY(pxY);
             this.combatForecast.setVisible(false);
             this.assistPreview.setVisible(false);
             this.actionIndicator.setFrame("movement-indicator").setVisible(true);
@@ -222,7 +222,7 @@ export default class MainScene extends Phaser.Scene {
             break;
           case "assist":
             if (x !== savedPosition.x || y !== savedPosition.y) {
-              this.actionIndicator.setX(x).setY(y);
+              this.actionIndicator.setX(pxX).setY(pxY);
               this.combatForecast.setVisible(false);
               this.actionIndicator.setFrame("assist-indicator").setVisible(true);
               this.sound.playAudioSprite("sfx", "hover");
