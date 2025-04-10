@@ -165,132 +165,142 @@ export default class MainScene extends Phaser.Scene {
   }
 
   enableDragging(hero: Hero) {
-    hero.on("drag", (_, dragX: number, dragY: number) => {
-      hero.x = dragX;
-      hero.y = dragY;
-    });
+    if (!hero.listeners("drag").length) {
+      hero.on("drag", (_, dragX: number, dragY: number) => {
+        hero.x = dragX;
+        hero.y = dragY;
+      });
+    }
 
-    hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
-      if (target.type === "Rectangle") {
-        this.movementIndicator.setVisible(true);
-        this.interactionsIndicator.disable();
-        const savedPosition = hero.getInternalHero().Position[0];
-        const { x, y } = getTileCoordinates(target.name);
-        const { x: pxX, y: pxY } = gridToPixels(x, y);
-        this.aoeLayer.removeAll();
+    if (!hero.listeners("dragenter").length) {
+      hero.on("dragenter", (_, target: GameObjects.Rectangle) => {
+        if (target.type === "Rectangle") {
+          this.movementIndicator.setVisible(true);
+          this.interactionsIndicator.disable();
+          const savedPosition = hero.getInternalHero().Position[0];
+          const { x, y } = getTileCoordinates(target.name);
+          const { x: pxX, y: pxY } = gridToPixels(x, y);
+          this.aoeLayer.removeAll();
 
-        switch (target.getData("type")) {
-          case "target":
-            if (x !== savedPosition.x || y !== savedPosition.y) {
-              this.socket.emit("request preview battle", {
-                x,
-                y,
-                roomId,
-                unit: hero.name,
-                position: hero.temporaryPosition,
-                path: this.storedPath.map(([x, y]) => ({
+          switch (target.getData("type")) {
+            case "target":
+              if (x !== savedPosition.x || y !== savedPosition.y) {
+                this.socket.emit("request preview battle", {
                   x,
-                  y
-                }))
-              });
-              this.actionIndicator.setFrame("attack-indicator").setVisible(true);
-              this.actionIndicator.setX(pxX).setY(pxY);
-            }
-            break;
-          case "movement":
-            hero.temporaryPosition = { x, y };
-            this.combatForecast.setVisible(false);
-            this.assistPreview.setVisible(false);
-            let path = this.pathfinder.findPath(savedPosition, { x, y });
-            if (!path.length) path = [[hero.temporaryPosition.x, hero.temporaryPosition.y]];
-            this.storedPath = path;
-            const pathCopy = [...path];
-            this.drawPath(pathCopy);
-            this.endRosary.setVisible(true).setX(pxX).setY(pxY);
-            this.movementIndicator.setX(pxX).setY(pxY);
-            this.movementIndicator.setFrame("movement-indicator");
-            this.actionIndicator.setVisible(false);
-            this.sound.playAudioSprite("sfx", "hover");
+                  y,
+                  roomId,
+                  unit: hero.name,
+                  position: hero.temporaryPosition,
+                  path: this.storedPath.map(([x, y]) => ({
+                    x,
+                    y
+                  }))
+                });
+                this.actionIndicator.setFrame("attack-indicator").setVisible(true);
+                this.actionIndicator.setX(pxX).setY(pxY);
+              }
+              break;
+            case "movement":
+              hero.temporaryPosition = { x, y };
+              this.combatForecast.setVisible(false);
+              this.assistPreview.setVisible(false);
+              let path = this.pathfinder.findPath(savedPosition, { x, y });
+              if (!path.length) path = [[hero.temporaryPosition.x, hero.temporaryPosition.y]];
+              this.storedPath = path;
+              const pathCopy = [...path];
+              this.drawPath(pathCopy);
+              this.endRosary.setVisible(true).setX(pxX).setY(pxY);
+              this.movementIndicator.setX(pxX).setY(pxY);
+              this.movementIndicator.setFrame("movement-indicator");
+              this.actionIndicator.setVisible(false);
+              this.sound.playAudioSprite("sfx", "hover");
 
-            break;
-          case "warp":
-            this.actionIndicator.setX(pxX).setY(pxY);
-            this.combatForecast.setVisible(false);
-            this.assistPreview.setVisible(false);
-            this.actionIndicator.setFrame("movement-indicator").setVisible(true);
-            this.sound.playAudioSprite("sfx", "hover");
-            break;
-          case "assist":
-            if (x !== savedPosition.x || y !== savedPosition.y) {
+              break;
+            case "warp":
               this.actionIndicator.setX(pxX).setY(pxY);
               this.combatForecast.setVisible(false);
-              this.actionIndicator.setFrame("assist-indicator").setVisible(true);
+              this.assistPreview.setVisible(false);
+              this.actionIndicator.setFrame("movement-indicator").setVisible(true);
               this.sound.playAudioSprite("sfx", "hover");
-              this.socket.emit("request preview assist", {
-                source: hero.name,
-                roomId,
-                sourceCoordinates: hero.temporaryPosition,
-                targetCoordinates: { x, y }
-              });
-            }
+              break;
+            case "assist":
+              if (x !== savedPosition.x || y !== savedPosition.y) {
+                this.actionIndicator.setX(pxX).setY(pxY);
+                this.combatForecast.setVisible(false);
+                this.actionIndicator.setFrame("assist-indicator").setVisible(true);
+                this.sound.playAudioSprite("sfx", "hover");
+                this.socket.emit("request preview assist", {
+                  source: hero.name,
+                  roomId,
+                  sourceCoordinates: hero.temporaryPosition,
+                  targetCoordinates: { x, y }
+                });
+              }
+              break;
+          }
+        }
+      });
+    }
+
+    if (!hero.listeners("dragstart").length) {
+      hero.on("dragstart", () => {
+        this.startRosary.setVisible(true).setX(hero.x).setY(hero.y);
+        this.movementIndicator.setVisible(true).setX(hero.x).setY(hero.y);
+        hero.setDepth(hero.depth + 1);
+      });
+    }
+
+    if (!hero.listeners("drop").length) {
+      hero.on("drop", (_, target: GameObjects.Rectangle) => {
+        console.log("attached event listener to " + hero.name, hero.getInternalHero().Name[0].value)
+        this.clearMovementLayer();
+        this.aoeLayer.removeAll();
+        hero.setDepth(hero.depth - 1);
+        const gridCell = getTileCoordinates(target.name);
+
+        this.startRosary.setVisible(false);
+        this.endRosary.setVisible(false);
+        this.movementIndicator.setVisible(false);
+        const tileType = target.getData("type");
+
+        switch (tileType) {
+          case "assist": {
+            this.socket.emit("request confirm assist", {
+              source: hero.name,
+              roomId,
+              targetCoordinates: gridCell,
+              sourceCoordinates: hero.temporaryPosition
+            });
             break;
+          }
+          case "target": {
+            this.socket.emit("request confirm combat", {
+              unitId: hero.name,
+              roomId,
+              attackerCoordinates: hero.temporaryPosition,
+              ...gridCell,
+              path: this.storedPath.map(([x, y]) => ({
+                x,
+                y
+              }))
+            });
+          }
+            break;
+          default: {
+            this.socket.emit("request confirm movement", {
+              unitId: hero.name,
+
+              roomId,
+              ...gridCell,
+            });
+          }
         }
-      }
-    });
 
-    hero.on("dragstart", () => {
-      this.startRosary.setVisible(true).setX(hero.x).setY(hero.y);
-      this.movementIndicator.setVisible(true).setX(hero.x).setY(hero.y);
-      hero.setDepth(hero.depth + 1);
-    });
-
-    hero.on("drop", (_, target: GameObjects.Rectangle) => {
-      this.clearMovementLayer();
-      this.aoeLayer.removeAll();
-      hero.setDepth(hero.depth - 1);
-      const gridCell = getTileCoordinates(target.name);
-
-      this.startRosary.setVisible(false);
-      this.endRosary.setVisible(false);
-      this.movementIndicator.setVisible(false);
-      const tileType = target.getData("type");
-
-      switch (tileType) {
-        case "assist": {
-          this.socket.emit("request confirm assist", {
-            source: hero.name,
-            roomId,
-            targetCoordinates: gridCell,
-            sourceCoordinates: hero.temporaryPosition
-          })
-        }
-          break;
-        case "target": {
-          this.socket.emit("request confirm combat", {
-            unitId: hero.name,
-            roomId,
-            attackerCoordinates: hero.temporaryPosition,
-            ...gridCell,
-            path: this.storedPath.map(([x, y]) => ({
-              x,
-              y
-            }))
-          });
-        }
-          break;
-        default: {
-          this.socket.emit("request confirm movement", {
-            unitId: hero.name,
-
-            roomId,
-            ...gridCell,
-          });
-        }
-      }
-
-      this.socket.sendBuffer = [];
-      this.storedPath = [];
-    });
+        this.socket.sendBuffer = [];
+        this.storedPath = [];
+      });
+    }
+    // todo: find a better way to ensure event unicity and consistency
 
     hero.enableMovementIndicator();
 
@@ -476,6 +486,24 @@ export default class MainScene extends Phaser.Scene {
       this.unitInfosBanner.setVisible(true).setHero(hero, stats);
     });
 
+    this.socket.on("response preview assist", ({ assisted, assisting, assist }) => {
+      const assistingObject = this.heroesLayer.getByName(assisting.id) as Hero;
+      const assistedObject = this.heroesLayer.getByName(assisted.id) as Hero;
+      this.assistPreview.updateSides({
+        assisting: {
+          object: assistingObject,
+          previousHP: assisting.previousHP,
+          expectedHP: assisting.expectedHP,
+        },
+        assisted: {
+          object: assistedObject,
+          previousHP: assisted.previousHP,
+          expectedHP: assisted.expectedHP,
+        },
+        assist
+      });
+    });
+
     this.socket.on("response preview movement", ({ movement = [], assistArray = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, unitId }) => {
       for (let child of this.tilesLayer.getChildren() as GameObjects.Rectangle[]) {
         child.disableInteractive();
@@ -651,7 +679,8 @@ export default class MainScene extends Phaser.Scene {
       internalHero[type] = Array.isArray(data) ? data : [data];
     });
 
-
+    // const 
+    // this.assistPreview
     // this.startBackgroundMusic(0.13);
   }
 

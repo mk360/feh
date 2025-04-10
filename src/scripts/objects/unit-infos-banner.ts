@@ -395,7 +395,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.A = new GameObjects.Image(this.scene, lvText.getBottomRight().x + 10, lvText.getCenter().y - 10, "").setScale(0.6).setOrigin(0, 0.5).setInteractive();
         this.B = new GameObjects.Image(this.scene, this.A.getRightCenter().x + 15, this.A.getCenter().y, "").setScale(0.6).setOrigin(0, 0.5).setInteractive();
         this.C = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 15, this.A.getCenter().y, "").setScale(0.6).setOrigin(0, 0.5).setInteractive();
-        this.S = new GameObjects.Image(this.scene, this.C.getRightCenter().x + 15, this.A.getCenter().y, "").setScale(0.6).setOrigin(0, 0.5);
+        this.S = new GameObjects.Image(this.scene, this.C.getRightCenter().x + 15, this.A.getCenter().y, "").setScale(0.6).setOrigin(0, 0.5).setInteractive();
         const A_Letter = new GameObjects.Image(this.scene, this.A.getBottomRight().x + 3, this.A.getBottomRight().y + 10, "skills-ui", "A").setOrigin(0, 1).setScale(0.5);
         const B_Letter = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 3, this.B.getBottomRight().y + 10, "skills-ui", "B").setOrigin(0, 1).setScale(0.5);
         const C_Letter = new GameObjects.Image(this.scene, this.C.getBottomRight().x + 3, this.C.getBottomRight().y + 10, "skills-ui", "C").setOrigin(0, 1).setScale(0.5);
