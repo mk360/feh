@@ -31,6 +31,7 @@ class Textbox extends GameObjects.Container {
         this.add(this.contentContainer);
     }
 
+    // render the textbox, while making sure its color matches the side it's highlighting
     display(side: string) {
         if (side === this.playerSide) {
             this.contentContainer.setFillStyle(0x13353F).setStrokeStyle(4, 0x7FD2E0);

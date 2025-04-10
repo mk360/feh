@@ -8,6 +8,10 @@ defaultSocket.on("error", msg => {
     document.getElementById("error-message").innerText = msg;
 });
 
+defaultSocket.on("sid", (id) => {
+    navigator.clipboard.writeText(id);
+});
+
 defaultSocket.on("confirm", msg => {
     document.getElementById("confirm").innerHTML = msg;
 });
@@ -22,7 +26,5 @@ document.getElementById("join-session").onclick = function () {
 };
 
 document.getElementById("create-session").onclick = function() {
-    defaultSocket.emit("create-session", {
-        uuid: localStorage.getItem("pid"),
-    });
+    defaultSocket.emit("create-session");
 }

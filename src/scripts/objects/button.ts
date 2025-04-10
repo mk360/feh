@@ -9,7 +9,7 @@ class Button extends GameObjects.Container {
         super(scene);
         const buttonImage = new GameObjects.Image(scene, 0, 0, "ui-button").setScale(0.70);
         buttonImage.setOrigin(0);
-        this.boundsArea = new GameObjects.Rectangle(scene, buttonImage.getCenter().x, buttonImage.getCenter().y, buttonImage.displayWidth * 0.75, buttonImage.displayHeight * 0.75, 0xFF0000, 0);
+        this.boundsArea = new GameObjects.Rectangle(scene, buttonImage.getCenter().x, buttonImage.getCenter().y, buttonImage.displayWidth * 0.75, buttonImage.displayHeight * 0.75, 0xFF0000, 0.4);
         this.boundsArea.setInteractive();
         this.label = renderText({
             scene,
