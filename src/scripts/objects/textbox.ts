@@ -148,7 +148,7 @@ class Textbox extends GameObjects.Container {
             }
         });
 
-        const lines: TextboxContent[][] = [[rangeLabel, rangeText], [descText]];
+        const lines: TextboxContent[][] = [[rangeLabel, rangeText], [descText.setWordWrapWidth(430)]];
 
         return lines;
     }

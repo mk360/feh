@@ -19,7 +19,7 @@ interface UpdateArguments {
 }
 
 interface UpdatedSide {
-    id: Hero;
+    object: Hero;
     previousHP: number;
     expectedHP: number;
 }
@@ -114,9 +114,8 @@ class AssistPreview extends GameObjects.Container {
 
     updateSides(args: UpdateArguments) {
         this.assistName.setText(args.assist);
-        const { Name, Stats } = args.assisting.id.getInternalHero();
-        const { Name: AssistedName, Stats: AssistedStats } = args.assisted.id.getInternalHero();
-        console.log(AssistedName, Name);
+        const { Name, Stats } = args.assisting.object.getInternalHero();
+        const { Name: AssistedName, Stats: AssistedStats } = args.assisted.object.getInternalHero();
         this.assister.portrait.setPortrait(Name[0].value, Stats[0].hp, Stats[0].maxHP);
         this.assisted.portrait.setPortrait(AssistedName[0].value, AssistedStats[0].hp, AssistedStats[0].maxHP);
 

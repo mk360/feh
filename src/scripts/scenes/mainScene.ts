@@ -252,7 +252,6 @@ export default class MainScene extends Phaser.Scene {
 
     if (!hero.listeners("drop").length) {
       hero.on("drop", (_, target: GameObjects.Rectangle) => {
-        console.log("attached event listener to " + hero.name, hero.getInternalHero().Name[0].value)
         this.clearMovementLayer();
         this.aoeLayer.removeAll();
         hero.setDepth(hero.depth - 1);
@@ -489,19 +488,19 @@ export default class MainScene extends Phaser.Scene {
     this.socket.on("response preview assist", ({ assisted, assisting, assist }) => {
       const assistingObject = this.heroesLayer.getByName(assisting.id) as Hero;
       const assistedObject = this.heroesLayer.getByName(assisted.id) as Hero;
-      this.assistPreview.updateSides({
-        assisting: {
-          object: assistingObject,
-          previousHP: assisting.previousHP,
-          expectedHP: assisting.expectedHP,
-        },
-        assisted: {
-          object: assistedObject,
-          previousHP: assisted.previousHP,
-          expectedHP: assisted.expectedHP,
-        },
-        assist
-      });
+      // this.assistPreview.updateSides({
+      //   assisting: {
+      //     object: assistingObject,
+      //     previousHP: assisting.previousHP,
+      //     expectedHP: assisting.expectedHP,
+      //   },
+      //   assisted: {
+      //     object: assistedObject,
+      //     previousHP: assisted.previousHP,
+      //     expectedHP: assisted.expectedHP,
+      //   },
+      //   assist
+      // });
     });
 
     this.socket.on("response preview movement", ({ movement = [], assistArray = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, unitId }) => {

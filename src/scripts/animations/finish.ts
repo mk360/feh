@@ -16,9 +16,7 @@ function finishAnimation(scene: MainScene, hero: Hero) {
             scene.heroesLayer.getChildren().forEach((child: Hero) => {
                 if (child === hero) return;
 
-                const { Side: [{ value }] } = child.getInternalHero();
-                if (!child.getInternalHero().FinishedAction && value === scene.currentTurn) child.enableMovementIndicator();
-                else scene.disableDragging(child);
+                scene.toggleHeroState(child);
             });
         },
     }];

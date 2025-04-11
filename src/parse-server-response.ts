@@ -1,26 +1,25 @@
+import { Time } from "phaser";
+import combatAnimation from "./scripts/animations/combat";
+import damageAnimation from "./scripts/animations/damage";
 import effectTriggerAnimation from "./scripts/animations/effect-trigger";
+import enemyPhase from "./scripts/animations/enemy-phase";
+import finishAnimation from "./scripts/animations/finish";
+import gravityAnimation from "./scripts/animations/gravity";
+import killAnimation from "./scripts/animations/kill";
 import mapBuffAnimation from "./scripts/animations/map-buff";
 import mapDebuffAnimation from "./scripts/animations/map-debuff";
+import MoveSingleUnit from "./scripts/animations/move-single-unit";
+import playerPhase from "./scripts/animations/player-phase";
+import refreshAnimation from "./scripts/animations/refresh";
 import Hero from "./scripts/objects/hero";
 import MainScene from "./scripts/scenes/mainScene";
-import playerPhase from "./scripts/animations/player-phase";
-import enemyPhase from "./scripts/animations/enemy-phase";
-import MoveSingleUnit from "./scripts/animations/move-single-unit";
-import MoveMultipleUnits from "./scripts/animations/move-multiple-units";
-import combatAnimation from "./scripts/animations/combat";
-import finishAnimation from "./scripts/animations/finish";
-import { Time } from "phaser";
-import refreshAnimation from "./scripts/animations/refresh";
-import killAnimation from "./scripts/animations/kill";
-import damageAnimation from "./scripts/animations/damage";
-import gravityAnimation from "./scripts/animations/gravity";
 
-import PivotAssist from "./scripts/animations/assists/pivot";
-import SwapAssist from "./scripts/animations/assists/swap";
-import SmiteAssist from "./scripts/animations/assists/smite";
-import ShoveAssist from "./scripts/animations/assists/shove";
 import DrawBack from "./scripts/animations/assists/draw-back";
+import PivotAssist from "./scripts/animations/assists/pivot";
 import RepositionAssist from "./scripts/animations/assists/reposition";
+import ShoveAssist from "./scripts/animations/assists/shove";
+import SmiteAssist from "./scripts/animations/assists/smite";
+import SwapAssist from "./scripts/animations/assists/swap";
 
 const animationKeys = {
     "trigger": effectTriggerAnimation,
@@ -38,7 +37,6 @@ const assistAnimations = {
     "Smite": SmiteAssist,
     "Shove": ShoveAssist,
     "Reposition": RepositionAssist,
-    "Draw Back": DrawBack,
 }
 
 function parseServerResponse(scene: MainScene, lines: string[]) {
@@ -75,6 +73,10 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
                         const sourceHero = scene.heroesLayer.getByName(source) as Hero;
                         const animation = assistAnimations[assistName as keyof typeof assistAnimations](scene, sourceHero, targetHero, sourceHeroCoordinates, targetHeroCoordinates);
                         const animationTimeline = new Time.Timeline(scene, animation);
+                        timelineArray.push(animationTimeline);
+                    } else if (assistName === "DrawBack") {
+                        const animData = DrawBack(scene, effect);
+                        const animationTimeline = new Time.Timeline(scene, animData);
                         timelineArray.push(animationTimeline);
                     } else {
                         console.warn(`No animation was found for ${assistName}`);
