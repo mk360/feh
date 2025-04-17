@@ -1,4 +1,4 @@
-import { Math, Types } from "phaser";
+import { Types } from "phaser";
 import Hero from "../../objects/hero";
 import MainScene from "../../scenes/mainScene";
 import { getTileCoordinates, gridToPixels } from "../../utils/grid-functions";
@@ -6,7 +6,6 @@ import { getTileCoordinates, gridToPixels } from "../../utils/grid-functions";
 function DrawBack(scene: MainScene, args: string) {
     const movedUnits = args.match(/\(.+?\)/g).map((unit) => {
         const [id, from, to] = unit.replace(/[()]/g, "").split(" ");
-        console.log(unit, unit.replace(/[()]/g, ""));
         return {
             id,
             from: +from,
@@ -47,8 +46,6 @@ function DrawBack(scene: MainScene, args: string) {
             }
         });
     }
-
-    console.log({ timelineData })
 
     return timelineData;
 };

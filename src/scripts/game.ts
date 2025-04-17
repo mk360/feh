@@ -41,7 +41,6 @@ fetch(`${import.meta.env.VITE_API_URL}/worlds/${gameId}`, {
     authorization: localStorage.getItem("pid")
   }
 }).then((response) => {
-  console.log(response.status, response.ok)
   if (response.ok) {
     return response.json()
   } else if (response.status === 404) {

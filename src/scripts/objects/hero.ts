@@ -140,9 +140,10 @@ class Hero extends GameObjects.Container {
 
     updateHP(newHP: number) {
         const stats = this.getInternalHero().Stats[0];
+        const renderedHP = newHP <= 0 ? 0 : newHP;
         const { maxHP } = stats;
-        this.hpText.setText(newHP.toString());
-        const hpRatio = newHP / maxHP;
+        this.hpText.setText(renderedHP.toString());
+        const hpRatio = renderedHP / maxHP;
         this.hpBar.displayWidth = hpBarWidth * hpRatio;
     }
 
