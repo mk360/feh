@@ -288,7 +288,6 @@ export default class MainScene extends Phaser.Scene {
           default: {
             this.socket.emit("request confirm movement", {
               unitId: hero.name,
-
               roomId,
               ...gridCell,
             });
@@ -470,7 +469,6 @@ export default class MainScene extends Phaser.Scene {
       this.enemyRangeLayer.removeAll();
       const edges = getEdges(enemyRange);
       console.log(edges);
-      edges[0].sides
       for (let item of enemyRange) {
         const { x, y } = getTileCoordinates(item);
         const { x: pxX, y: pxY } = gridToPixels(x, y);

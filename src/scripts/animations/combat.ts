@@ -7,8 +7,9 @@ import effectTriggerAnimation from "./effect-trigger";
 import healingAnimation from "./healing";
 
 function combatAnimation(scene: MainScene, payload: string) {
-    const tweens: Types.Time.TimelineEventConfig[] = [];
+    const tweens: (Types.Time.TimelineEventConfig & { name?: string })[] = [];
     const events = payload.split("|");
+    const initiator = events[0].split(" ")[1];
     for (let i = 0; i < events.length; i++) {
         const [, attacker, attackerHP, attackerCooldown, shouldAttackerTriggerSpecial, damage, attackerHealing, defender, defenderHP, defenderCooldown, shouldDefenderTriggerSpecial, _, defenderHealing] = events[i].split(" ");
         const defenderObject = scene.heroesLayer.getByName(defender) as Hero;
@@ -21,39 +22,44 @@ function combatAnimation(scene: MainScene, payload: string) {
         const defenderPosition = gridToPixels(defenderCoordinates.x, defenderCoordinates.y);
         const damageTween = damageAnimation(scene, defenderObject, +damage, "medium", +defenderHP);
 
-        if (shouldAttackerTriggerSpecial) {
+        if (shouldAttackerTriggerSpecial !== "false") {
             const skillTrigger = effectTriggerAnimation(scene, attackerObject);
 
             tweens.push({
+                name: "special-trigger-attacker",
                 from: 200,
             }, ...skillTrigger);
         }
 
-        if (shouldDefenderTriggerSpecial) {
+        if (shouldDefenderTriggerSpecial !== "false") {
             const skillTrigger = effectTriggerAnimation(scene, defenderObject);
 
-            tweens.push({
-                from: 100,
-            }, ...skillTrigger);
+            tweens.push(...skillTrigger);
         }
 
         tweens.push({
-            from: i ? 700 : 100,
+            from: i ? 300 : 100,
+            name: "make-attacker-movement",
             tween: {
                 targets: [attackerObject],
                 x: (defenderPosition.x + attackerPosition.x) / 2,
                 y: (defenderPosition.y + attackerPosition.y) / 2,
                 yoyo: true,
-                duration: 350,
+                duration: 200,
                 onYoyo: () => {
                     scene.tweens.existing(damageTween);
                     attackerObject.updateHP(+attackerHP);
                     defenderObject.updateHP(+defenderHP);
+                    console.log({ attackerHP, defenderHP })
                     attackerObject.updateSpecial(+attackerCooldown);
                     defenderObject.updateSpecial(+defenderCooldown);
                     const attackerRatio = +attackerHP / attackerObject.getInternalHero().Stats[0].maxHP;
                     const defenderHPRatio = +defenderHP / defenderObject.getInternalHero().Stats[0].maxHP;
-                    scene.combatForecast.updatePortraits(attackerRatio, defenderHPRatio);
+                    if (attackerObject.name === initiator) {
+                        scene.combatForecast.updatePortraits(attackerRatio, defenderHPRatio);
+                    } else {
+                        scene.combatForecast.updatePortraits(defenderHPRatio, attackerRatio);
+                    }
                 },
                 onComplete: () => {
                     attackerObject.x = attackerPosition.x;
@@ -69,6 +75,7 @@ function combatAnimation(scene: MainScene, payload: string) {
             const healing = healingAnimation(scene, attackerObject, +attackerHealing, +attackerHP / attackerObject.getInternalHero().Stats[0].maxHP);
 
             tweens.push({
+                name: "attacker-heal",
                 from: 350,
                 tween: healing
             });
@@ -78,11 +85,18 @@ function combatAnimation(scene: MainScene, payload: string) {
             const healing = healingAnimation(scene, defenderObject, +defenderHealing, +defenderHP / defenderObject.getInternalHero().Stats[0].maxHP);
 
             tweens.push({
+                name: "defender-heal",
                 from: attackerHealed ? 0 : 350,
                 tween: healing
             });
         }
+
+        tweens.push({
+            from: 500
+        });
     }
+
+    console.log(tweens)
 
     return tweens;
 };
