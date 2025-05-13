@@ -58,9 +58,17 @@
   </head>
   <body style="display: grid; grid-template-columns: 1fr 2fr 1fr;">
     <noscript>Please enable javascript to continue using this application.</noscript>
+    <script>
+      // window.volume = 1;
+    </script>
     <div></div>
     <div id="game" style="font-family: FEH"></div>
-    <div>chat</div>
+    <div>
+      <div style="background-color: aqua">
+      <!-- <input type="range" value="100" step="1" max="100" style="width: 100%;" onchange="window.volume = this.value / 100" /> -->
+      </div>
+      <div id="battle-log"></div> 
+    </div>
     <script type="module" src="./src/scripts/game.ts"></script>
   </body>
 </html>

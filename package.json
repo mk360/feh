@@ -6,6 +6,7 @@
   "main": "./index.js",
   "scripts": {
     "start": "vite serve",
+    "host": "vite serve --host",
     "build": "rimraf dist && vite build",
     "serve": "serve dist",
     "format": "prettier --check src/scripts/**",
