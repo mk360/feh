@@ -27,8 +27,6 @@ document.addEventListener('DOMContentLoaded', function () {
   joinSessionBtn.addEventListener('click', function () {
     const sessionId = sessionIdInput.value.trim();
 
-    console.log({ sessionId });
-
     if (!sessionId) {
       showNotification('Please enter a session ID', 'error');
       return;
@@ -45,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
       defaultSocket.emit("join", {
         roomId: sessionId,
         uuid: uid,
+        team: JSON.parse(localStorage.getItem("team"))
       });
     }
   });
@@ -65,6 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   defaultSocket.on("sid", (newSessionId) => {
     sessionIdInput.value = newSessionId;
+    navigator.clipboard.writeText(newSessionId);
     showNotification(`New session created: ${newSessionId}`);
   });
 
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
     showNotification(message, "error");
   });
 
-  defaultSocket.on("join-session", (id) => {
+  defaultSocket.on("join-session", (gameId) => {
     location.href = `game?id=${gameId}`;
   });
 
