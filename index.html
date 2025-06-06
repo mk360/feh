@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Tonio Emblem Heroes - Join the Battle</title>
-        <style>
-            :root {
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tonio Emblem Heroes - Join the Battle</title>
+    <style>
+        :root {
             --primary: #ff5a5f;
             --primary-light: #ff8a8f;
             --primary-dark: #c41c24;
@@ -15,24 +16,24 @@
             --text: #f5f5f5;
             --text-muted: #a0a0a0;
             --accent: #ffd700;
-            }
-            
-            * {
+        }
+
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            }
-            
-            body {
+        }
+
+        body {
             background-color: var(--background);
             color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            }
-            
-            .hero {
+        }
+
+        .hero {
             position: relative;
             min-height: 100vh;
             display: flex;
@@ -42,9 +43,9 @@
             overflow: hidden;
             text-align: center;
             padding: 2rem;
-            }
-            
-            .hero::before {
+        }
+
+        .hero::before {
             content: "";
             position: absolute;
             top: 0;
@@ -53,9 +54,9 @@
             height: 100%;
             background: radial-gradient(circle at center, rgba(21, 21, 25, 0.6) 0%, rgba(21, 21, 25, 0.9) 100%);
             z-index: -1;
-            }
-            
-            .hero-background {
+        }
+
+        .hero-background {
             position: absolute;
             top: 0;
             left: 0;
@@ -64,17 +65,17 @@
             background: url('/api/placeholder/1920/1080') center/cover no-repeat;
             filter: blur(3px) brightness(0.4);
             z-index: -2;
-            }
-            
-            .logo {
+        }
+
+        .logo {
             margin-bottom: 2rem;
             font-size: 3rem;
             font-weight: bold;
             color: var(--accent);
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-            }
-            
-            .session-container {
+        }
+
+        .session-container {
             background-color: var(--background-light);
             padding: 2rem;
             border-radius: 8px;
@@ -82,54 +83,54 @@
             width: 100%;
             max-width: 500px;
             margin-bottom: 2rem;
-            }
-            
-            .session-title {
+        }
+
+        .session-title {
             font-size: 1.5rem;
             margin-bottom: 1.5rem;
             color: var(--primary-light);
-            }
-            
-            .session-form {
+        }
+
+        .session-form {
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            }
-            
-            .input-group {
+        }
+
+        .input-group {
             display: flex;
             flex-direction: column;
             text-align: left;
-            }
-            
-            .input-group label {
+        }
+
+        .input-group label {
             margin-bottom: 0.5rem;
             font-size: 0.9rem;
             color: var(--text-muted);
-            }
-            
-            .input-field {
+        }
+
+        .input-field {
             padding: 0.8rem 1rem;
             border-radius: 4px;
             border: 1px solid #333;
             background-color: rgba(0, 0, 0, 0.2);
             color: var(--text);
             font-size: 1rem;
-            }
-            
-            .input-field:focus {
+        }
+
+        .input-field:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(255, 90, 95, 0.3);
-            }
-            
-            .button-group {
+        }
+
+        .button-group {
             display: flex;
             gap: 1rem;
             margin-top: 1rem;
-            }
-            
-            .btn {
+        }
+
+        .btn {
             padding: 0.8rem 1.5rem;
             border-radius: 4px;
             font-weight: bold;
@@ -138,40 +139,40 @@
             flex: 1;
             font-size: 1rem;
             border: none;
-            }
-            
-            .btn-primary {
+        }
+
+        .btn-primary {
             background-color: var(--primary);
             color: white;
-            }
-            
-            .btn-primary:hover {
+        }
+
+        .btn-primary:hover {
             background-color: var(--primary-dark);
-            }
-            
-            .btn-secondary {
+        }
+
+        .btn-secondary {
             background-color: var(--secondary);
             color: white;
-            }
-            
-            .btn-secondary:hover {
+        }
+
+        .btn-secondary:hover {
             background-color: #3a5985;
-            }
-            
-            .teambuilder-link {
+        }
+
+        .teambuilder-link {
             display: inline-block;
             margin-top: 1rem;
             color: var(--primary-light);
             text-decoration: none;
             font-weight: bold;
-            }
-            
-            .teambuilder-link:hover {
+        }
+
+        .teambuilder-link:hover {
             text-decoration: underline;
             color: var(--primary);
-            }
-            
-            .team-notice {
+        }
+
+        .team-notice {
             margin-top: 1rem;
             padding: 0.8rem;
             background-color: rgba(255, 215, 0, 0.1);
@@ -180,9 +181,9 @@
             text-align: left;
             font-size: 0.9rem;
             line-height: 1.5;
-            }
-            
-            .notification {
+        }
+
+        .notification {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -194,67 +195,70 @@
             transform: translateX(200%);
             transition: transform 0.3s ease;
             z-index: 100;
-            }
-            
-            .notification.show {
+        }
+
+        .notification.show {
             transform: translateX(0);
-            }
-            
-            .notification.success {
+        }
+
+        .notification.success {
             border-left: 4px solid #4CAF50;
-            }
-            
-            .notification.error {
+        }
+
+        .notification.error {
             border-left: 4px solid #F44336;
-            }
-            
-            .notification.warning {
+        }
+
+        .notification.warning {
             border-left: 4px solid #FFC107;
-            }
-            
-            @media (max-width: 768px) {
+        }
+
+        @media (max-width: 768px) {
             .button-group {
                 flex-direction: column;
             }
-            
+
             .logo {
                 font-size: 2.5rem;
             }
-            }
-        </style>
-    </head>
-    <body>
-        <main class="hero">
-            <div class="hero-background"></div>
-            
-            <h1 class="logo">TONIO EMBLEM HEROES</h1>
-            
-            <div class="session-container">
+        }
+    </style>
+</head>
+
+<body>
+    <main class="hero">
+        <div class="hero-background"></div>
+
+        <h1 class="logo">TONIO EMBLEM HEROES</h1>
+
+        <div class="session-container">
             <h2 class="session-title">Join the Battle</h2>
             <form class="session-form" id="sessionForm">
                 <div class="input-group">
                     <label for="sessionId">Session ID</label>
                     <input type="text" id="sessionId" class="input-field" placeholder="Enter session ID" required>
                 </div>
-                
+
                 <div class="team-notice">
-                    <strong>Note:</strong> You need to have a team saved before joining or creating a session. If you haven't created a team yet, please visit the Teambuilder first.
+                    <strong>Note:</strong> You need to have a team saved before joining or creating a session. If you
+                    haven't created a team yet, please visit the Teambuilder first.
                 </div>
-                
+
                 <div class="button-group">
                     <button type="button" id="joinSession" class="btn btn-primary">Join Session</button>
                     <button type="button" id="createSession" class="btn btn-secondary">Create New Session</button>
                 </div>
-                
+
                 <a href="/teambuilder" class="teambuilder-link">Go to Teambuilder</a>
             </form>
-            </div>
-        </main>
-    
-        <div id="notification" class="notification">
-            <span id="notificationText"></span>
         </div>
-        <script type="module" src="./generate-ids.ts"></script>
-        <script type="module" src="./start-form.js"></script>
-    </body>
+    </main>
+
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+    <script type="module" src="./generate-ids.ts"></script>
+    <script type="module" src="./start-form.js"></script>
+</body>
+
 </html>

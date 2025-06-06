@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Check if user has a team saved in localStorage
   function hasTeam() {
-    return localStorage.getItem('saved-team') !== null;
+    return localStorage.getItem('team') !== null;
   }
 
   // Show notification function
@@ -58,7 +58,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }, 2000);
       return;
     } else {
-      defaultSocket.emit("create-session");
+      const team = JSON.parse(localStorage.getItem("team"));
+      defaultSocket.emit("create-session", team);
     }
   });
 
