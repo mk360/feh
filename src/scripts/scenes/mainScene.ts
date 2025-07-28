@@ -1,8 +1,3 @@
-/**
- * TODO:
- * start implementing battle preview requests
- */
-
 import { GameObjects, Time } from 'phaser';
 import socket from "../../default-socket";
 import parseServerResponse from '../../parse-server-response';
@@ -321,7 +316,6 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
-    this.socket.emit("loading-complete", { roomId });
     this.socket.on("allow-control", ({ ids, id, currentSide }) => {
       this.side = id;
       this.currentTurn = currentSide;
@@ -676,8 +670,8 @@ export default class MainScene extends Phaser.Scene {
       internalHero[type] = Array.isArray(data) ? data : [data];
     });
 
-    // const 
-    // this.assistPreview
+    this.socket.emit("loading-complete", { roomId });
+
     // this.startBackgroundMusic(0.13);
   }
 

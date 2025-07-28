@@ -50,7 +50,6 @@ function combatAnimation(scene: MainScene, payload: string) {
                     scene.tweens.existing(damageTween);
                     attackerObject.updateHP(+attackerHP);
                     defenderObject.updateHP(+defenderHP);
-                    console.log({ attackerHP, defenderHP })
                     attackerObject.updateSpecial(+attackerCooldown);
                     defenderObject.updateSpecial(+defenderCooldown);
                     const attackerRatio = +attackerHP / attackerObject.getInternalHero().Stats[0].maxHP;

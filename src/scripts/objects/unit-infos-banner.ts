@@ -42,8 +42,8 @@ class UnitInfosBanner extends GameObjects.Container {
     private C: GameObjects.Image;
     private S: GameObjects.Image;
     private displayedHero: Hero;
+    private levelCount: GameObjects.Text;
     private highlighter = new HighlightRectangle(this.scene);
-    //     private S: GameObjects.Image;
     private heroPortrait: GameObjects.Image;
     private weaponBg: GameObjects.Image;
     private specialBg: GameObjects.Image;
@@ -109,15 +109,15 @@ class UnitInfosBanner extends GameObjects.Container {
             content: "LV.",
             style: { fontSize: "18px" }
         }).setOrigin(0, 0.5);
-        const levelCount = renderText({
+        this.levelCount = renderText({
             scene,
             x: lvText.getLeftCenter().x,
             y: lvText.getBottomCenter().y + 10,
-            content: "40",
+            content: `40`,
             style: { fontSize: "20px" }
         }).setOrigin(0, 0.5);
         this.add(lvText);
-        this.add(levelCount);
+        this.add(this.levelCount);
 
         this.weaponName = renderText({
             scene: this.scene,
@@ -147,7 +147,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(this.special);
         this.add(this.assist);
         this.add(this.textbox);
-        this.createPassives(levelCount);
+        this.createPassives(this.levelCount);
         this.add(this.highlighter);
     }
 
@@ -431,7 +431,7 @@ class UnitInfosBanner extends GameObjects.Container {
 
     private updatePassives(hero: Hero) {
         const internalHero = hero.getInternalHero();
-        const skills = Object.groupBy(internalHero.Skill as { name: string, slot: "A" | "B" | "C" | "S" }[], (s) => s.slot);
+        const skills = Object.groupBy((internalHero.Skill ?? []) as { name: string, slot: "A" | "B" | "C" | "S" }[], (s) => s.slot);
         const skillSlots = ["A", "B", "C", "S"] as const;
 
         for (let skillSlot of skillSlots) {
@@ -449,7 +449,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.statChanges = statChanges;
         this.textbox.clearContent().setVisible(false);
         const internalHero = hero.getInternalHero();
-        const { Name, Stats, Weapon, Skill, Special, Assist, Side } = internalHero;
+        const { Name, Stats, Weapon, Skill, Special, Assist, Side, HeroMerges } = internalHero;
         const name = Name[0].value
         const stats = Stats[0];
         const weapon = Weapon[0];
@@ -517,6 +517,13 @@ class UnitInfosBanner extends GameObjects.Container {
                 weaponType: weapon.weaponType,
                 weaponColor: weapon.color,
             });
+
+            if (HeroMerges) {
+                const { value } = HeroMerges;
+                this.levelCount.setText(`40+${value}`);
+            } else {
+                this.levelCount.setText("40");
+            }
 
             this.maxHP.setText(`/ ${stats.maxHP}`);
 
