@@ -71,7 +71,7 @@ function combatAnimation(scene: MainScene, payload: string) {
 
         if (+attackerHealing) {
             attackerHealed = true;
-            const healing = healingAnimation(scene, attackerObject, +attackerHealing, +attackerHP / attackerObject.getInternalHero().Stats[0].maxHP);
+            const healing = healingAnimation(scene, attackerObject, +attackerHealing, +attackerHP);
 
             tweens.push({
                 name: "attacker-heal",
@@ -81,7 +81,7 @@ function combatAnimation(scene: MainScene, payload: string) {
         }
 
         if (+defenderHealing) {
-            const healing = healingAnimation(scene, defenderObject, +defenderHealing, +defenderHP / defenderObject.getInternalHero().Stats[0].maxHP);
+            const healing = healingAnimation(scene, defenderObject, +defenderHealing, +defenderHP);
 
             tweens.push({
                 name: "defender-heal",
