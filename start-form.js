@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   defaultSocket.on("join-session", (gameId) => {
-    location.href = `game?id=${gameId}`;
+    location.href = `/game?id=${gameId}`;
   });
 
   // Prevent form submission (since we're handling clicks separately)
