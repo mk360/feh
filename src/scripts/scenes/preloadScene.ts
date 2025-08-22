@@ -1,8 +1,10 @@
+import { Scene } from "phaser";
+
 function formatName(name: string) {
   return name.replace(/: /, "_").replace(/ /g, "_");
 };
 
-export default class PreloadScene extends Phaser.Scene {
+export default class PreloadScene extends Scene {
   constructor() {
     super({ key: 'PreloadScene' })
   }

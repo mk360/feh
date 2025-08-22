@@ -20,6 +20,7 @@ import RepositionAssist from "./scripts/animations/assists/reposition";
 import ShoveAssist from "./scripts/animations/assists/shove";
 import SmiteAssist from "./scripts/animations/assists/smite";
 import SwapAssist from "./scripts/animations/assists/swap";
+import healingAnimation from "./scripts/animations/healing";
 
 const animationKeys = {
     "trigger": effectTriggerAnimation,
