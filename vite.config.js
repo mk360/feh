@@ -38,4 +38,15 @@ export default defineConfig({
         },
     },
     ],
+    build: {
+        rollupOptions: {
+            input: {
+                main: "index.html",
+                game: "game.html"
+            }
+        }
+    },
+    esbuild: {
+        legalComments: "none"
+    }
 });
