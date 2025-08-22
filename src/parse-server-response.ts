@@ -66,6 +66,14 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
                     break;
                 }
 
+                case "heal": {
+                    const [, target, amount, newHP] = args;
+                    const targetHero = scene.heroesLayer.getByName(target) as Hero;
+                    const healing = new Time.Timeline(scene, [{ from: 0, tween: healingAnimation(scene, targetHero, +amount, +newHP) }]);
+                    timelineArray.push(healing);
+                    break;
+                };
+
                 case "assist-movement": {
                     const [, assistName, source, target, sourceHeroCoordinates, targetHeroCoordinates] = args;
                     if (assistName in assistAnimations) {
