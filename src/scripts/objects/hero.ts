@@ -148,10 +148,12 @@ class Hero extends GameObjects.Container {
     }
 
     updateSpecial(newCooldown: number) {
-        this.specialImage.setVisible(newCooldown === 0);
-        this.specialText.setVisible(newCooldown > 0);
-        if (newCooldown) {
-            this.specialText.setText(newCooldown.toString());
+        if (this.specialImage) {
+            this.specialImage.setVisible(newCooldown === 0);
+            this.specialText.setVisible(newCooldown > 0);
+            if (newCooldown) {
+                this.specialText.setText(newCooldown.toString());
+            }
         }
     }
 
