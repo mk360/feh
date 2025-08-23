@@ -1,1 +1,484 @@
-{"frames":{"blue-bow":{"frame":{"x":1,"y":1,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"blue-dagger":{"frame":{"x":29,"y":1,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"blue-breath":{"frame":{"x":57,"y":1,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"blue-lance":{"frame":{"x":85,"y":1,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"blue-tome":{"frame":{"x":1,"y":29,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"colorless-bow":{"frame":{"x":29,"y":29,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"colorless-dagger":{"frame":{"x":57,"y":29,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"colorless-breath":{"frame":{"x":85,"y":29,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"colorless-tome":{"frame":{"x":1,"y":57,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"green-axe":{"frame":{"x":29,"y":57,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"green-bow":{"frame":{"x":57,"y":57,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"green-dagger":{"frame":{"x":85,"y":57,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"green-breath":{"frame":{"x":1,"y":85,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"green-tome":{"frame":{"x":29,"y":85,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"red-bow":{"frame":{"x":57,"y":85,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"red-dagger":{"frame":{"x":85,"y":85,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"red-breath":{"frame":{"x":113,"y":1,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"red-sword":{"frame":{"x":113,"y":29,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}},"red-tome":{"frame":{"x":113,"y":57,"w":26,"h":26},"rotated":false,"trimmed":false,"spriteSourceSize":{"x":0,"y":0,"w":26,"h":26},"sourceSize":{"w":26,"h":26}}}}
+{
+	"frames": {
+		"blue-beast": {
+			"frame": {
+				"x": 1,
+				"y": 1,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"blue-bow": {
+			"frame": {
+				"x": 33,
+				"y": 1,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"blue-breath": {
+			"frame": {
+				"x": 65,
+				"y": 1,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"blue-dagger": {
+			"frame": {
+				"x": 97,
+				"y": 1,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"blue-lance": {
+			"frame": {
+				"x": 1,
+				"y": 33,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"blue-tome": {
+			"frame": {
+				"x": 33,
+				"y": 33,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"colorless-beast": {
+			"frame": {
+				"x": 65,
+				"y": 33,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"colorless-bow": {
+			"frame": {
+				"x": 97,
+				"y": 33,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"colorless-breath": {
+			"frame": {
+				"x": 1,
+				"y": 65,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"colorless-dagger": {
+			"frame": {
+				"x": 33,
+				"y": 65,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"colorless-staff": {
+			"frame": {
+				"x": 65,
+				"y": 65,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"colorless-tome": {
+			"frame": {
+				"x": 97,
+				"y": 65,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"green-axe": {
+			"frame": {
+				"x": 1,
+				"y": 97,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"green-beast": {
+			"frame": {
+				"x": 33,
+				"y": 97,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"green-bow": {
+			"frame": {
+				"x": 65,
+				"y": 97,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"green-breath": {
+			"frame": {
+				"x": 97,
+				"y": 97,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"green-dagger": {
+			"frame": {
+				"x": 129,
+				"y": 1,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"green-tome": {
+			"frame": {
+				"x": 129,
+				"y": 33,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"red-beast": {
+			"frame": {
+				"x": 129,
+				"y": 65,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"red-bow": {
+			"frame": {
+				"x": 129,
+				"y": 97,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"red-breath": {
+			"frame": {
+				"x": 1,
+				"y": 129,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"red-dagger": {
+			"frame": {
+				"x": 33,
+				"y": 129,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"red-sword": {
+			"frame": {
+				"x": 65,
+				"y": 129,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		},
+		"red-tome": {
+			"frame": {
+				"x": 97,
+				"y": 129,
+				"w": 30,
+				"h": 30
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 30,
+				"h": 30
+			},
+			"sourceSize": {
+				"w": 30,
+				"h": 30
+			}
+		}
+	}
+}
