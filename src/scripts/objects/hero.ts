@@ -78,7 +78,6 @@ class Hero extends GameObjects.Container {
         const existingSpecial = data.components.Special;
 
         this.updateHero(data);
-        this.updateHP(stats.hp);
         this.enableMovementIndicator();
 
         if (existingSpecial) {
@@ -98,6 +97,12 @@ class Hero extends GameObjects.Container {
                 texture: "statuses"
             }
         });
+
+        this.updateHP(this.getData("hero").Stats[0].hp);
+
+        if (this.getInternalHero().Special) {
+            this.updateSpecial(this.getInternalHero().Special[0].cooldown);
+        }
     }
 
     createFlashTween() {

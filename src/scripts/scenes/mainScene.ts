@@ -717,17 +717,17 @@ export default class MainScene extends Phaser.Scene {
   */
   toggleHeroState(hero: Hero) {
     const { Side: [{ value }], FinishedAction } = hero.getInternalHero();
-    if (this.currentTurn === this.side && value === this.side) {
-      if (FinishedAction) {
-        this.disableDragging(hero);
-        const matrix = hero.sprite.postFX.addColorMatrix();
-        matrix.blackWhite(true);
-      } else {
-        this.enableDragging(hero);
-      }
-    } else {
-      hero.sprite.clearFX();
+    if (FinishedAction) {
       this.disableDragging(hero);
+      const matrix = hero.sprite.postFX.addColorMatrix();
+      matrix.blackWhite(true);
+    } else {
+      hero.sprite.postFX.clear();
+      if (this.currentTurn === this.side && value === this.side) {
+        this.enableDragging(hero);
+      } else {
+        this.disableDragging(hero);
+      }
     }
   }
 }
