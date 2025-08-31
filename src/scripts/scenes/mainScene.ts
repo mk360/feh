@@ -14,6 +14,7 @@ import UnitInfosBanner from '../objects/unit-infos-banner';
 import { getTileCoordinates, gridToPixels, squareSize } from '../utils/grid-functions';
 import { renderText } from '../utils/text-renderer';
 import getEdges from '../utils/get-edges';
+import bindLoggerSocket from '../../logger';
 
 function createHeroQuoter(scene: MainScene) {
   let previousQuote = "";
@@ -316,13 +317,22 @@ export default class MainScene extends Phaser.Scene {
   }
 
   create() {
+    const entities = this.game.registry.list.world;
+
     this.socket.on("allow-control", ({ ids, id, currentSide }) => {
       this.side = id;
+      bindLoggerSocket(this.side, Object.entries(entities.heroes).map(([id, hero]) => {
+        // flemme de typer
+        return {
+          id,
+          name: (hero as any).components.Name[0].value,
+          teamId: (hero as any).components.Side[0].value,
+        };
+      }))
       this.currentTurn = currentSide;
       this.teamIds = ids;
       this.sound.pauseOnBlur = false;
       const header = this.add.image(0, 0, "marginals", "header").setOrigin(0);
-      const entities = this.game.registry.list.world;
       this.unitInfosBanner = new UnitInfosBanner(this, id, header.getBottomCenter().y).setVisible(false);
       this.combatForecast = new CombatForecast(this).setVisible(false);
       const ornateBanner = this.add.image(this.game.canvas.width / 2, header.getBottomCenter().y, "banner").setScale(0.6).setOrigin(0.5, 0);
