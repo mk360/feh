@@ -245,9 +245,9 @@ class CombatForecast extends GameObjects.Container {
         statChangesX: number;
         xShift: number;
     }) {
-        console.log(hero.statMods);
         while (side.statMods.length) {
-            this.remove(side.statMods[0], true);
+            const element = side.statMods.pop();
+            element.destroy(true);
         }
         side.damage.setText(hero.turns === 0 ? "-" : hero.damage.toString()).setColor(hero.effectiveness ? TextColors.effective : TextColors.numbers);
         if (hero.damageBeforeCombat) {

@@ -340,6 +340,7 @@ export default class MainScene extends Phaser.Scene {
       this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
       const endTurn = new Button(this, "End Turn");
       this.actionsTray.addAction(endTurn, () => {
+        this.clearTiles();
         this.socket.emit("request end turn", { roomId });
       });
       const enemyRange = new Button(this, "Enemy Range");

@@ -1,7 +1,15 @@
 #battle-log {
-    padding: 1rem;
+    padding: 0.5rem;
     border-radius: 1rem;
     background-color: white;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
 
+.log-entry {
+    padding: 0.5rem;
+    border-radius: 1rem;
+    border: 2px solid gray;
 }

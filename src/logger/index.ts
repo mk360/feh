@@ -6,8 +6,7 @@ interface SkillLogProperties {
     targetEntity: string;
 }
 
-let lastLogContainer = document.createElement("div");
-document.getElementById("battle-log").appendChild(lastLogContainer);
+let lastLogContainer = document.getElementById("battle-log");
 
 interface CombatModLog extends SkillLogProperties {
     brave: boolean;
@@ -16,23 +15,38 @@ interface CombatModLog extends SkillLogProperties {
     healed: number;
 };
 
+interface CombatLog {
+    logType: "combat";
+    rounds: CombatRoundLog[];
+    attacker: {
+        id: string;
+        mods: CombatModLog[];
+    };
+    defender: {
+        id: string;
+        mods: CombatModLog[];
+    };
+}
+
 interface CombatRoundLog {
-    logType: "combat-round";
     round: number;
     attacker: {
         id: string;
         damage: number;
         activatedSpecial: boolean;
-        mods: CombatModLog[];
         newSpecialCooldown: number;
     };
     defender: {
         id: string;
         activatedSpecial: boolean;
         healed: number;
-        mods: CombatModLog[];
         newSpecialCooldown: number;
     };
+};
+
+interface MapDamageLog extends SkillLogProperties {
+    logType: "MapDamage";
+    damage: number;
 };
 
 interface CombatBuffLog extends SkillLogProperties {
@@ -63,7 +77,12 @@ interface PenaltyLog extends SkillLogProperties {
     };
 };
 
-type LogPayload = CombatBuffLog | CombatDebuffLog | BonusLog | PenaltyLog | CombatRoundLog;
+interface StatusLog extends SkillLogProperties {
+    logType: "Status";
+    status: string;
+}
+
+type LogPayload = CombatBuffLog | CombatDebuffLog | BonusLog | PenaltyLog | CombatLog | StatusLog | MapDamageLog;
 
 interface LoggableHeroData {
     id: string;
@@ -73,8 +92,8 @@ interface LoggableHeroData {
 
 function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
     SOCKET.on("history", (payload: LogPayload[]) => {
+        console.log({ payload });
         for (let item of payload) {
-            console.log({ item });
             switch (item.logType) {
                 case "bonus": {
                     const changeString = createStatsString(item.bonuses);
@@ -91,6 +110,22 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = `'s ${item.sourceSkill}.`;
                     entry.appendChild(sourceSkill);
+                    if (changeString) appendToLog(entry);
+                    break;
+                }
+
+                case "Status": {
+                    const targetEntity = printCharacterName(teamId, units, item.targetEntity);
+                    const sourceEntity = printCharacterName(teamId, units, item.targetEntity);
+                    const addsStatus = document.createElement("span");
+                    addsStatus.innerText = ` gave the status ${item.status} to`;
+                    const sourceSkill = document.createElement("span");
+                    sourceSkill.innerText = `'s ${item.sourceSkill}`;
+                    const entry = document.createElement("div");
+                    entry.appendChild(sourceEntity);
+                    entry.appendChild(sourceSkill);
+                    entry.appendChild(addsStatus);
+                    entry.appendChild(targetEntity);
                     appendToLog(entry);
                     break;
                 }
@@ -105,21 +140,22 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     const receives = document.createElement("span");
                     receives.innerText = ` receives ${changeString} from `;
                     entry.appendChild(receives);
+                    entry.classList.add("log-entry");
                     entry.appendChild(sourceEntity);
 
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = `'s ${item.sourceSkill}.`;
                     entry.appendChild(sourceSkill);
-                    appendToLog(entry);
+                    if (changeString) appendToLog(entry);
                     break;
                 }
 
                 case "CombatBuff": {
-                    console.log({ teamId, units, source: item.sourceEntity })
                     const changeString = createStatsString(item.buffs);
                     const targetEntity = printCharacterName(teamId, units, item.targetEntity);
                     const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
                     const entry = document.createElement("div");
+                    entry.classList.add("log-entry");
                     entry.appendChild(targetEntity);
 
                     const receives = document.createElement("span");
@@ -130,7 +166,7 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = `'s ${item.sourceSkill}.`;
                     entry.appendChild(sourceSkill);
-                    appendToLog(entry);
+                    if (changeString) appendToLog(entry);
                     break;
                 }
 
@@ -148,13 +184,44 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
 
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = `'s ${item.sourceSkill}.`;
+                    entry.classList.add("log-entry");
                     entry.appendChild(sourceSkill);
+                    if (changeString) appendToLog(entry);
+                    break;
+                }
+
+                case "PreventFollowup": {
+                    // const targetEntity = printCharacterName(teamId, units, item.targetEntity);
+                    const prevented = document.createElement("span");
+                    prevented.innerText = ` prevented the opponent from performing a follow-up attack.`;
+                    console.log(units);
+                    const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
+                    const entry = document.createElement("div");
+                    // entry.appendChild(targetEntity);
+                    const sourceSkill = document.createElement("span");
+                    sourceSkill.innerText = `'s ${item.sourceSkill}`;
+                    entry.classList.add("log-entry");
+                    entry.appendChild(sourceEntity);
+                    entry.appendChild(sourceSkill);
+                    entry.appendChild(prevented);
+                    // entry.appendChild(targetEntity);
                     appendToLog(entry);
                     break;
                 }
 
-                case "combat-round": {
-
+                case "GuaranteedFollowup": {
+                    const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
+                    const guaranteed = document.createElement("span");
+                    guaranteed.innerText = ` gets a guaranteed follow-up attack from `;
+                    const sourceSkill = document.createElement("span");
+                    sourceSkill.innerText = item.sourceSkill;
+                    const entry = document.createElement("div");
+                    entry.classList.add("log-entry");
+                    entry.appendChild(sourceEntity);
+                    entry.appendChild(guaranteed);
+                    entry.appendChild(sourceSkill);
+                    appendToLog(entry);
+                    break;
                 }
             }
         }
@@ -162,12 +229,7 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
 };
 
 function appendToLog(item: HTMLDivElement) {
-    if (lastLogContainer.parentNode.lastChild === lastLogContainer) {
-        lastLogContainer.appendChild(item);
-    } else {
-        lastLogContainer = document.createElement("div");
-        lastLogContainer.appendChild(item);
-    }
+    lastLogContainer.appendChild(item);
 }
 
 function createStatsString(stats: {
