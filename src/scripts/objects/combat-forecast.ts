@@ -32,7 +32,7 @@ interface RenderedSide {
     nameplate: HeroNameplate;
     previousHP: GameObjects.Text;
     remainingHP: GameObjects.Text;
-    statMods: GameObjects.Group;
+    statMods: GameObjects.Text[];
     damageLine: GameObjects.Image;
     roundCount: GameObjects.Text;
     damage: GameObjects.Text;
@@ -74,7 +74,7 @@ class CombatForecast extends GameObjects.Container {
     private koTween: Tweens.Tween;
 
     private createFirstHero() {
-        this.firstHero.statMods = new GameObjects.Group(this.scene);
+        this.firstHero.statMods = [];
         //
         this.firstHero.portrait = new HeroPortrait(this.scene, -100, "").setOrigin(0).setScale(0.6);
         this.firstHero.nameplate = new HeroNameplate(this.scene, 60, 20, {
@@ -149,7 +149,7 @@ class CombatForecast extends GameObjects.Container {
     }
 
     private createSecondHero() {
-        this.secondHero.statMods = new GameObjects.Group(this.scene);
+        this.secondHero.statMods = [];
         this.secondHero.portrait = new HeroPortrait(this.scene, 900, "").setFlipX(true).setOrigin(1, 0).setScale(0.6);
         this.secondHero.nameplate = new HeroNameplate(this.scene, 270, 20, {
             name: "", weaponType: "", weaponColor: "",
@@ -245,7 +245,10 @@ class CombatForecast extends GameObjects.Container {
         statChangesX: number;
         xShift: number;
     }) {
-        side.statMods.clear(true, true);
+        console.log(hero.statMods);
+        while (side.statMods.length) {
+            this.remove(side.statMods[0], true);
+        }
         side.damage.setText(hero.turns === 0 ? "-" : hero.damage.toString()).setColor(hero.effectiveness ? TextColors.effective : TextColors.numbers);
         if (hero.damageBeforeCombat) {
             side.damageBeforeCombat.setText(hero.damageBeforeCombat + "+");
@@ -282,8 +285,10 @@ class CombatForecast extends GameObjects.Container {
                     y: 140,
                     content: capitalize(stat)
                 });
-                side.statMods.add(changedStat).add(statChangeValue);
-                this.add(side.statMods.getChildren());
+                side.statMods.push(changedStat);
+                side.statMods.push(statChangeValue);
+                this.add(changedStat);
+                this.add(statChangeValue);
                 if (team === "attacker") {
                     xOffset = changedStat.getLeftCenter().x + xChangeBetweenStats;
                 } else {
