@@ -1,0 +1,375 @@
+{
+	"frames": {
+		"1-star-plate.png": {
+			"frame": {
+				"x": 1,
+				"y": 1,
+				"w": 193,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 193,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 193,
+				"h": 33
+			}
+		},
+		"2-star-plate.png": {
+			"frame": {
+				"x": 1,
+				"y": 36,
+				"w": 193,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 193,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 193,
+				"h": 33
+			}
+		},
+		"3-star-plate.png": {
+			"frame": {
+				"x": 1,
+				"y": 71,
+				"w": 193,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 193,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 193,
+				"h": 33
+			}
+		},
+		"4-star-plate.png": {
+			"frame": {
+				"x": 1,
+				"y": 106,
+				"w": 193,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 193,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 193,
+				"h": 33
+			}
+		},
+		"5-star-plate.png": {
+			"frame": {
+				"x": 1,
+				"y": 141,
+				"w": 193,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 193,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 193,
+				"h": 33
+			}
+		},
+		"ally-assist.png": {
+			"frame": {
+				"x": 1,
+				"y": 176,
+				"w": 204,
+				"h": 32
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 204,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 204,
+				"h": 32
+			}
+		},
+		"ally-hp.png": {
+			"frame": {
+				"x": 1,
+				"y": 210,
+				"w": 190,
+				"h": 48
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 190,
+				"h": 48
+			},
+			"sourceSize": {
+				"w": 190,
+				"h": 48
+			}
+		},
+		"ally-line.png": {
+			"frame": {
+				"x": 1,
+				"y": 260,
+				"w": 200,
+				"h": 28
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 200,
+				"h": 28
+			},
+			"sourceSize": {
+				"w": 200,
+				"h": 28
+			}
+		},
+		"ally-plate.png": {
+			"frame": {
+				"x": 1,
+				"y": 290,
+				"w": 193,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 193,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 193,
+				"h": 33
+			}
+		},
+		"ally-special.png": {
+			"frame": {
+				"x": 196,
+				"y": 1,
+				"w": 204,
+				"h": 32
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 204,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 204,
+				"h": 32
+			}
+		},
+		"ally-weapon.png": {
+			"frame": {
+				"x": 196,
+				"y": 35,
+				"w": 204,
+				"h": 32
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 204,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 204,
+				"h": 32
+			}
+		},
+		"enemy-assist.png": {
+			"frame": {
+				"x": 196,
+				"y": 69,
+				"w": 204,
+				"h": 32
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 204,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 204,
+				"h": 32
+			}
+		},
+		"enemy-hp.png": {
+			"frame": {
+				"x": 196,
+				"y": 103,
+				"w": 191,
+				"h": 48
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 191,
+				"h": 48
+			},
+			"sourceSize": {
+				"w": 191,
+				"h": 48
+			}
+		},
+		"enemy-line.png": {
+			"frame": {
+				"x": 207,
+				"y": 153,
+				"w": 203,
+				"h": 23
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 203,
+				"h": 23
+			},
+			"sourceSize": {
+				"w": 203,
+				"h": 23
+			}
+		},
+		"enemy-plate.png": {
+			"frame": {
+				"x": 207,
+				"y": 178,
+				"w": 193,
+				"h": 33
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 193,
+				"h": 33
+			},
+			"sourceSize": {
+				"w": 193,
+				"h": 33
+			}
+		},
+		"enemy-special.png": {
+			"frame": {
+				"x": 193,
+				"y": 213,
+				"w": 204,
+				"h": 32
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 204,
+				"h": 32
+			},
+			"sourceSize": {
+				"w": 204,
+				"h": 32
+			}
+		},
+		"enemy-stat-line.png": {
+			"frame": {
+				"x": 203,
+				"y": 247,
+				"w": 204,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 204,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 204,
+				"h": 26
+			}
+		},
+		"enemy-weapon.png": {
+			"frame": {
+				"x": 203,
+				"y": 275,
+				"w": 204,
+				"h": 31
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 204,
+				"h": 31
+			},
+			"sourceSize": {
+				"w": 204,
+				"h": 31
+			}
+		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "spritesheet.png",
+		"format": "RGBA8888",
+		"size": {
+			"w": 411,
+			"h": 324
+		},
+		"scale": "1"
+	}
+}

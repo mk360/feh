@@ -1,0 +1,115 @@
+{
+	"frames": {
+		"ally.png": {
+			"frame": {
+				"x": 1,
+				"y": 1,
+				"w": 750,
+				"h": 180
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 750,
+				"h": 180
+			},
+			"sourceSize": {
+				"w": 750,
+				"h": 180
+			}
+		},
+		"assist.png": {
+			"frame": {
+				"x": 1,
+				"y": 183,
+				"w": 750,
+				"h": 180
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 750,
+				"h": 180
+			},
+			"sourceSize": {
+				"w": 750,
+				"h": 180
+			}
+		},
+		"combat-forecast.png": {
+			"frame": {
+				"x": 1,
+				"y": 365,
+				"w": 750,
+				"h": 180
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 750,
+				"h": 180
+			},
+			"sourceSize": {
+				"w": 750,
+				"h": 180
+			}
+		},
+		"enemy.png": {
+			"frame": {
+				"x": 1,
+				"y": 547,
+				"w": 750,
+				"h": 180
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 750,
+				"h": 180
+			},
+			"sourceSize": {
+				"w": 750,
+				"h": 180
+			}
+		},
+		"starter.png": {
+			"frame": {
+				"x": 753,
+				"y": 1,
+				"w": 752,
+				"h": 180
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 752,
+				"h": 180
+			},
+			"sourceSize": {
+				"w": 752,
+				"h": 180
+			}
+		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "spritesheet.png",
+		"format": "RGBA8888",
+		"size": {
+			"w": 1506,
+			"h": 728
+		},
+		"scale": "1"
+	}
+}
