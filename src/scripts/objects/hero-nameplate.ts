@@ -5,21 +5,28 @@ interface HeroInformations {
     name: string;
     weaponType: string;
     weaponColor: string;
+    rarity: number;
+    ally: boolean;
+};
+
+interface NameplateInit extends HeroInformations {
     tapCallbacks: {
         name: (boundObject: GameObjects.Text) => void;
         weaponType: (boundObject: GameObjects.Image) => void;
-    }
-};
+    };
+}
 
 class HeroNameplate extends GameObjects.Container {
     weaponIcon: GameObjects.Image;
     heroName: GameObjects.Text;
+    nameplateBackground: GameObjects.Image;
     nameplate: GameObjects.Image;
 
-    constructor(scene: Scene, x: number, y: number, informations: HeroInformations) {
+    constructor(scene: Scene, x: number, y: number, informations: NameplateInit) {
         super(scene, x, y);
-        this.nameplate = new GameObjects.Image(scene, 0, 0, "top-banner", "nameplate").setScale(0.7, 0.45).setOrigin(0, 0.5);
-        this.weaponIcon = new GameObjects.Image(scene, this.nameplate.getLeftCenter().x + 22, this.nameplate.getLeftCenter().y, "weapons", `${informations.weaponColor}-${informations.weaponType}`).setScale(1.1).setInteractive().on("pointerdown", function (this: GameObjects.Image) {
+        this.nameplate = new GameObjects.Image(scene, 0, 0, `rarity-${informations.rarity}`).setOrigin(0, 0.5).setScale(1.05, 1);
+        this.nameplateBackground = new GameObjects.Image(scene, 0, 0, "ally-plate").setOrigin(0, 0.5).setScale(1.05, 1);
+        this.weaponIcon = new GameObjects.Image(scene, this.nameplate.getLeftCenter().x + 22, this.nameplate.getLeftCenter().y, "weapons", `${informations.weaponColor}-${informations.weaponType}`).setInteractive().on("pointerdown", function (this: GameObjects.Image) {
             informations.tapCallbacks.weaponType(this);
         });
         this.heroName = renderText({
@@ -32,12 +39,17 @@ class HeroNameplate extends GameObjects.Container {
         this.heroName.on("pointerdown", function (this: GameObjects.Text) {
             informations.tapCallbacks.name(this);
         });
-        this.add([this.nameplate, this.weaponIcon, this.heroName]);
+        this.add([this.nameplateBackground, this.nameplate, this.weaponIcon, this.heroName]);
     }
 
-    updateNameplate({ name, weaponType, weaponColor }: { name: string; weaponType: string; weaponColor: string }) {
+    updateNameplate({ name, weaponType, weaponColor, ally }: HeroInformations) {
         this.heroName.setText(name);
         this.weaponIcon.setFrame(`${weaponColor}-${weaponType}`);
+        if (ally) {
+            this.nameplateBackground.setTexture("ally-plate");
+        } else {
+            this.nameplateBackground.setTexture("enemy-plate");
+        }
     }
 };
 

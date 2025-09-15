@@ -70,6 +70,20 @@ interface BonusLog extends SkillLogProperties {
     };
 };
 
+interface NewTurnLog {
+    logType: "turn";
+    count: number;
+    side: string;
+}
+
+interface GuaranteedFollowupLog extends SkillLogProperties {
+    logType: "GuaranteedFollowup";
+};
+
+interface PreventFollowupLog extends SkillLogProperties {
+    logType: "PreventFollowup";
+};
+
 interface PenaltyLog extends SkillLogProperties {
     logType: "penalty";
     penalties: {
@@ -82,7 +96,7 @@ interface StatusLog extends SkillLogProperties {
     status: string;
 }
 
-type LogPayload = CombatBuffLog | CombatDebuffLog | BonusLog | PenaltyLog | CombatLog | StatusLog | MapDamageLog;
+type LogPayload = CombatBuffLog | CombatDebuffLog | BonusLog | PenaltyLog | CombatLog | StatusLog | MapDamageLog | NewTurnLog | GuaranteedFollowupLog | PreventFollowupLog;
 
 interface LoggableHeroData {
     id: string;
@@ -223,6 +237,14 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     appendToLog(entry);
                     break;
                 }
+
+                case "turn": {
+                    const container = document.createElement("div");
+                    container.classList.add("turn-container");
+                    container.innerText = `Turn ${item.count}: ${item.side === teamId ? "Player Team" : "Enemy Team"}`;
+                    appendToLog(container);
+                    break;
+                }
             }
         }
     });
@@ -230,6 +252,7 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
 
 function appendToLog(item: HTMLDivElement) {
     lastLogContainer.appendChild(item);
+    lastLogContainer.scrollTop = lastLogContainer.scrollHeight;
 }
 
 function createStatsString(stats: {

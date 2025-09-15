@@ -20,6 +20,20 @@ export default class PreloadScene extends Scene {
       };
     };
     this.load.image("map", `/assets/maps/${world.mapId}.webp`);
+    this.load.image("ally-hp", "/assets/unit-summary/ally-hp.png");
+    for (let i = 1; i <= 5; i++) {
+      this.load.image(`rarity-${i}`, `/assets/unit-summary/${i}-star-plate.png`);
+    }
+    this.load.image("ally-plate", "/assets/unit-summary/ally-plate.png");
+    this.load.image("enemy-plate", "/assets/unit-summary/enemy-plate.png");
+    this.load.image("ally-weapon", "/assets/unit-summary/ally-weapon.png");
+    this.load.image("enemy-weapon", "/assets/unit-summary/enemy-weapon.png");
+    this.load.image("ally-assist", "/assets/unit-summary/ally-assist.png");
+    this.load.image("enemy-assist", "/assets/unit-summary/enemy-assist.png");
+    this.load.image("ally-special", "/assets/unit-summary/ally-special.png");
+    this.load.image("ally-line", "/assets/unit-summary/ally-line.png");
+    this.load.image("enemy-line", "/assets/unit-summary/enemy-line.png");
+    this.load.image("enemy-special", "/assets/unit-summary/enemy-special.png");
     this.load.atlas("skills", "/assets/sheets/skills.webp", "/assets/sheets/skills.json");
     this.load.atlas("weapons", "/assets/sheets/weapons.webp", "/assets/sheets/weapons.json");
     this.load.atlas("movement-types", "/assets/sheets/movement-types.png", "/assets/sheets/movement-types.json");

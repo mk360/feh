@@ -49,6 +49,8 @@ class UnitInfosBanner extends GameObjects.Container {
     private specialBg: GameObjects.Image;
     private special: GameObjects.Text;
     private textbox: Textbox;
+    private statLine1: GameObjects.Image;
+    private statLine2: GameObjects.Image;
     private stats: {
         [k in keyof Stats]: RenderedStat;
     };
@@ -72,10 +74,12 @@ class UnitInfosBanner extends GameObjects.Container {
         this.createStats();
 
         this.textbox = new Textbox(scene, 0, 0, playerSide).setVisible(false);
-        this.nameplate = new HeroNameplate(scene, blockX - 170, 25, {
+        this.nameplate = new HeroNameplate(scene, blockX - 165, 25, {
             name: "",
             weaponType: "",
             weaponColor: "",
+            rarity: 5,
+            ally: false,
             tapCallbacks: {
                 name: (boundObject) => {
                     const internalHero = this.displayedHero.getInternalHero();
@@ -104,10 +108,10 @@ class UnitInfosBanner extends GameObjects.Container {
         this.createMainSkills();
         const lvText = renderText({
             scene,
-            x: this.weaponBg.getLeftCenter().x + 25,
+            x: this.weaponBg.getLeftCenter().x + 20,
             y: this.weaponBg.getTopCenter().y - 39,
             content: "LV.",
-            style: { fontSize: "18px" }
+            style: { fontSize: "16px" }
         }).setOrigin(0, 0.5);
         this.levelCount = renderText({
             scene,
@@ -149,6 +153,7 @@ class UnitInfosBanner extends GameObjects.Container {
         this.add(this.textbox);
         this.createPassives(this.levelCount);
         this.add(this.highlighter);
+        // this.add(new GameObjects.Image(this.scene, blockX - 170, 40, "ally-stats").setOrigin(0));
     }
 
     closeTextbox() {
@@ -159,7 +164,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private createStats() {
         const statsBlockX = 130;
 
-        this.hpBackground = new GameObjects.Image(this.scene, statsBlockX, 70, "top-banner", "hp plate").setScale(0.85, 0.7).setOrigin(0, 0.5).setInteractive();
+        this.hpBackground = new GameObjects.Image(this.scene, statsBlockX, 70, "ally-hp").setOrigin(0, 0.5).setInteractive();
         this.hpBackground.setSize(this.hpBackground.displayWidth, this.hpBackground.displayHeight);
         this.add(this.hpBackground.setInteractive());
 
@@ -236,11 +241,11 @@ class UnitInfosBanner extends GameObjects.Container {
             hp: {
                 label: renderText({
                     scene: this.scene,
-                    x: statsBlockX + 10,
-                    y: 55,
+                    x: statsBlockX + 8,
+                    y: this.hpBackground.getCenter().y,
                     content: "HP",
-                    style: { fontSize: "20px" }
-                }).setInteractive(),
+                    style: { fontSize: "19px" }
+                }).setInteractive().setOrigin(0, 0.5),
                 description: STATS.hp,
                 value: renderRegularHPText({
                     scene: this.scene,
@@ -256,7 +261,7 @@ class UnitInfosBanner extends GameObjects.Container {
 
         this.maxHP = renderRegularHPText({
             scene: this.scene,
-            x: statsBlockX + 120,
+            x: statsBlockX + 125,
             y: 56,
             content: "",
             style: {
@@ -265,6 +270,11 @@ class UnitInfosBanner extends GameObjects.Container {
         });
 
         this.add(this.maxHP);
+
+        this.statLine1 = new GameObjects.Image(this.scene, statsBlockX, this.stats.atk.value.getBottomCenter().y + 2, "ally-line").setScale(1, 0.5).setOrigin(0, 1);
+        this.statLine2 = new GameObjects.Image(this.scene, statsBlockX, this.stats.res.value.getBottomCenter().y + 2, "ally-line").setScale(1, 0.5).setOrigin(0, 1);
+        this.add(this.statLine1);
+        this.add(this.statLine2);
 
         for (let statKey in this.stats) {
             const castKey = statKey as keyof typeof this.stats;
@@ -310,17 +320,15 @@ class UnitInfosBanner extends GameObjects.Container {
             }
             this.add([label, value]);
         }
-        this.add(new GameObjects.Image(this.scene, statsBlockX, 125, "top-banner", "separator").setScale(0.17, 0.5).setOrigin(0));
-        this.add(new GameObjects.Image(this.scene, statsBlockX, 160, "top-banner", "separator").setScale(0.17, 0.5).setOrigin(0));
     }
 
     private createMainSkills() {
         const skillsBlockX = 335;
-        this.weaponBg = new GameObjects.Image(this.scene, skillsBlockX, 50, "skills-ui", "weapon-bg").setOrigin(0, 0).setScale(0.18, 0.25).setInteractive();
+        this.weaponBg = new GameObjects.Image(this.scene, skillsBlockX, 95, "ally-weapon").setOrigin(0, 1).setInteractive();
         this.weaponBg.setSize(this.weaponBg.displayWidth, this.weaponBg.displayHeight);
-        this.assistBg = new GameObjects.Image(this.scene, skillsBlockX, 90, "skills-ui", "assist-bg").setOrigin(0, 0).setScale(0.18, 0.25).setInteractive();
+        this.assistBg = new GameObjects.Image(this.scene, skillsBlockX, this.weaponBg.getBottomCenter().y + 2, "ally-assist").setOrigin(0, 0).setInteractive();
         this.assistBg.setSize(this.assistBg.displayWidth, this.assistBg.displayHeight);
-        this.specialBg = new GameObjects.Image(this.scene, skillsBlockX, 130, "skills-ui", "special-bg").setOrigin(0).setScale(0.18, 0.25).setInteractive();
+        this.specialBg = new GameObjects.Image(this.scene, skillsBlockX, this.assistBg.getBottomCenter().y + 2, "ally-special").setOrigin(0).setInteractive();
         this.specialBg.setSize(this.specialBg.displayWidth, this.specialBg.displayHeight);
         const assistIcon = new GameObjects.Image(this.scene, this.assistBg.getLeftCenter().x, this.assistBg.getLeftCenter().y, "skills-ui", "assist-icon").setScale(0.45).setOrigin(0.25, 0.5);
         const specialIcon = new GameObjects.Image(this.scene, this.specialBg.getLeftCenter().x, this.specialBg.getLeftCenter().y, "skills-ui", "special-icon").setScale(0.45).setOrigin(0.25, 0.5);
@@ -512,11 +520,21 @@ class UnitInfosBanner extends GameObjects.Container {
 
             heroPortraitIntroduction.play();
 
+            const isAlly = this.playerSide === Side[0].value;
+
             this.nameplate.updateNameplate({
                 name: name.split(":")[0],
                 weaponType: weapon.weaponType,
                 weaponColor: weapon.color,
+                rarity: 5,
+                ally: isAlly,
             });
+
+            this.weaponBg.setTexture(isAlly ? "ally-weapon" : "enemy-weapon");
+            this.assistBg.setTexture(isAlly ? "ally-assist" : "enemy-assist");
+            this.specialBg.setTexture(isAlly ? "ally-special" : "enemy-special");
+            this.statLine1.setTexture(isAlly ? "ally-line" : "enemy-line");
+            this.statLine2.setTexture(isAlly ? "ally-line" : "enemy-line");
 
             if (HeroMerges) {
                 const { value } = HeroMerges;
@@ -525,7 +543,7 @@ class UnitInfosBanner extends GameObjects.Container {
                 this.levelCount.setText("40");
             }
 
-            this.maxHP.setText(`/ ${stats.maxHP}`);
+            this.maxHP.setText(`${stats.maxHP}`);
 
             this.updatePassives(hero);
         }

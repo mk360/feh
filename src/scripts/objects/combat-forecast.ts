@@ -84,7 +84,9 @@ class CombatForecast extends GameObjects.Container {
             tapCallbacks: {
                 weaponType: null,
                 name: null,
-            }
+            },
+            ally: true,
+            rarity: 5,
         });
         this.firstHero.previousHP = renderRegularHPText({
             scene: this.scene,
@@ -156,7 +158,9 @@ class CombatForecast extends GameObjects.Container {
             tapCallbacks: {
                 weaponType: null,
                 name: null,
-            }
+            },
+            rarity: 5,
+            ally: false,
         });
         this.secondHero.previousHP = renderRegularHPText({
             scene: this.scene,
@@ -303,6 +307,8 @@ class CombatForecast extends GameObjects.Container {
             name: Name[0].value.split(":")[0],
             weaponColor: Weapon[0].color,
             weaponType: Weapon[0].weaponType,
+            ally: team === "attacker",
+            rarity: 5,
         });
 
         const texture = `portrait${Stats[0].hp / Stats[0].maxHP < 0.5 ? "-damage" : ""}`;
