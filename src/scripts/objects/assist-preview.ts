@@ -3,13 +3,14 @@ import MainScene from "../scenes/mainScene";
 import HeroPortrait from "./hero-portrait";
 import { getHealthyHPGradient, getLowHPGradient, renderRegularHPText, renderText } from "../utils/text-renderer";
 import Hero from "./hero";
+import HeroNameplate from "./hero-nameplate";
 
 
 interface AssistSide {
     portrait: HeroPortrait;
     startingHP: GameObjects.Text;
     endHP: GameObjects.Text;
-    arrow: GameObjects.Text;
+    nameplate: HeroNameplate;
 }
 
 interface UpdateArguments {
@@ -24,6 +25,8 @@ interface UpdatedSide {
     expectedHP: number;
 }
 
+const hpTextHeight = 60;
+
 class AssistPreview extends GameObjects.Container {
     background: GameObjects.Image;
     assister: AssistSide;
@@ -33,13 +36,13 @@ class AssistPreview extends GameObjects.Container {
 
     constructor(scene: MainScene, y: number) {
         super(scene, 0, y);
-        this.background = new GameObjects.Image(scene, 0, 0, "top-banner", "assist-bg").setOrigin(0);
+        this.background = new GameObjects.Image(scene, 0, 0, "banners", "assist").setOrigin(0);
         this.assistName = renderText({
             scene: this.scene,
-            x: this.background.getCenter().x,
-            y: this.background.getBottomCenter().y - 20,
+            x: this.background.getCenter().x - 100,
+            y: this.background.getCenter().y + 25,
             content: ""
-        });
+        }).setOrigin(0.5);
         this.add(this.background);
         this.assister = {
             portrait: new HeroPortrait(scene, -100, "").setScale(0.6).setOrigin(0),
@@ -54,21 +57,23 @@ class AssistPreview extends GameObjects.Container {
             }),
             endHP: renderRegularHPText({
                 scene,
-                x: 20,
-                y: 60,
+                x: 200,
+                y: hpTextHeight,
                 content: "",
                 style: {
                     fontSize: 26
                 }
             }),
-            arrow: renderRegularHPText({
-                scene,
-                x: 50,
-                y: 60,
-                content: "→",
-                style: {
-                    fontSize: 26
-                }
+            nameplate: new HeroNameplate(this.scene, 60, 20, {
+                name: "",
+                weaponColor: "",
+                weaponType: "",
+                ally: true,
+                tapCallbacks: {
+                    weaponType: null,
+                    name: null,
+                },
+                rarity: 5,
             })
         };
 
@@ -76,8 +81,8 @@ class AssistPreview extends GameObjects.Container {
             portrait: new HeroPortrait(scene, 900, "").setScale(0.6).setFlipX(true),
             startingHP: renderRegularHPText({
                 scene,
-                x: 20,
-                y: 0,
+                x: 300,
+                y: hpTextHeight,
                 content: "",
                 style: {
                     fontSize: 26
@@ -85,37 +90,49 @@ class AssistPreview extends GameObjects.Container {
             }),
             endHP: renderRegularHPText({
                 scene,
-                x: 20,
-                y: 0,
+                x: 370,
+                y: hpTextHeight,
                 content: "",
                 style: {
                     fontSize: 26
                 }
             }),
-            arrow: renderRegularHPText({
-                scene,
-                x: 20,
-                y: 60,
-                content: "→",
-                style: {
-                    fontSize: 26
-                }
+            nameplate: new HeroNameplate(this.scene, 270, 20, {
+                name: "",
+                weaponColor: "",
+                weaponType: "",
+                ally: true,
+                tapCallbacks: {
+                    weaponType: null,
+                    name: null,
+                },
+                rarity: 5,
             })
         };
 
-        for (let key in this.assister) {
-            this.add(this.assister[key]);
-        }
+        this.add(this.assister.portrait);
+        this.add(this.assister.nameplate);
 
-        for (let key in this.assisted) {
-            this.add(this.assisted[key]);
-        }
+        this.add(this.assisted.portrait);
+        this.add(this.assisted.nameplate);
+
+        this.add(new GameObjects.Image(this.scene, this.scene.game.canvas.width / 2, hpTextHeight + 30, "assist-forecast"));
+
+        this.add(this.assister.startingHP);
+        this.add(this.assister.endHP);
+
+        this.add(this.assisted.startingHP);
+        this.add(this.assisted.endHP);
+
+
+        this.add(this.assister.startingHP);
+        this.add(this.assistName);
     }
 
     updateSides(args: UpdateArguments) {
         this.assistName.setText(args.assist);
-        const { Name, Stats } = args.assisting.object.getInternalHero();
-        const { Name: AssistedName, Stats: AssistedStats } = args.assisted.object.getInternalHero();
+        const { Name, Stats, Weapon } = args.assisting.object.getInternalHero();
+        const { Name: AssistedName, Stats: AssistedStats, Weapon: assistedWeapon } = args.assisted.object.getInternalHero();
         this.assister.portrait.setPortrait(Name[0].value, Stats[0].hp, Stats[0].maxHP);
         this.assisted.portrait.setPortrait(AssistedName[0].value, AssistedStats[0].hp, AssistedStats[0].maxHP);
 
@@ -134,6 +151,21 @@ class AssistPreview extends GameObjects.Container {
         const applyAssistedCurrentHPGradient = args.assisted.previousHP <= 10 ? getLowHPGradient : getHealthyHPGradient;
         const currentAssistedHPGradient = applyAssistedCurrentHPGradient(this.assisted.startingHP);
         this.assisted.startingHP.setFill(currentAssistedHPGradient).setText(args.assisted.previousHP.toString());
+        this.assister.nameplate.updateNameplate({
+            name: Name[0].value.split(":")[0],
+            weaponColor: Weapon[0].color,
+            weaponType: Weapon[0].weaponType,
+            ally: true,
+            rarity: 5,
+        });
+
+        this.assisted.nameplate.updateNameplate({
+            name: AssistedName[0].value.split(":")[0],
+            weaponColor: assistedWeapon[0].color,
+            weaponType: assistedWeapon[0].weaponType,
+            ally: true,
+            rarity: 5,
+        });
 
         if (this.portraitDisplayTween) this.portraitDisplayTween.stop();
         this.portraitDisplayTween = this.scene.tweens.add({

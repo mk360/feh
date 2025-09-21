@@ -12,6 +12,7 @@ interface ForecastHeroData {
     remainingHP: number;
     turns: number;
     entity: Hero;
+    advantage: "advantage" | "neutral" | "disadvantage";
     damageBeforeCombat: number;
     statMods: {
         [k in keyof Stats]: {
@@ -33,49 +34,45 @@ interface RenderedSide {
     previousHP: GameObjects.Text;
     remainingHP: GameObjects.Text;
     statMods: GameObjects.Text[];
-    damageLine: GameObjects.Image;
     roundCount: GameObjects.Text;
     damage: GameObjects.Text;
     damageBeforeCombat: GameObjects.Text;
-    arrow: GameObjects.Text;
+    affinityArrow: GameObjects.Image;
 };
 
 const hpTextHeight = 60;
-const hpLineHeight = 70;
 
 class CombatForecast extends GameObjects.Container {
     private portraitDisplayTween: Tweens.Tween;
     private forecastBackground: GameObjects.Image;
+    private forecastUI: GameObjects.Image;
 
     private firstHero: RenderedSide = {
         portrait: null,
         previousHP: null,
         statMods: null,
-        damageLine: null,
         remainingHP: null,
         nameplate: null,
         roundCount: null,
         damage: null,
-        arrow: null,
         damageBeforeCombat: null,
+        affinityArrow: null,
     };
     private secondHero: RenderedSide = {
         portrait: null,
         previousHP: null,
         statMods: null,
         remainingHP: null,
-        arrow: null,
-        damageLine: null,
         nameplate: null,
         roundCount: null,
         damage: null,
         damageBeforeCombat: null,
+        affinityArrow: null,
     };
     private koTween: Tweens.Tween;
 
     private createFirstHero() {
         this.firstHero.statMods = [];
-        //
         this.firstHero.portrait = new HeroPortrait(this.scene, -100, "").setOrigin(0).setScale(0.6);
         this.firstHero.nameplate = new HeroNameplate(this.scene, 60, 20, {
             name: "",
@@ -97,18 +94,9 @@ class CombatForecast extends GameObjects.Container {
             },
             content: ""
         });
-        this.firstHero.arrow = renderRegularHPText({
-            scene: this.scene,
-            x: this.firstHero.previousHP.getRightCenter().x + 40,
-            y: hpTextHeight,
-            content: "→",
-            style: {
-                fontSize: "26px"
-            }
-        });
         this.firstHero.remainingHP = renderRegularHPText({
             scene: this.scene,
-            x: this.firstHero.arrow.getRightCenter().x + 10,
+            x: 195,
             y: hpTextHeight,
             style: {
                 fontSize: "26px"
@@ -117,8 +105,8 @@ class CombatForecast extends GameObjects.Container {
         });
         this.firstHero.damageBeforeCombat = renderNumberText({
             scene: this.scene,
-            x: this.firstHero.arrow.getBottomCenter().x - 30,
-            y: 100,
+            x: 166,
+            y: 98,
             content: "",
             style: {
                 fontSize: "18px"
@@ -127,7 +115,7 @@ class CombatForecast extends GameObjects.Container {
         this.firstHero.damage = renderNumberText({
             scene: this.scene,
             x: this.firstHero.damageBeforeCombat.getRightCenter().x + 1,
-            y: 100,
+            y: 98,
             content: "",
             style: {
                 fontSize: "18px"
@@ -143,11 +131,11 @@ class CombatForecast extends GameObjects.Container {
             }
         });
 
-        this.firstHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damage.getBottomCenter().x + 10, this.firstHero.damage.getBottomLeft().y, "top-banner", "separator").setOrigin(0.5, 0).setScale(0.2, 0.5);
-        const { statMods, ...ui } = this.firstHero;
-        for (let uiElement in ui) {
-            this.add(this.firstHero[uiElement]);
-        }
+        this.firstHero.affinityArrow = new GameObjects.Image(this.scene, this.scene.game.canvas.width / 2 - 30, 110, "statuses", "bonus").setScale(0.5);
+
+        this.add(this.firstHero.portrait);
+        this.add(this.firstHero.nameplate);
+        this.add(this.firstHero.statMods);
     }
 
     private createSecondHero() {
@@ -168,22 +156,13 @@ class CombatForecast extends GameObjects.Container {
             style: {
                 fontSize: "26px",
             },
-            x: 310,
+            x: 300,
             y: hpTextHeight,
-        });
-        this.secondHero.arrow = renderRegularHPText({
-            scene: this.scene,
-            x: this.secondHero.previousHP.getRightCenter().x + 40,
-            y: hpTextHeight,
-            content: "→",
-            style: {
-                fontSize: "26px"
-            }
         });
         this.secondHero.remainingHP = renderRegularHPText({
             scene: this.scene,
             content: 0,
-            x: this.secondHero.arrow.getRightCenter().x + 10,
+            x: 370,
             y: hpTextHeight,
             style: {
                 fontSize: "26px"
@@ -191,7 +170,7 @@ class CombatForecast extends GameObjects.Container {
         });
         this.secondHero.damageBeforeCombat = renderNumberText({
             scene: this.scene,
-            x: this.secondHero.arrow.getCenter().x,
+            x: 350,
             y: this.firstHero.damage.getTopCenter().y,
             content: "-",
             style: {
@@ -216,30 +195,34 @@ class CombatForecast extends GameObjects.Container {
                 fontSize: "18px"
             }
         });
-        this.secondHero.damageLine = new GameObjects.Image(this.scene, this.firstHero.damageLine.x + 200, this.firstHero.damageLine.y, "top-banner", "separator").setOrigin(0.5, 0).setScale(0.2, 0.5).setTint(0xff0000);
-        const { statMods, ...ui } = this.secondHero;
-        for (let uiElement in ui) {
-            this.add(this.secondHero[uiElement]);
-        }
+        this.secondHero.affinityArrow = new GameObjects.Image(this.scene, this.scene.game.canvas.width / 2 + 25, 110, "statuses", "bonus").setScale(0.5);
+
+        this.add(this.secondHero.portrait);
+        this.add(this.secondHero.nameplate);
+        this.add(this.secondHero.statMods);
     }
 
     constructor(scene: Scene) {
         super(scene, 0, 71);
-        this.forecastBackground = new GameObjects.Image(scene, 0, 0, "top-banner", "forecast-bg").setOrigin(0, 0);
+        this.forecastBackground = new GameObjects.Image(scene, 0, 0, "banners", "combat-forecast").setOrigin(0, 0);
         this.forecastBackground.setDisplaySize(+this.scene.game.config.width, this.forecastBackground.displayHeight);
         this.add(this.forecastBackground);
         this.createFirstHero();
         this.createSecondHero();
+        this.add(new GameObjects.Image(this.scene, this.scene.game.canvas.width / 2, hpTextHeight + 30, "attack-forecast"));
+        this.add(this.firstHero.previousHP);
+        this.add(this.firstHero.remainingHP);
+        this.add(this.firstHero.damageBeforeCombat);
+        this.add(this.firstHero.damage);
+        this.add(this.firstHero.roundCount);
+        this.add(this.firstHero.affinityArrow);
 
-        this.add(renderText({
-            scene,
-            x: this.forecastBackground.getCenter().x,
-            y: hpLineHeight - 10,
-            content: "HP",
-            style: {
-                fontSize: "22px",
-            }
-        }).setOrigin(0.5, 0));
+        this.add(this.secondHero.previousHP);
+        this.add(this.secondHero.remainingHP);
+        this.add(this.secondHero.damageBeforeCombat);
+        this.add(this.secondHero.damage);
+        this.add(this.secondHero.roundCount);
+        this.add(this.secondHero.affinityArrow);
     }
 
     private updateSide({ side, team, hero, statChangesX, xShift: xChangeBetweenStats }: {
@@ -322,11 +305,28 @@ class CombatForecast extends GameObjects.Container {
         const previousHPGradient = applyPreviousHPGradient(side.previousHP);
         side.previousHP.setFill(previousHPGradient).setText(hero.startHP.toString());
 
+        side.affinityArrow.setVisible(true);
+
+        switch (hero.advantage) {
+            case "advantage": {
+                side.affinityArrow.setFrame("bonus");
+                break;
+            }
+            case "disadvantage": {
+                side.affinityArrow.setFrame("penalty");
+                break;
+            }
+            default: {
+                side.affinityArrow.setVisible(false);
+                break;
+            }
+        }
+
         return this;
     }
 
     setForecastData(params: ForecastData) {
-        console.log(params);
+        console.log({ params });
         const forecastCenter = this.forecastBackground.getCenter();
         this.updateSide({
             side: this.firstHero,
@@ -387,18 +387,6 @@ class CombatForecast extends GameObjects.Container {
     }
 
     updatePortraits(attackerHPRatio: number, defenderHPRatio: number) {
-        if (attackerHPRatio < 0.5 && !this.firstHero.portrait.frame.name.includes("damage")) {
-            this.scene.tweens.add({
-                targets: [this.firstHero.portrait],
-                alpha: 0,
-                duration: 100,
-                yoyo: true,
-                onYoyo: () => {
-                    this.firstHero.portrait.setFrame("portrait-damage");
-                }
-            }).play();
-        }
-
         const attackerPortraitSwitcher = this.switchPortraitsTween(this.firstHero.portrait, attackerHPRatio <= 0.5);
         const defenderPortraitSwitcher = this.switchPortraitsTween(this.secondHero.portrait, defenderHPRatio <= 0.5);
 

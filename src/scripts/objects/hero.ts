@@ -120,7 +120,7 @@ class Hero extends GameObjects.Container {
     createSpecial(startingCooldown: number, scene: MainScene) {
         const { value: team } = this.getInternalHero().Side[0];
         const isLeftSided = team === scene.side;
-        this.specialImage = new GameObjects.Image(this.scene, isLeftSided ? -40 : 20, -20, "skills-ui", "special-icon").setScale(0.4).setOrigin(0);
+        this.specialImage = new GameObjects.Image(this.scene, isLeftSided ? -40 : 20, -20, "skill-icons", "special").setScale(0.4).setOrigin(0);
         this.specialText = renderSpecialText({
             scene,
             x: isLeftSided ? -40 : 20,

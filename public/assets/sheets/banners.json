@@ -1,6 +1,6 @@
 {
 	"frames": {
-		"ally.png": {
+		"ally": {
 			"frame": {
 				"x": 1,
 				"y": 1,
@@ -20,7 +20,7 @@
 				"h": 180
 			}
 		},
-		"assist.png": {
+		"assist": {
 			"frame": {
 				"x": 1,
 				"y": 183,
@@ -40,7 +40,7 @@
 				"h": 180
 			}
 		},
-		"combat-forecast.png": {
+		"combat-forecast": {
 			"frame": {
 				"x": 1,
 				"y": 365,
@@ -60,7 +60,7 @@
 				"h": 180
 			}
 		},
-		"enemy.png": {
+		"enemy": {
 			"frame": {
 				"x": 1,
 				"y": 547,
@@ -80,7 +80,7 @@
 				"h": 180
 			}
 		},
-		"starter.png": {
+		"starter": {
 			"frame": {
 				"x": 753,
 				"y": 1,
@@ -104,7 +104,7 @@
 	"meta": {
 		"app": "http://www.codeandweb.com/texturepacker",
 		"version": "1.0",
-		"image": "spritesheet.png",
+		"image": "spritesheet",
 		"format": "RGBA8888",
 		"size": {
 			"w": 1506,

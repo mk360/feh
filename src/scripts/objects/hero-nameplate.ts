@@ -24,8 +24,8 @@ class HeroNameplate extends GameObjects.Container {
 
     constructor(scene: Scene, x: number, y: number, informations: NameplateInit) {
         super(scene, x, y);
-        this.nameplate = new GameObjects.Image(scene, 0, 0, `rarity-${informations.rarity}`).setOrigin(0, 0.5).setScale(1.05, 1);
-        this.nameplateBackground = new GameObjects.Image(scene, 0, 0, "ally-plate").setOrigin(0, 0.5).setScale(1.05, 1);
+        this.nameplate = new GameObjects.Image(scene, 0, 0, "unit-summary", `${informations.rarity}-star-plate`).setOrigin(0, 0.5).setScale(1.05, 1);
+        this.nameplateBackground = new GameObjects.Image(scene, 0, 0, "unit-summary", "ally-plate").setOrigin(0, 0.5).setScale(1.05, 1);
         this.weaponIcon = new GameObjects.Image(scene, this.nameplate.getLeftCenter().x + 22, this.nameplate.getLeftCenter().y, "weapons", `${informations.weaponColor}-${informations.weaponType}`).setInteractive().on("pointerdown", function (this: GameObjects.Image) {
             informations.tapCallbacks.weaponType(this);
         });
@@ -46,9 +46,9 @@ class HeroNameplate extends GameObjects.Container {
         this.heroName.setText(name);
         this.weaponIcon.setFrame(`${weaponColor}-${weaponType}`);
         if (ally) {
-            this.nameplateBackground.setTexture("ally-plate");
+            this.nameplateBackground.setFrame("ally-plate");
         } else {
-            this.nameplateBackground.setTexture("enemy-plate");
+            this.nameplateBackground.setFrame("enemy-plate");
         }
     }
 };

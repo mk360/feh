@@ -44,7 +44,7 @@ class Textbox extends GameObjects.Container {
         this.scene.tweens.add({
             targets: [this],
             scale: 1,
-            duration: 50,
+            duration: 50
         }).play();
     }
 
@@ -259,7 +259,7 @@ class Textbox extends GameObjects.Container {
         const textLines: TextboxContent[][] = [];
         const firstLine: TextboxContent[] = [];
         const secondLine: TextboxContent[] = [];
-        const specialIcon = new GameObjects.Image(this.scene, 0, 0, "skills-ui", "special-icon").setOrigin(0).setScale(0.5);
+        const specialIcon = new GameObjects.Image(this.scene, 0, 0, "skill-icons", "special").setOrigin(0).setScale(0.5);
         firstLine.push(specialIcon);
         if (cooldown) {
             const cooldownText = renderText({

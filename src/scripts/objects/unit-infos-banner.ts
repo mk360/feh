@@ -64,7 +64,7 @@ class UnitInfosBanner extends GameObjects.Container {
         super(scene, 0, y);
         const blockX = 290;
         this.playerSide = playerSide;
-        this.bannerBg = new GameObjects.Image(scene, 0, 0, "top-banner", "unit-banner-bg").setOrigin(0, 0).setInteractive();
+        this.bannerBg = new GameObjects.Image(scene, 0, 0, "banners", "starter").setOrigin(0, 0).setInteractive();
         this.bannerBg.on("pointerdown", () => {
             this.closeTextbox();
         });
@@ -164,7 +164,7 @@ class UnitInfosBanner extends GameObjects.Container {
     private createStats() {
         const statsBlockX = 130;
 
-        this.hpBackground = new GameObjects.Image(this.scene, statsBlockX, 70, "ally-hp").setOrigin(0, 0.5).setInteractive();
+        this.hpBackground = new GameObjects.Image(this.scene, statsBlockX, 70, "unit-summary", "ally-hp").setOrigin(0, 0.5).setInteractive();
         this.hpBackground.setSize(this.hpBackground.displayWidth, this.hpBackground.displayHeight);
         this.add(this.hpBackground.setInteractive());
 
@@ -271,8 +271,8 @@ class UnitInfosBanner extends GameObjects.Container {
 
         this.add(this.maxHP);
 
-        this.statLine1 = new GameObjects.Image(this.scene, statsBlockX, this.stats.atk.value.getBottomCenter().y + 2, "ally-line").setScale(1, 0.5).setOrigin(0, 1);
-        this.statLine2 = new GameObjects.Image(this.scene, statsBlockX, this.stats.res.value.getBottomCenter().y + 2, "ally-line").setScale(1, 0.5).setOrigin(0, 1);
+        this.statLine1 = new GameObjects.Image(this.scene, statsBlockX, this.stats.atk.value.getBottomCenter().y + 2, "unit-summary", "ally-line").setScale(1, 0.5).setOrigin(0, 1);
+        this.statLine2 = new GameObjects.Image(this.scene, statsBlockX, this.stats.res.value.getBottomCenter().y + 2, "unit-summary", "ally-line").setScale(1, 0.5).setOrigin(0, 1);
         this.add(this.statLine1);
         this.add(this.statLine2);
 
@@ -324,15 +324,15 @@ class UnitInfosBanner extends GameObjects.Container {
 
     private createMainSkills() {
         const skillsBlockX = 335;
-        this.weaponBg = new GameObjects.Image(this.scene, skillsBlockX, 95, "ally-weapon").setOrigin(0, 1).setInteractive();
+        this.weaponBg = new GameObjects.Image(this.scene, skillsBlockX, 95, "unit-summary", "ally-weapon").setOrigin(0, 1).setInteractive();
         this.weaponBg.setSize(this.weaponBg.displayWidth, this.weaponBg.displayHeight);
-        this.assistBg = new GameObjects.Image(this.scene, skillsBlockX, this.weaponBg.getBottomCenter().y + 2, "ally-assist").setOrigin(0, 0).setInteractive();
+        this.assistBg = new GameObjects.Image(this.scene, skillsBlockX, this.weaponBg.getBottomCenter().y + 2, "unit-summary", "ally-assist").setOrigin(0, 0).setInteractive();
         this.assistBg.setSize(this.assistBg.displayWidth, this.assistBg.displayHeight);
-        this.specialBg = new GameObjects.Image(this.scene, skillsBlockX, this.assistBg.getBottomCenter().y + 2, "ally-special").setOrigin(0).setInteractive();
+        this.specialBg = new GameObjects.Image(this.scene, skillsBlockX, this.assistBg.getBottomCenter().y + 2, "unit-summary", "ally-special").setOrigin(0).setInteractive();
         this.specialBg.setSize(this.specialBg.displayWidth, this.specialBg.displayHeight);
-        const assistIcon = new GameObjects.Image(this.scene, this.assistBg.getLeftCenter().x, this.assistBg.getLeftCenter().y, "skills-ui", "assist-icon").setScale(0.45).setOrigin(0.25, 0.5);
-        const specialIcon = new GameObjects.Image(this.scene, this.specialBg.getLeftCenter().x, this.specialBg.getLeftCenter().y, "skills-ui", "special-icon").setScale(0.45).setOrigin(0.25, 0.5);
-        const weaponIcon = new GameObjects.Image(this.scene, this.weaponBg.getLeftCenter().x, this.weaponBg.getLeftCenter().y, "skills-ui", "weapon-icon").setScale(0.45).setOrigin(0.25, 0.5);
+        const assistIcon = new GameObjects.Image(this.scene, this.assistBg.getLeftCenter().x, this.assistBg.getLeftCenter().y, "skill-icons", "assist").setScale(0.45).setOrigin(0.25, 0.5);
+        const specialIcon = new GameObjects.Image(this.scene, this.specialBg.getLeftCenter().x, this.specialBg.getLeftCenter().y, "skill-icons", "special").setScale(0.45).setOrigin(0.25, 0.5);
+        const weaponIcon = new GameObjects.Image(this.scene, this.weaponBg.getLeftCenter().x, this.weaponBg.getLeftCenter().y, "skill-icons", "weapon").setScale(0.45).setOrigin(0.25, 0.5);
         this.add(this.weaponBg);
         this.add(this.assistBg);
         this.add(this.specialBg);
@@ -404,10 +404,10 @@ class UnitInfosBanner extends GameObjects.Container {
         this.B = new GameObjects.Image(this.scene, this.A.getRightCenter().x + 15, this.A.getCenter().y, "").setScale(0.6).setOrigin(0, 0.5).setInteractive();
         this.C = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 15, this.A.getCenter().y, "").setScale(0.6).setOrigin(0, 0.5).setInteractive();
         this.S = new GameObjects.Image(this.scene, this.C.getRightCenter().x + 15, this.A.getCenter().y, "").setScale(0.6).setOrigin(0, 0.5).setInteractive();
-        const A_Letter = new GameObjects.Image(this.scene, this.A.getBottomRight().x + 3, this.A.getBottomRight().y + 10, "skills-ui", "A").setOrigin(0, 1).setScale(0.5);
-        const B_Letter = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 3, this.B.getBottomRight().y + 10, "skills-ui", "B").setOrigin(0, 1).setScale(0.5);
-        const C_Letter = new GameObjects.Image(this.scene, this.C.getBottomRight().x + 3, this.C.getBottomRight().y + 10, "skills-ui", "C").setOrigin(0, 1).setScale(0.5);
-        const S_Letter = new GameObjects.Image(this.scene, this.S.getBottomRight().x + 3, this.S.getBottomRight().y + 10, "skills-ui", "S").setOrigin(0, 1).setScale(0.5);
+        const A_Letter = new GameObjects.Image(this.scene, this.A.getBottomRight().x + 3, this.A.getBottomRight().y + 10, "skill-icons", "A").setOrigin(0, 1).setScale(0.5);
+        const B_Letter = new GameObjects.Image(this.scene, this.B.getBottomRight().x + 3, this.B.getBottomRight().y + 10, "skill-icons", "B").setOrigin(0, 1).setScale(0.5);
+        const C_Letter = new GameObjects.Image(this.scene, this.C.getBottomRight().x + 3, this.C.getBottomRight().y + 10, "skill-icons", "C").setOrigin(0, 1).setScale(0.5);
+        const S_Letter = new GameObjects.Image(this.scene, this.S.getBottomRight().x + 3, this.S.getBottomRight().y + 10, "skill-icons", "S").setOrigin(0, 1).setScale(0.5);
         this.add([this.C, C_Letter, this.B, B_Letter, this.A, A_Letter, this.S, S_Letter]);
 
         for (let skillSlot of ["A", "B", "C", "S"] as const) {
@@ -476,7 +476,7 @@ class UnitInfosBanner extends GameObjects.Container {
         const { maxHP, hp } = stats;
 
         this.heroPortrait.setTexture(name, hp / maxHP < 0.5 ? "portrait-damage" : "portrait");
-        this.bannerBg.setFrame(this.playerSide === Side[0].value ? "unit-banner-bg" : "enemy-banner");
+        this.bannerBg.setFrame(this.playerSide === Side[0].value ? "ally" : "enemy");
         if (Special) this.special.setText(Special[0].name);
         else this.special.setText("-");
 
@@ -530,11 +530,13 @@ class UnitInfosBanner extends GameObjects.Container {
                 ally: isAlly,
             });
 
-            this.weaponBg.setTexture(isAlly ? "ally-weapon" : "enemy-weapon");
-            this.assistBg.setTexture(isAlly ? "ally-assist" : "enemy-assist");
-            this.specialBg.setTexture(isAlly ? "ally-special" : "enemy-special");
-            this.statLine1.setTexture(isAlly ? "ally-line" : "enemy-line");
-            this.statLine2.setTexture(isAlly ? "ally-line" : "enemy-line");
+            this.weaponBg.setFrame(isAlly ? "ally-weapon" : "enemy-weapon");
+            this.assistBg.setFrame(isAlly ? "ally-assist" : "enemy-assist");
+            this.specialBg.setFrame(isAlly ? "ally-special" : "enemy-special");
+            this.statLine1.setFrame(isAlly ? "ally-line" : "enemy-line");
+            this.statLine2.setFrame(isAlly ? "ally-line" : "enemy-line");
+            this.hpBackground.setFrame(isAlly ? "ally-hp" : "enemy-hp");
+            this.bannerBg.setFrame(isAlly ? "ally" : "enemy");
 
             if (HeroMerges) {
                 const { value } = HeroMerges;

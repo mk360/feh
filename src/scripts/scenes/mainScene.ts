@@ -328,14 +328,14 @@ export default class MainScene extends Phaser.Scene {
           name: (hero as any).components.Name[0].value,
           teamId: (hero as any).components.Side[0].value,
         };
-      }))
+      }));
       this.currentTurn = currentSide;
       this.teamIds = ids;
       this.sound.pauseOnBlur = false;
       const header = this.add.image(0, 0, "marginals", "header").setOrigin(0);
       this.unitInfosBanner = new UnitInfosBanner(this, id, header.getBottomCenter().y).setVisible(false);
       this.combatForecast = new CombatForecast(this).setVisible(false);
-      const ornateBanner = this.add.image(this.game.canvas.width / 2, header.getBottomCenter().y, "banner").setScale(0.6).setOrigin(0.5, 0);
+      const ornateBanner = this.add.image(0, header.getBottomCenter().y, "banners", "starter").setOrigin(0, 0);
       this.background = this.add.image(0, ornateBanner.getBottomCenter().y, "map").setOrigin(0).setInteractive();
       this.actionsTray = this.add.existing(new ActionsTray(this, 0, this.background.getBottomCenter().y));
       const endTurn = new Button(this, "End Turn");
@@ -461,6 +461,7 @@ export default class MainScene extends Phaser.Scene {
       });
       this.add.existing(startGameButton);
       this.add.existing(startGameText);
+      this.add.existing(this.assistPreview);
     });
 
     this.socket.on("update-entities", (dict) => {
@@ -490,20 +491,21 @@ export default class MainScene extends Phaser.Scene {
 
     this.socket.on("response preview assist", ({ assisted, assisting, assist }) => {
       const assistingObject = this.heroesLayer.getByName(assisting.id) as Hero;
+      console.log(assistingObject)
       const assistedObject = this.heroesLayer.getByName(assisted.id) as Hero;
-      // this.assistPreview.updateSides({
-      //   assisting: {
-      //     object: assistingObject,
-      //     previousHP: assisting.previousHP,
-      //     expectedHP: assisting.expectedHP,
-      //   },
-      //   assisted: {
-      //     object: assistedObject,
-      //     previousHP: assisted.previousHP,
-      //     expectedHP: assisted.expectedHP,
-      //   },
-      //   assist
-      // });
+      this.assistPreview.updateSides({
+        assisting: {
+          object: assistingObject,
+          previousHP: assisting.previousHP,
+          expectedHP: assisting.expectedHP,
+        },
+        assisted: {
+          object: assistedObject,
+          previousHP: assisted.previousHP,
+          expectedHP: assisted.expectedHP,
+        },
+        assist
+      }).setVisible(true);
     });
 
     this.socket.on("response preview movement", ({ movement = [], assistArray = [], attack = [], warpTiles = [], targetableTiles = [], effectiveness, unitId }) => {
@@ -621,12 +623,6 @@ export default class MainScene extends Phaser.Scene {
       this.clearMovementLayer();
     });
 
-    this.socket.on("response preview assist", (preview) => {
-      preview.assisting.id = this.heroesLayer.getByName(preview.assisting.id) as Hero;
-      preview.assisted.id = this.heroesLayer.getByName(preview.assisted.id) as Hero;
-      this.assistPreview.updateSides(preview).setVisible(true);
-    });
-
     this.socket.on("response preview battle", (preview) => {
       const { attacker: previewAttacker, defender: previewDefender, attackerTile } = preview;
       const attacker = this.heroesLayer.getByName(previewAttacker.id) as Hero;
@@ -647,6 +643,7 @@ export default class MainScene extends Phaser.Scene {
           startHP: previewAttacker.previousHP,
           effectiveness: previewAttacker.effectiveness,
           remainingHP: previewAttacker.newHP,
+          advantage: previewAttacker.advantage,
           statMods: previewAttacker.combatBuffs,
           damageBeforeCombat: previewAttacker.beforeCombat,
         },
@@ -658,6 +655,7 @@ export default class MainScene extends Phaser.Scene {
           effectiveness: previewDefender.effectiveness,
           remainingHP: previewDefender.newHP,
           statMods: previewDefender.combatBuffs,
+          advantage: previewDefender.advantage,
           damageBeforeCombat: 0,
         }
       });
