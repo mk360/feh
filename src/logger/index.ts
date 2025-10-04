@@ -1,102 +1,6 @@
 import SOCKET from "../default-socket";
-
-interface SkillLogProperties {
-    sourceSkill: string;
-    sourceEntity: string;
-    targetEntity: string;
-}
-
+import { LogPayload } from "./interfaces";
 let lastLogContainer = document.getElementById("battle-log");
-
-interface CombatModLog extends SkillLogProperties {
-    brave: boolean;
-    followupEnabled: boolean;
-    extraDamage: number;
-    healed: number;
-};
-
-interface CombatLog {
-    logType: "combat";
-    rounds: CombatRoundLog[];
-    attacker: {
-        id: string;
-        mods: CombatModLog[];
-    };
-    defender: {
-        id: string;
-        mods: CombatModLog[];
-    };
-}
-
-interface CombatRoundLog {
-    round: number;
-    attacker: {
-        id: string;
-        damage: number;
-        activatedSpecial: boolean;
-        newSpecialCooldown: number;
-    };
-    defender: {
-        id: string;
-        activatedSpecial: boolean;
-        healed: number;
-        newSpecialCooldown: number;
-    };
-};
-
-interface MapDamageLog extends SkillLogProperties {
-    logType: "MapDamage";
-    damage: number;
-};
-
-interface CombatBuffLog extends SkillLogProperties {
-    logType: "CombatBuff";
-    buffs: {
-        [k in "atk" | "def" | "spd" | "res"]: number;
-    };
-};
-
-interface CombatDebuffLog extends SkillLogProperties {
-    logType: "combat-debuff";
-    debuffs: {
-        [k in "atk" | "def" | "spd" | "res"]: number;
-    };
-};
-
-interface BonusLog extends SkillLogProperties {
-    logType: "bonus";
-    bonuses: {
-        [k in "atk" | "def" | "spd" | "res"]: number;
-    };
-};
-
-interface NewTurnLog {
-    logType: "turn";
-    count: number;
-    side: string;
-}
-
-interface GuaranteedFollowupLog extends SkillLogProperties {
-    logType: "GuaranteedFollowup";
-};
-
-interface PreventFollowupLog extends SkillLogProperties {
-    logType: "PreventFollowup";
-};
-
-interface PenaltyLog extends SkillLogProperties {
-    logType: "penalty";
-    penalties: {
-        [k in "atk" | "def" | "spd" | "res"]: number;
-    };
-};
-
-interface StatusLog extends SkillLogProperties {
-    logType: "Status";
-    status: string;
-}
-
-type LogPayload = CombatBuffLog | CombatDebuffLog | BonusLog | PenaltyLog | CombatLog | StatusLog | MapDamageLog | NewTurnLog | GuaranteedFollowupLog | PreventFollowupLog;
 
 interface LoggableHeroData {
     id: string;
@@ -108,12 +12,22 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
     SOCKET.on("history", (payload: LogPayload[]) => {
         console.log({ payload });
         for (let item of payload) {
+            const entry = document.createElement("div");
+            entry.classList.add("log-entry");
+            if (!item.preview) {
+                entry.classList.add("standalone");
+            }
+
             switch (item.logType) {
-                case "bonus": {
+                case "MapBuff": {
+                    if (!item.preview) {
+
+                    }
                     const changeString = createStatsString(item.bonuses);
                     const targetEntity = printCharacterName(teamId, units, item.targetEntity);
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
                     const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
-                    const entry = document.createElement("div");
                     entry.appendChild(targetEntity);
 
                     const receives = document.createElement("span");
@@ -124,23 +38,24 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = `'s ${item.sourceSkill}.`;
                     entry.appendChild(sourceSkill);
-                    if (changeString) appendToLog(entry);
+                    if (changeString) appendToLog(entry, item.preview);
                     break;
                 }
 
                 case "Status": {
                     const targetEntity = printCharacterName(teamId, units, item.targetEntity);
-                    const sourceEntity = printCharacterName(teamId, units, item.targetEntity);
+                    const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
                     const addsStatus = document.createElement("span");
-                    addsStatus.innerText = ` gave the status ${item.status} to`;
+                    addsStatus.innerText = ` gave the ${item.status} status to `;
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = `'s ${item.sourceSkill}`;
-                    const entry = document.createElement("div");
                     entry.appendChild(sourceEntity);
                     entry.appendChild(sourceSkill);
                     entry.appendChild(addsStatus);
                     entry.appendChild(targetEntity);
-                    appendToLog(entry);
+                    appendToLog(entry, item.preview);
                     break;
                 }
 
@@ -148,6 +63,7 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     const changeString = createStatsString(item.penalties);
                     const targetEntity = printCharacterName(teamId, units, item.targetEntity);
                     const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
+
                     const entry = document.createElement("div");
                     entry.appendChild(targetEntity);
 
@@ -157,10 +73,13 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     entry.classList.add("log-entry");
                     entry.appendChild(sourceEntity);
 
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
+
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = `'s ${item.sourceSkill}.`;
                     entry.appendChild(sourceSkill);
-                    if (changeString) appendToLog(entry);
+                    if (changeString) appendToLog(entry, item.preview);
                     break;
                 }
 
@@ -168,8 +87,6 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     const changeString = createStatsString(item.buffs);
                     const targetEntity = printCharacterName(teamId, units, item.targetEntity);
                     const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
-                    const entry = document.createElement("div");
-                    entry.classList.add("log-entry");
                     entry.appendChild(targetEntity);
 
                     const receives = document.createElement("span");
@@ -177,10 +94,13 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     entry.appendChild(receives);
                     entry.appendChild(sourceEntity);
 
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
+
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = `'s ${item.sourceSkill}.`;
                     entry.appendChild(sourceSkill);
-                    if (changeString) appendToLog(entry);
+                    if (changeString) appendToLog(entry, item.preview);
                     break;
                 }
 
@@ -195,12 +115,14 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     receives.innerText = ` receives ${changeString} from `;
                     entry.appendChild(receives);
                     entry.appendChild(sourceEntity);
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
 
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = `'s ${item.sourceSkill}.`;
                     entry.classList.add("log-entry");
                     entry.appendChild(sourceSkill);
-                    if (changeString) appendToLog(entry);
+                    if (changeString) appendToLog(entry, item.preview);
                     break;
                 }
 
@@ -208,7 +130,6 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     // const targetEntity = printCharacterName(teamId, units, item.targetEntity);
                     const prevented = document.createElement("span");
                     prevented.innerText = ` prevented the opponent from performing a follow-up attack.`;
-                    console.log(units);
                     const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
                     const entry = document.createElement("div");
                     // entry.appendChild(targetEntity);
@@ -218,8 +139,10 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     entry.appendChild(sourceEntity);
                     entry.appendChild(sourceSkill);
                     entry.appendChild(prevented);
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
                     // entry.appendChild(targetEntity);
-                    appendToLog(entry);
+                    appendToLog(entry, item.preview);
                     break;
                 }
 
@@ -229,12 +152,13 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     guaranteed.innerText = ` gets a guaranteed follow-up attack from `;
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = item.sourceSkill;
-                    const entry = document.createElement("div");
-                    entry.classList.add("log-entry");
                     entry.appendChild(sourceEntity);
                     entry.appendChild(guaranteed);
                     entry.appendChild(sourceSkill);
-                    appendToLog(entry);
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
+                    appendToLog(entry, item.preview);
+
                     break;
                 }
 
@@ -242,18 +166,44 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     const container = document.createElement("div");
                     container.classList.add("turn-container");
                     container.innerText = `Turn ${item.count}: ${item.side === teamId ? "Player Team" : "Enemy Team"}`;
-                    appendToLog(container);
+                    appendToLog(container, false);
                     break;
+                }
+
+                case "Refresh": {
+                    const container = document.createElement("div");
+                    const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
+                    const refreshed = document.createElement("span");
+                    refreshed.innerText = ` granted another action to `;
+                    container.classList.add("log-entry");
+                    const targetEntity = printCharacterName(teamId, units, item.targetEntity);
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
+                    container.appendChild(sourceEntity);
+                    container.appendChild(refreshed);
+                    container.appendChild(targetEntity);
+                    appendToLog(container, item.preview);
+                    break;
+                }
+
+                default: {
+                    entry.classList.add("unknown-message");
+                    entry.innerText = `No configured message for log type ${item.logType}.`;
+                    appendToLog(entry, false);
                 }
             }
         }
     });
 };
 
-function appendToLog(item: HTMLDivElement) {
-    lastLogContainer.appendChild(item);
-    lastLogContainer.scrollTop = lastLogContainer.scrollHeight;
-}
+const appendToLog = (item: HTMLDivElement, preview: boolean) => {
+    const previewDivs = createPreviewContainer();
+    if (preview) {
+        previewDivs.previewContent.appendChild(item);
+        lastLogContainer.appendChild(previewDivs.previewContainer);
+        lastLogContainer.scrollTop = lastLogContainer.scrollHeight;
+    };
+};
 
 function createStatsString(stats: {
     [k in "atk" | "def" | "spd" | "res"]: number;
@@ -284,14 +234,39 @@ function createStatsString(stats: {
 
 function printCharacterName(teamId: string, units: LoggableHeroData[], unitId: string) {
     const span = document.createElement("span");
-    console.log(unitId);
     const unitData = units.find((unit) => unit.id === unitId);
     const isSameTeam = teamId === unitData.teamId;
     const b = document.createElement("b");
     span.appendChild(b);
     b.innerText = unitData.name;
-    b.style.color = isSameTeam ? "#54DFF4" : "#FA4D69";
+    b.classList.add(isSameTeam ? "enemy" : "enemy");
     return span;
 };
+
+function createPreviewContainer() {
+    const deleteButton = document.createElement("button");
+    deleteButton.classList.add("delete-single-log");
+    deleteButton.innerText = "Delete";
+
+
+    const previewHeader = document.createElement("div");
+    previewHeader.classList.add("preview-header");
+    const heading = document.createElement("h4");
+    heading.innerText = "Preview";
+    previewHeader.appendChild(heading);
+    previewHeader.appendChild(deleteButton);
+    const previewContent = document.createElement("div");
+
+    const previewContainer = document.createElement("div");
+    deleteButton.onclick = function () {
+        lastLogContainer.removeChild(previewContainer);
+    }
+    previewContainer.classList.add("preview");
+    previewContainer.appendChild(previewHeader);
+    previewContainer.appendChild(previewContent);
+    return {
+        previewContainer, previewContent
+    };
+}
 
 export default bindLoggerSocket;

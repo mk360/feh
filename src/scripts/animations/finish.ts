@@ -10,6 +10,7 @@ function finishAnimation(scene: MainScene, hero: Hero) {
             hero.disableMovementIndicator();
             scene.clearTiles();
             scene.combatForecast.setVisible(false);
+            scene.assistPreview.setVisible(false);
             scene.disableDragging(hero);
             const matrix = hero.sprite.postFX.addColorMatrix();
             matrix.blackWhite(true);

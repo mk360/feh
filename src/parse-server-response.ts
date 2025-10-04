@@ -129,6 +129,7 @@ function parseServerResponse(scene: MainScene, lines: string[]) {
 
                 default: {
                     const [animation, target] = args;
+                    scene.clearMovementLayer();
                     if (animation in animationKeys) {
                         const hero = scene.heroesLayer.getByName(target) as Hero;
                         const animData = animationKeys[animation as keyof typeof animationKeys](scene, hero);

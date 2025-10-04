@@ -26,25 +26,25 @@
 }
 
 #battle-log {
-    display: flex;
     overflow-y: auto;
-    padding-top: 0.5rem;
-    gap: 0.2rem;
     flex: 1;
     width: 100%;
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
     background-color: #ffffff40;
     flex-direction: column;
+    position: relative;
 }
 
 #battle-log-header {
     font-family: 'FEH';
+    z-index: 1;
     background-color: #13353F;
     color: white;
-    display: flex;
     align-items: center;
     justify-content: center;
     position: sticky;
-    padding: 0.5rem;
     top: 0;
     text-align: center;
     font-size: 2rem;
@@ -56,10 +56,72 @@
 
 .log-entry {
     padding: 0.5rem;
-    border-radius: 0.5rem;
-    border: 2px solid gray;
-    background-color: #13353FCD;
     color: white;
     font-family: 'FEH';
+
+    &.ally {
+        background-color: #13353FCD;
+    }
+
+    &.enemy {
+        background-color: #32070CCD;
+    }
+
     font-size: 1rem;
+
+    &.standalone {
+        border-radius: 0.5rem;
+        margin: 0 0.5rem;
+        border: 2px solid gray;
+    }
+}
+
+.preview {
+    border-radius: 0.5rem;
+    border: 2px solid black;
+    background-color: #AAE4B0;
+    font-family: 'FEH';
+    font-size: 1rem;
+    color: black;
+    margin: 0 0.5rem;
+}
+
+.delete-preview-logs {
+    width: 100%;
+    font-family: 'FEH';
+    text-align: center;
+    outline: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: black;
+    background-color: #AAE4B0;
+}
+
+.delete-single-log {
+    border-radius: 2rem;
+    border: 2px solid gray;
+    background-color: transparent;
+    color: inherit;
+    font-family: inherit;
+    padding: 0.25rem 0.5rem;
+    height: fit-content;
+}
+
+.preview-header {
+    background-color: transparent;
+    padding: 0 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    max-width: 100%;
+    align-items: center;
+    border-bottom: 1px solid #795E5E;
+
+    h4 {
+        margin: 0.5rem 0 0.5rem 0.5rem;
+    }
+}
+
+.unknown-message {
+    background-color: #FFC666;
+    border-color: #FFBF87;
 }

@@ -95,8 +95,6 @@ function combatAnimation(scene: MainScene, payload: string) {
         });
     }
 
-    console.log(tweens)
-
     return tweens;
 };
 

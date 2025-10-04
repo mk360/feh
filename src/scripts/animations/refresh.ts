@@ -39,12 +39,13 @@ function refreshAnimation(scene: MainScene, target: Hero) {
         from: 0,
         tween: {
             targets: [note1, note2, note3, note4, note5, refreshAura],
-            duration: 200,
+            duration: 400,
             alpha: 0,
             onComplete: () => {
                 [note1, note2, note3, note4, note5].forEach((note) => {
                     note.destroy();
                 });
+                target.sprite.clearFX();
             }
         }
     }];
