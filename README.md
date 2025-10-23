@@ -7,7 +7,7 @@ This is the UI Repo, which is part of a group that includes:
 <ul>
 <li>The <a href="https://github.com/mk360/feh-battles">Game Engine</a>, in which all the meat and potatoes lie.</li>
 <li>The <a href="https://github.com/mk360/feh-server">HTTP Server</a> that handles connections and acts as a relay between the Engine and the UI.</li>
-<li>The <a href="https://github.com/mk360/feh-showdown">Web App</a> that will be the website where you'll be able to play.
+<li>The <a href="https://github.com/mk360/feh-showdown">Teambuilder Web App</a> where you... build the teams that you'll use.
 </ul>
 
 <h2 id="notes">Notes</h2>
