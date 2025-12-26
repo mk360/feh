@@ -1,0 +1,18 @@
+FROM node:24-alpine
+
+WORKDIR /app/projects/something
+
+# Copy only dependency manifests first
+COPY projects/something/package*.json ./
+
+RUN npm install
+
+# Copy the rest of the repo
+WORKDIR /app
+COPY . .
+
+WORKDIR /app/projects/something
+RUN npm run build
+
+EXPOSE 3666
+CMD ["npm", "run", "serve"]

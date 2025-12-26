@@ -5,6 +5,13 @@ interface SkillLogProperties {
     preview: boolean;
 }
 
+interface CounterattackLog extends SkillLogProperties {
+    logType: "Counterattack"
+};
+
+interface NormalizeStaffDamageLog extends SkillLogProperties {
+    logType: "NormalizeStaffDamage"
+};
 
 interface CombatModLog extends SkillLogProperties {
     brave: boolean;
@@ -14,7 +21,7 @@ interface CombatModLog extends SkillLogProperties {
 };
 
 interface CombatLog extends SkillLogProperties {
-    logType: "combat";
+    logType: "DealDamage";
     rounds: CombatRoundLog[];
     attacker: {
         id: string;
@@ -70,7 +77,7 @@ interface MapBuffLog extends SkillLogProperties {
 
 interface NewTurnLog extends SkillLogProperties {
     logType: "turn";
-    count: number;
+    turn: number;
     side: string;
 }
 
@@ -98,4 +105,9 @@ interface RefreshLog extends SkillLogProperties {
     logType: "Refresh";
 };
 
-export type LogPayload = CombatBuffLog | CombatDebuffLog | MapBuffLog | PenaltyLog | CombatLog | StatusLog | MapDamageLog | NewTurnLog | GuaranteedFollowupLog | PreventFollowupLog | RefreshLog;
+interface DealDamageLog extends SkillLogProperties {
+    logType: "DealDamage";
+
+}
+
+export type LogPayload = NormalizeStaffDamageLog | CounterattackLog | CombatBuffLog | CombatDebuffLog | MapBuffLog | PenaltyLog | CombatLog | StatusLog | MapDamageLog | NewTurnLog | GuaranteedFollowupLog | PreventFollowupLog | RefreshLog;

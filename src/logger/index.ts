@@ -1,6 +1,6 @@
 import SOCKET from "../default-socket";
 import { LogPayload } from "./interfaces";
-let lastLogContainer = document.getElementById("battle-log");
+let lastLogContainer = document.getElementById("battle-log-content");
 
 interface LoggableHeroData {
     id: string;
@@ -10,7 +10,6 @@ interface LoggableHeroData {
 
 function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
     SOCKET.on("history", (payload: LogPayload[]) => {
-        console.log({ payload });
         for (let item of payload) {
             const entry = document.createElement("div");
             entry.classList.add("log-entry");
@@ -63,8 +62,6 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     const changeString = createStatsString(item.penalties);
                     const targetEntity = printCharacterName(teamId, units, item.targetEntity);
                     const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
-
-                    const entry = document.createElement("div");
                     entry.appendChild(targetEntity);
 
                     const receives = document.createElement("span");
@@ -108,7 +105,6 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     const changeString = createStatsString(item.debuffs);
                     const targetEntity = printCharacterName(teamId, units, item.targetEntity);
                     const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
-                    const entry = document.createElement("div");
                     entry.appendChild(targetEntity);
 
                     const receives = document.createElement("span");
@@ -126,12 +122,30 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     break;
                 }
 
+                case "Counterattack": {
+                    const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
+                    const targetEntity = printCharacterName(teamId, units, item.targetEntity);
+                    const entry = document.createElement("div");
+                    const sourceSkill = document.createElement("span");
+                    sourceSkill.innerText = `'s ${item.sourceSkill}`;
+                    entry.classList.add("log-entry");
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
+                    const canCounterattack = document.createElement("span");
+                    canCounterattack.innerHTML = ` can perform a counterattack from `;
+                    entry.appendChild(targetEntity);
+                    entry.appendChild(canCounterattack);
+                    entry.appendChild(sourceEntity);
+                    entry.appendChild(sourceSkill);
+                    appendToLog(entry, item.preview);
+                    break;
+                }
+
                 case "PreventFollowup": {
                     // const targetEntity = printCharacterName(teamId, units, item.targetEntity);
                     const prevented = document.createElement("span");
                     prevented.innerText = ` prevented the opponent from performing a follow-up attack.`;
                     const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
-                    const entry = document.createElement("div");
                     // entry.appendChild(targetEntity);
                     const sourceSkill = document.createElement("span");
                     sourceSkill.innerText = `'s ${item.sourceSkill}`;
@@ -158,38 +172,71 @@ function bindLoggerSocket(teamId: string, units: LoggableHeroData[]) {
                     const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
                     entry.classList.add(isSameTeam ? "ally" : "enemy");
                     appendToLog(entry, item.preview);
-
                     break;
                 }
 
                 case "turn": {
                     const container = document.createElement("div");
-                    container.classList.add("turn-container");
-                    container.innerText = `Turn ${item.count}: ${item.side === teamId ? "Player Team" : "Enemy Team"}`;
+                    container.classList.add("log-entry");
+                    const isSameTeam = item.side === teamId;
+                    container.classList.add(isSameTeam ? "ally" : "enemy");
+                    container.innerText = `Turn ${item.turn}: ${isSameTeam ? "Player Team" : "Enemy Team"}`;
                     appendToLog(container, false);
                     break;
                 }
 
                 case "Refresh": {
-                    const container = document.createElement("div");
                     const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
                     const refreshed = document.createElement("span");
                     refreshed.innerText = ` granted another action to `;
-                    container.classList.add("log-entry");
+                    entry.classList.add("log-entry");
                     const targetEntity = printCharacterName(teamId, units, item.targetEntity);
                     const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
                     entry.classList.add(isSameTeam ? "ally" : "enemy");
-                    container.appendChild(sourceEntity);
-                    container.appendChild(refreshed);
-                    container.appendChild(targetEntity);
-                    appendToLog(container, item.preview);
+                    entry.appendChild(sourceEntity);
+                    entry.appendChild(refreshed);
+                    entry.appendChild(targetEntity);
+                    appendToLog(entry, item.preview);
+                    break;
+                }
+
+                case "DealDamage": {
+                    const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
+                    const targetEntity = printCharacterName(teamId, units, item.targetEntity);
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
+                    break;
+                };
+
+                case "NormalizeStaffDamage": {
+                    const sourceEntity = printCharacterName(teamId, units, item.sourceEntity);
+                    const targetEntity = printCharacterName(teamId, units, item.targetEntity);
+                    const sourceSkill = document.createElement("span");
+                    sourceSkill.innerText = `'s ${item.sourceSkill}`;
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add("log-entry");
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
+                    const canCounterattack = document.createElement("span");
+                    canCounterattack.innerHTML = `'s staff attacks suffer no penalty thanks to `;
+                    entry.appendChild(targetEntity);
+                    entry.appendChild(canCounterattack);
+                    entry.appendChild(sourceEntity);
+                    entry.appendChild(sourceSkill);
+                    appendToLog(entry, item.preview);
+                    break;
+                }
+
+                case "DealDamage": {
+                    const isSameTeam = units.find((i) => i.id === item.sourceEntity).teamId === teamId;
+                    entry.classList.add("log-entry");
+                    entry.classList.add(isSameTeam ? "ally" : "enemy");
                     break;
                 }
 
                 default: {
                     entry.classList.add("unknown-message");
                     entry.innerText = `No configured message for log type ${item.logType}.`;
-                    appendToLog(entry, false);
+                    appendToLog(entry, item.preview);
                 }
             }
         }
@@ -202,7 +249,9 @@ const appendToLog = (item: HTMLDivElement, preview: boolean) => {
         previewDivs.previewContent.appendChild(item);
         lastLogContainer.appendChild(previewDivs.previewContainer);
         lastLogContainer.scrollTop = lastLogContainer.scrollHeight;
-    };
+    } else {
+        lastLogContainer.appendChild(item);
+    }
 };
 
 function createStatsString(stats: {

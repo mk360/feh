@@ -25,16 +25,19 @@
     font-weight: bold;
 }
 
-#battle-log {
-    overflow-y: auto;
+#battle-log-content {
     flex: 1;
-    width: 100%;
+    flex-direction: column;
     display: flex;
     gap: 0.5rem;
-    padding-top: 0.5rem;
-    background-color: #ffffff40;
+}
+
+#battle-log {
+    overflow-y: auto;
+    width: 100%;
     flex-direction: column;
     position: relative;
+    max-height: 1000px;
 }
 
 #battle-log-header {
