@@ -73,7 +73,7 @@ export default class MainScene extends Phaser.Scene {
   private tilesLayer: GameObjects.Layer;
   private unitInfosBanner: UnitInfosBanner;
   private storedPath: [number, number][] = [];
-  private fpsText: GameObjects.Text;
+  // private fpsText: GameObjects.Text;
   private playHeroQuote = createHeroQuoter(this);
   private movementUI: GameObjects.Layer;
   private miscUIElements: GameObjects.Layer;
